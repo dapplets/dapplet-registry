@@ -45,6 +45,8 @@ contract DappletRegistry {
     }
 
     // ToDo: location must be array of strings
+    // ToDo: how many modules can be returned?
+    // ToDo: is it need to be optimized?
     function getModules(string memory location)
         public
         view
