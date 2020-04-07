@@ -1,0 +1,20 @@
+{
+  "name": "@dapplets/dapplet-registry",
+  "version": "0.1.0",
+  "description": "Ethereum-based Dapplet Registry",
+  "main": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "migrate": "truffle migrate",
+    "migrate:rinkeby": "truffle migrate --network rinkeby",
+    "compile": "truffle compile"
+  },
+  "author": "Dapplets Team",
+  "license": "MIT",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.0.34"
+  }
+}
