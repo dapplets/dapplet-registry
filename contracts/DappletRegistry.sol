@@ -122,6 +122,50 @@ contract DappletRegistry {
             }
         }
     }
+
+    ////////////////////////////////////////////////
+    
+    uint256[] public testArray;
+
+    function addUnique(uint256 number) public {
+        for (uint256 i = 0; i < testArray.length; i++) {
+            if (testArray[i] == number) return;
+        }
+
+        for (uint256 i = 0; i < 100; i++) {
+            testArray.push(number);
+        }
+    }
+
+
+    function generate(uint256 count) public {
+        for (uint256 i = 0; i < count; i++) {
+            testArray.push(1);
+        }
+    }
+
+    function sum() public view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < testArray.length; i++) {
+            count += testArray[i];
+        }
+        return count;
+    }
+
+    function getLength() public view returns (uint256) {
+        return testArray.length;
+    }
+
+    function getUnique() public view returns (uint256[] memory) {
+        return testArray;
+    }
+
+    function resetUnique() public {
+        delete testArray;
+    }
+
+    // ToDo: create a function with loop by modules
+    // ToDo: it's possible to emit Event with gas
 }
 
 /*
