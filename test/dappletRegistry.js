@@ -32,4 +32,17 @@ contract('DappletRegistry', (accounts) => {
       }
     }
   });
+
+
+  it('playing', async () => {
+    const DappletRegistryInstance = await DappletRegistry.deployed();
+
+    // ToDo: it's possible to set gas limit for transaction with last parameter
+    // Read more: https://www.trufflesuite.com/docs/truffle/getting-started/interacting-with-your-contracts#making-a-transaction
+
+    // ToDo: how to get here a transaction receipt?
+    // Read more: https://www.trufflesuite.com/docs/truffle/getting-started/interacting-with-your-contracts#special-methods-on-truffle-contract-objects
+    const sum = await DappletRegistryInstance.sum();
+
+  });
 });
