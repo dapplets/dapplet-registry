@@ -18,6 +18,19 @@ contract DappletRegistry {
         mapping(string => string[]) urisByVersion;
     }
 
+    struct AddModuleInput {
+        string name;
+        string branch;
+        string version;
+        string uri;
+    }
+
+    struct AddLocationInput {
+        string name;
+        string branch;
+        string location;
+    }
+
     // ToDo: read operations are free, because of it's better to optimize writing.
     // Low level: 1) call, 2) send tx
 
@@ -91,6 +104,12 @@ contract DappletRegistry {
         info.urisByVersion[version].push(uri);
     }
 
+    function addModules(AddModuleInput[] memory modules) public {
+        for (uint256 i = 0; i < modules.length; i++) {
+            addModule(modules[i].name, modules[i].branch, modules[i].version, modules[i].uri);
+        }
+    }
+
     // ToDo: is it necessary to bind branch? maybe only name is enough?
     function addLocation(
         string memory name,
@@ -100,6 +119,12 @@ contract DappletRegistry {
         require(_infoByName[name].infoByBranches[branch].versions.length != 0); // ToDo: how to throw specific error? Dima: revert
         // ToDo: check empty strings everywhere
         _modulesByLocation[location].push([name, branch]);
+    }
+
+    function addLocations(AddLocationInput[] memory locations) public {
+        for (uint256 i = 0; i < locations.length; i++) {
+            addLocation(locations[i].name, locations[i].branch, locations[i].location);
+        }
     }
 
     function removeLocation(
