@@ -57,6 +57,16 @@ contract DappletRegistry {
         return _infoByName[name].infoByBranches[branch].urisByVersion[version];
     }
 
+    function generateOutput(uint256 size) public pure returns (string[] memory){
+        string[] memory output = new string[](size);
+
+        for (uint256 i = 0; i < size; i++) {
+            output[i] = 'bzz://2a45cbc8f939be2c6e4845917a1a95a7b74131f9472b8302efedf159f87e3970'; // 70
+        }
+
+        return output;
+    }
+
     // ToDo: location must be array of strings
     // ToDo: how many modules can be returned?
     // ToDo: is it need to be optimized?
@@ -106,7 +116,12 @@ contract DappletRegistry {
 
     function addModules(AddModuleInput[] memory modules) public {
         for (uint256 i = 0; i < modules.length; i++) {
-            addModule(modules[i].name, modules[i].branch, modules[i].version, modules[i].uri);
+            addModule(
+                modules[i].name,
+                modules[i].branch,
+                modules[i].version,
+                modules[i].uri
+            );
         }
     }
 
@@ -123,7 +138,11 @@ contract DappletRegistry {
 
     function addLocations(AddLocationInput[] memory locations) public {
         for (uint256 i = 0; i < locations.length; i++) {
-            addLocation(locations[i].name, locations[i].branch, locations[i].location);
+            addLocation(
+                locations[i].name,
+                locations[i].branch,
+                locations[i].location
+            );
         }
     }
 
@@ -193,9 +212,48 @@ contract DappletRegistry {
 
     // ToDo: create a function with loop by modules
     // ToDo: it's possible to emit Event with gas
+    struct GetAllModulesOutput {
+        string name;
+        string branch;
+        string version;
+        string[] uris;
+    }
+
+    function getAllModules(string memory location)
+        public
+        view
+        returns (GetAllModulesOutput[] memory)
+    {
+        string[2][] memory nameBranches = _modulesByLocation[location];
+        
+        GetAllModulesOutput[] memory output = new GetAllModulesOutput[](500);
+
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < nameBranches.length; i++) {
+            string memory name = nameBranches[i][0];
+            string memory branch = nameBranches[i][1];
+
+            string[] memory versions = getVersions(name, branch);
+
+            for (uint256 j = 0; j < nameBranches.length; j++) {
+                string memory version = versions[i];
+                string[] memory uris = resolveToUri(name, branch, version);
+                GetAllModulesOutput memory module = GetAllModulesOutput(name, branch, version, uris);
+                output[count] = module;
+                count++;
+            }
+        }
+
+        return output;
+    }
 }
 
 /*
+
+[
+    ["name"]
+]
 
 map name|hash => array of [branch, version[]][]
 version 4 byte = major, minor, patch

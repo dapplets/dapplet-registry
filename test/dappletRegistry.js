@@ -3,7 +3,7 @@ const testData = require('../migrations/test_registry.json');
 const DappletRegistry = artifacts.require("DappletRegistry");
 
 contract('DappletRegistry', (accounts) => {
-  it('should return uris by name#branch@version', async () => {
+  xit('should return uris by name#branch@version', async () => {
     const DappletRegistryInstance = await DappletRegistry.deployed();
 
     for (const name in testData.modules) {
@@ -17,7 +17,7 @@ contract('DappletRegistry', (accounts) => {
     }
   });
 
-  it('should return modules by locations', async () => {
+  xit('should return modules by locations', async () => {
     const DappletRegistryInstance = await DappletRegistry.deployed();
 
     for (const location in testData.hostnames) {
@@ -45,4 +45,26 @@ contract('DappletRegistry', (accounts) => {
     const sum = await DappletRegistryInstance.sum();
 
   });
+  xit('getAllModules', async () => {
+    const DappletRegistryInstance = await DappletRegistry.deployed();
+    const modules = await DappletRegistryInstance.getAllModules('twitter.com');
+    console.log(modules);
+  });
+
+  it('resolve to uris', async () => {
+    const DappletRegistryInstance = await DappletRegistry.deployed();
+    const uris = await DappletRegistryInstance.resolveToUri('test', 'test', 'test', { gas: 100000000000000 });
+    console.log(uris.length);
+  });
+
+
+
+  for (let i = 1; i <= 1000000; i = i * 2) {
+    xit(`generate output ${i}`, async function () {
+      this.timeout(60 * 1000);
+      const DappletRegistryInstance = await DappletRegistry.deployed();
+      const uris = await DappletRegistryInstance.generateOutput(i, { gas: 100000000000000 });
+      assert.equal(uris.length, i);
+    });
+  }
 });

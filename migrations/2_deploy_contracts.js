@@ -9,8 +9,9 @@ module.exports = function (deployer) {
   deployer.deploy(HelpersLib);
   deployer.link(HelpersLib, DappletRegistry);
   deployer.deploy(DappletRegistry)
-    .then((instance) => initModules(instance))
-    .then((instance) => initLocations(instance));
+    // .then((instance) => initModules(instance))
+    // .then((instance) => initLocations(instance))
+    .then((instance) => generateVersions(instance));
 };
 
 async function initModules(registry) {
@@ -58,6 +59,41 @@ async function initLocations(registry) {
     await registry.addLocations(chunks[i]);
     console.log(`Deployed ${i + 1} / ${chunks.length} chunks of locations.`);
   }
+
+  return registry;
+}
+
+async function generateVersions(registry) {
+
+  function getRandomHex(length) {
+    var letters = '0123456789abcdef';
+    var color = '';
+    for (var i = 0; i < length; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  const name = 'test';
+  const branch = 'test';
+  const version = 'test';
+
+  const modules = [];
+
+  for (let i = 0; i < 1024; i++) {
+    modules.push({ name, branch, version, uri: `bzz://${getRandomHex(64)}` });
+  }
+
+  //const amountOfGas = await registry.addModules.estimateGas(modules, { gas: 100000000 });
+  const chunkSize = 50; //Math.ceil(modules.length / Math.ceil(amountOfGas / 5000000));
+  const chunks = array_chunks(modules, chunkSize);
+
+  for (let i = 0; i < chunks.length; i++) {
+    await registry.addModules(chunks[i]);
+    console.log(`Deployed ${i + 1} / ${chunks.length} chunks of modules.`);
+  }
+
+  await registry.addLocation('test', 'test', 'test');
 
   return registry;
 }
