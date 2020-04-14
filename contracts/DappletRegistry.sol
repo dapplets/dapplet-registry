@@ -116,6 +116,7 @@ contract DappletRegistry {
         string memory branch,
         string memory location
     ) public {
+        // ToDo: add ownership checking
         require(_infoByName[name].infoByBranches[branch].versions.length != 0); // ToDo: how to throw specific error? Dima: revert
         // ToDo: check empty strings everywhere
         _modulesByLocation[location].push([name, branch]);
