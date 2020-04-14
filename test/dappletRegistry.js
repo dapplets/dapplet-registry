@@ -34,7 +34,7 @@ contract('DappletRegistry', (accounts) => {
   });
 
 
-  it('playing', async () => {
+  xit('playing', async () => {
     const DappletRegistryInstance = await DappletRegistry.deployed();
 
     // ToDo: it's possible to set gas limit for transaction with last parameter
@@ -45,13 +45,13 @@ contract('DappletRegistry', (accounts) => {
     const sum = await DappletRegistryInstance.sum();
 
   });
-  xit('getAllModules', async () => {
+  it('getAllModules', async () => {
     const DappletRegistryInstance = await DappletRegistry.deployed();
     const modules = await DappletRegistryInstance.getAllModules('twitter.com');
     console.log(modules);
   });
 
-  it('resolve to uris', async () => {
+  xit('resolve to uris', async () => {
     const DappletRegistryInstance = await DappletRegistry.deployed();
     const uris = await DappletRegistryInstance.resolveToUri('test', 'test', 'test', { gas: 100000000000000 });
     console.log(uris.length);

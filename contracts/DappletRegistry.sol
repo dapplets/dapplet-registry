@@ -226,7 +226,7 @@ contract DappletRegistry {
     {
         string[2][] memory nameBranches = _modulesByLocation[location];
         
-        GetAllModulesOutput[] memory output = new GetAllModulesOutput[](500);
+        GetAllModulesOutput[] memory output = new GetAllModulesOutput[](100);
 
         uint256 count = 0;
 
@@ -236,8 +236,8 @@ contract DappletRegistry {
 
             string[] memory versions = getVersions(name, branch);
 
-            for (uint256 j = 0; j < nameBranches.length; j++) {
-                string memory version = versions[i];
+            for (uint256 j = 0; j < versions.length; j++) {
+                string memory version = versions[j];
                 string[] memory uris = resolveToUri(name, branch, version);
                 GetAllModulesOutput memory module = GetAllModulesOutput(name, branch, version, uris);
                 output[count] = module;

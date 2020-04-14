@@ -9,9 +9,9 @@ module.exports = function (deployer) {
   deployer.deploy(HelpersLib);
   deployer.link(HelpersLib, DappletRegistry);
   deployer.deploy(DappletRegistry)
-    // .then((instance) => initModules(instance))
-    // .then((instance) => initLocations(instance))
-    .then((instance) => generateVersions(instance));
+    .then((instance) => initModules(instance))
+    .then((instance) => initLocations(instance));
+    //.then((instance) => generateVersions(instance));
 };
 
 async function initModules(registry) {
