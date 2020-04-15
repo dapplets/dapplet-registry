@@ -61,27 +61,30 @@ contract DappletRegistry {
         return _modulesByLocation[location];
     }
 
+    event ModuleAdded(
+        string indexed name,
+        string indexed branch,
+        string indexed version,
+        string uri
+    );
+
     function addModule(
         string memory name,
         string memory branch,
         string memory version,
         string memory uri
     ) public {
-        // ToDo: find info about "null" in solidity docs
-
         // ownership checking
         require(
             _infoByName[name].owner == address(0x0) ||
                 msg.sender == _infoByName[name].owner,
             "This action can be done only by module's owner."
-        ); // second parameter - text of error
+        );
 
         // owning
         if (_infoByName[name].owner == address(0x0)) {
             _infoByName[name].owner = msg.sender;
         }
-
-        // ToDo: how to prevent long chains _infoByName[name].infoByBranches[branch].urisByVersion[version];
 
         ModuleBranchInfo storage info = _infoByName[name]
             .infoByBranches[branch];
@@ -96,6 +99,8 @@ contract DappletRegistry {
 
         // ToDo: check existence of the uri? Dima: create map uri => boolean;
         info.urisByVersion[version].push(uri);
+
+        emit ModuleAdded(name, branch, version, uri);
     }
 
     function addModules(AddModuleInput[] memory modules) public {
