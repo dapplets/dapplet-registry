@@ -25,10 +25,7 @@ contract('DappletRegistry', (accounts) => {
       assert.isArray(modules);
 
       for (const name in testData.hostnames[location]) {
-        for (const branch of testData.hostnames[location][name]) {
-          const module = [name, branch];
-          assert.deepInclude(modules, module);
-        }
+          assert.deepInclude(modules, name);
       }
     }
   });

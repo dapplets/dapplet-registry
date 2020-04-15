@@ -25,21 +25,14 @@ contract DappletRegistry {
         string uri;
     }
 
-    struct AddLocationInput {
-        string name;
-        string branch;
-        string location;
-    }
-
     // ToDo: read operations are free, because of it's better to optimize writing.
     // Low level: 1) call, 2) send tx
 
     // ToDo: does public accessor generate setter?
     mapping(string => ModuleNameInfo) private _infoByName;
 
-    // ToDo: is it better to replace array[2] to struct? If yes, how to name such struct?
     // ToDo: fix double storing of [name, branch]
-    mapping(string => string[2][]) private _modulesByLocation; // location => [name, branch][]
+    mapping(string => string[]) private _modulesByLocation;
 
     function getVersions(string memory name, string memory branch)
         public
@@ -63,7 +56,7 @@ contract DappletRegistry {
     function getModules(string memory location)
         public
         view
-        returns (string[2][] memory)
+        returns (string[] memory)
     {
         return _modulesByLocation[location];
     }
@@ -79,7 +72,8 @@ contract DappletRegistry {
         // ownership checking
         require(
             _infoByName[name].owner == address(0x0) ||
-                msg.sender == _infoByName[name].owner
+                msg.sender == _infoByName[name].owner,
+            "This action can be done only by module's owner."
         ); // second parameter - text of error
 
         // owning
@@ -106,46 +100,39 @@ contract DappletRegistry {
 
     function addModules(AddModuleInput[] memory modules) public {
         for (uint256 i = 0; i < modules.length; i++) {
-            addModule(modules[i].name, modules[i].branch, modules[i].version, modules[i].uri);
+            addModule(
+                modules[i].name,
+                modules[i].branch,
+                modules[i].version,
+                modules[i].uri
+            );
         }
     }
 
-    // ToDo: is it necessary to bind branch? maybe only name is enough?
-    function addLocation(
-        string memory name,
-        string memory branch,
-        string memory location
-    ) public {
-        // ToDo: add ownership checking
-        require(_infoByName[name].infoByBranches[branch].versions.length != 0); // ToDo: how to throw specific error? Dima: revert
+    function addLocation(string memory name, string memory location) public {
         // ToDo: check empty strings everywhere
-        _modulesByLocation[location].push([name, branch]);
+        _modulesByLocation[location].push(name);
+    }
+
+    struct AddLocationInput {
+        string name;
+        string location;
     }
 
     function addLocations(AddLocationInput[] memory locations) public {
         for (uint256 i = 0; i < locations.length; i++) {
-            addLocation(locations[i].name, locations[i].branch, locations[i].location);
+            addLocation(locations[i].name, locations[i].location);
         }
     }
 
-    function removeLocation(
-        string memory name,
-        string memory branch,
-        string memory location
-    ) public {
-        uint256 length = _modulesByLocation[location].length;
-
-        if (length == 0) return;
+    function removeLocation(string memory name, string memory location) public {
+        string[] storage modules = _modulesByLocation[location];
 
         // ToDo: how to optimize it? Dima: use map
-        for (uint256 i = 0; i < length; i++) {
-            if (
-                HelpersLib.areEqual(_modulesByLocation[location][i][0], name) &&
-                HelpersLib.areEqual(_modulesByLocation[location][i][1], branch)
-            ) {
-                _modulesByLocation[location][i] = _modulesByLocation[location][length -
-                    1];
-                _modulesByLocation[location].pop(); // ToDo: or delete _modulesByLocation[location][length - 1] ? Dima: delete maybe just make it empty.
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (HelpersLib.areEqual(modules[i], name)) {
+                modules[i] = modules[modules.length - 1];
+                modules.pop(); // ToDo: or delete _modulesByLocation[location][length - 1] ? Dima: delete maybe just make it empty.
                 break;
             }
         }
