@@ -110,6 +110,15 @@ contract DappletRegistry {
     }
 
     function addLocation(string memory name, string memory location) public {
+        require(
+            _infoByName[name].owner != address(0x0),
+            "No modules with this name exist"
+        );
+        require(
+            _infoByName[name].owner == msg.sender,
+            "This action can be done only by module's owner"
+        );
+
         // ToDo: check empty strings everywhere
         _modulesByLocation[location].push(name);
     }
@@ -126,6 +135,15 @@ contract DappletRegistry {
     }
 
     function removeLocation(string memory name, string memory location) public {
+        require(
+            _infoByName[name].owner != address(0x0),
+            "No modules with this name exist"
+        );
+        require(
+            _infoByName[name].owner == msg.sender,
+            "This action can be done only by module's owner"
+        );
+
         string[] storage modules = _modulesByLocation[location];
 
         // ToDo: how to optimize it? Dima: use map
