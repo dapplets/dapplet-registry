@@ -1,13 +1,10 @@
 const testData = require("./test_registry.json");
 
-const HelpersLib = artifacts.require("HelpersLib");
 const DappletRegistry = artifacts.require("DappletRegistry");
 
 const array_chunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk_size)).fill().map((_, index) => index * chunk_size).map(begin => array.slice(begin, begin + chunk_size));
 
 module.exports = function (deployer) {
-  deployer.deploy(HelpersLib);
-  deployer.link(HelpersLib, DappletRegistry);
   deployer.deploy(DappletRegistry)
     .then((instance) => initModules(instance))
     .then((instance) => initLocations(instance));

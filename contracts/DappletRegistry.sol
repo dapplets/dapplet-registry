@@ -1,9 +1,6 @@
 pragma solidity >=0.4.25 <0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "./HelpersLib.sol";
-
-
 // ToDo: maybe hash is better to use?
 // hash(name+branch, version)
 
@@ -153,12 +150,17 @@ contract DappletRegistry {
 
         // ToDo: how to optimize it? Dima: use map
         for (uint256 i = 0; i < modules.length; i++) {
-            if (HelpersLib.areEqual(modules[i], name)) {
+            if (areEqual(modules[i], name)) {
                 modules[i] = modules[modules.length - 1];
                 modules.pop(); // ToDo: or delete _modulesByLocation[location][length - 1] ? Dima: delete maybe just make it empty.
                 break;
             }
         }
+    }
+
+    function areEqual(string memory a, string memory b) public pure returns(bool) {
+        // ToDo: it's expensive probably
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
 }
 
