@@ -59,9 +59,9 @@ contract DappletRegistry {
     }
 
     event ModuleAdded(
-        string indexed name,
-        string indexed branch,
-        string indexed version,
+        string name,
+        string branch,
+        string version,
         string uri
     );
 

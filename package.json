@@ -9,7 +9,7 @@
   "scripts": {
     "test": "truffle test",
     "migrate": "truffle migrate",
-    "migrate:rinkeby": "truffle migrate --network rinkeby",
+    "migrate:rinkeby": "truffle migrate --network rinkeby --skip-dry-run --reset",
     "compile": "truffle compile"
   },
   "author": "Dapplets Team",
