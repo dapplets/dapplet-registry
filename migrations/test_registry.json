@@ -1,401 +1,401 @@
 {
-    "modules": {
-      "common-lib.dapplet-base.eth": {
-        "default": {
-          "0.1.1": [
-            "bzz://4ff5b8d9109f6c2a26eb431e7496626b9e15a14b093635067dca100495f17dd5",
-            "bzz://aecb7bd6ef01070057265ebe418d9f185633c79d9613fb1eb9c8e86fe1ebe6f3",
-            "https://test.dapplets.org/dapplet-base/storage/QmP5hPWnEqhKfw2duKKRStzhGRy22QqnuKfAPE5ZGu91DW"
-          ],
-          "0.1.0": [
-            "bzz://b7023cfdbd67aa32fbb4122ef4d0c9c4147c868486305651e26046ad34902a89",
-            "https://test.dapplets.org/dapplet-base/storage/QmXj7aCjQuphmDsbgEMGAksdAGYV839DV1LSXe96PhD1mC"
-          ],
-          "0.3.1": [
-            "bzz://c90aa78c636d5090d0285c44065fb11be79097e19dbbdd1e2dca0ac28ee8c878",
-            "https://test.dapplets.org/dapplet-base/storage/QmbZoVrF1iTpH3mfkq46SHRziETjEwBQVGrHoCtxqNkRb1"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmYMEnEjQq3XATrjxSE5fUQ7jEetFzgKSDR2TtozM4zPKu",
-            "https://test.dapplets.org/dapplet-base/storage/QmYMSopBFpMBGFwgNKnMuD74JNxCKCpRf9opZK9ysXbE3u"
-          ],
-          "0.3.3": [
-            "bzz://4cda2a102a849cc78af9e8ae279c833c5fb95e2fc7450dcb284f84b8263c8321",
-            "https://test.dapplets.org/dapplet-base/storage/QmYmxBKktwQUJxK2F5zkko77RTVEGFWtUYQ3Fc4VfD7zCs"
-          ]
-        }
-      },
-      "twitter-adapter.dapplet-base.eth": {
-        "default": {
-          "0.2.2": [
-            "bzz://acb721fdf1fdb118e1d49fc952f5d118864fb2e9d7b4bd2fd2c2fefb131926f5",
-            "https://test.dapplets.org/dapplet-base/storage/QmVu5mTooxSjPWSiMtSfFAbj89gudbvQVuV9d7S9zik9Gz"
-          ],
-          "0.1.0": [
-            "bzz://ef739c697de9d6b999ef2aad464ddcda5c745f2dcc346802be59931540e88c07",
-            "https://test.dapplets.org/dapplet-base/storage/QmTrhoCUvGU55s9bzPsSbAjnts9ZmCPo6Mhn1cG1xQxSVD"
-          ],
-          "0.1.1": [
-            "bzz://9af3e52ef8b3732cd821cbd7ab5d4b3442ed296989f968856108bed7f983d0ce",
-            "https://test.dapplets.org/dapplet-base/storage/QmTqGQ65aL4oYtmysrj3AJPTK1EeXmNZzwY96cxMTbAQi2"
-          ],
-          "0.2.0": [
-            "bzz://8aec8131c14f33b58d62d0e95b9e44c97eac057658f20fda6e30838cda3a1a61",
-            "https://test.dapplets.org/dapplet-base/storage/QmfE47H5EbpiPXW4AuZvLoFTeivNh1JFxwdgf93kx39z3F"
-          ],
-          "0.2.1": [
-            "bzz://a143435b470f602e79b68723355d7227f555e33f2d5e32a33a0dd07fc2c37c60",
-            "https://test.dapplets.org/dapplet-base/storage/QmStq1krTQVdqM3Rj6SEsP2cfGyXzxAur8U4MG7qmNN6wk"
-          ],
-          "0.3.1": [
-            "bzz://7af3bb66e4e0fc88ffffbad365a311ef85ba47ec30b386b0469c23471f64494e",
-            "https://test.dapplets.org/dapplet-base/storage/QmSsFdMmpkRpWgTmSwaEcu5jQnVvEwG4n6fhJAMVtqCJsv"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmZ9LQQMEYie63ugQ4PT6ntu1AjAkx4MuYFsb9ZdHM9wwF",
-            "https://test.dapplets.org/dapplet-base/storage/QmZYZayFmsNy3K9142WQnRrsD4L39bxGM3Ju8wcvRpbFzL"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmR3eKSvZ6YLiXPH6RANacrcwZmn3YCeCAgR61j2vzybeC",
-            "https://test.dapplets.org/dapplet-base/storage/QmV6UcysNAvsPQDBUS4cY7qmgmwNso3cfAfdLsP2BJkcgE"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/QmVigpxYNhg6146Rfex2QGrszyWgsPqEtmrGimoDWCiAvD"
-          ],
-          "0.3.5": [
-            "bzz://655caafbeea61b4dd9ecb70b295568d9efca6fc3ebf3bd6540290221808ab249"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmfDg1oDQrKW4Q3Hqp3C42WcjDvgahof8DSMN88ohTkPpW"
-          ]
-        },
-        "new": {
-          "0.2.5": [
-            "bzz://f4df81e9ed473ac7d674cb0d2e0ba32323e5401bd02964ace5679b99cde890c9",
-            "bzz://d87213ad61f44251effaf8b75eacb12ecd11251831024202d242431df604d792",
-            "https://test.dapplets.org/dapplet-base/storage/QmXBC578APWuCZ1KTch2BzCnWBVgcGAfBrtXAPTeSybZWM"
-          ],
-          "0.2.1": [
-            "bzz://6bf0971ebd13554ce1e8f03bc19eef1100ac9da0cb162fb22d0bf2cd0eaa545d",
-            "https://test.dapplets.org/dapplet-base/storage/Qma16TWfYpPorvowXoBAX127gx6JwVvvgFnxEvBrXwGEGJ"
-          ],
-          "0.2.2": [
-            "bzz://3070c5b745e3fe84985c1b3ab0821a68280655ee49cf6e79415d6af3736f6330",
-            "https://test.dapplets.org/dapplet-base/storage/QmPreVEwUZETdRLanp8kuKoaYojURdHYemXPBJsk4XW9EY"
-          ],
-          "0.2.3": [
-            "bzz://3da1428e647d3a428efde360720b202bd10473ffa567810fdac2a7363b6b36c1",
-            "https://test.dapplets.org/dapplet-base/storage/QmQDdw7u6nsTyDJSbqRXLA7yG7eN6qsEoUgqwubDaNLbrx"
-          ],
-          "0.2.4": [
-            "bzz://7d69088702817e6b7e06eac18b25711a64fb7db90895f413214dcb1dc30a1750",
-            "https://test.dapplets.org/dapplet-base/storage/QmXNQYFyH5z8McVV87J79jLVj8yegfNEzUDTvuVfSk1cA7"
-          ],
-          "0.3.1": [
-            "bzz://cbb31f2efde07a942043edf59daf228bd7b010ca9e082c2779ebe205ae328c18",
-            "https://test.dapplets.org/dapplet-base/storage/Qmc3emFmbwSLmdMSTJxqxf6ZBoydEtUQGvNgzFWr7fiWB7"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmTU6jpQBmfFA9dS2hbeAyp3NWe7PYJjdWcG2W6daGUBn4",
-            "https://test.dapplets.org/dapplet-base/storage/QmSUB5xU9MB3Vo9VWRL7CFdRshrQHGEij9hAuUpsYBt75G"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmZNam5KbqiaFEf9Sh3jDXZsDF4dB6yLCThGC9qsKBiPbw",
-            "https://test.dapplets.org/dapplet-base/storage/QmUpJwM7H2rMisxYYVFzt98qNYwAWoY7TzvqYehB63b196"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/Qmcw6v5TKnX4WyqghJ8nsXefNqFx2zyHW19bUMp2aRTXZR"
-          ],
-          "0.3.5": [
-            "bzz://88caefdcb59fd38802597aa545a119c197301ea289ef398896252b9068ee44f0"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmQjqjwtdusPAS6P2RXCpoobhAxNmc5eTGqywiHanCK4UF"
-          ],
-          "0.3.7": [
-            "https://test.dapplets.org/dapplet-base/storage/QmdKt3uCbr61FAGPGiX3RCNVepkreMx6eUx2asgEKJ92uX"
-          ]
-        },
-        "legacy": {
-          "0.2.5": [
-            "bzz://11bfa350ae1532838995253e2d11c259daa41d248e0d2ca76fffbc4a62df526f",
-            "bzz://bf2e7cdc51269704e159cf406cabe0bcca6a977991aa239868272c4526a04536",
-            "https://test.dapplets.org/dapplet-base/storage/QmNavYm8wkrgPDBF7C1PKzcaoYHuw6pVqAPUHfbZKDWRY8"
-          ],
-          "0.2.1": [
-            "bzz://bd370238332fe0470a01a35a746879687a8d967941911b600be5cf404e71bd61",
-            "https://test.dapplets.org/dapplet-base/storage/QmYPXNttvvKRN86UiZmx7VS7MMZazawcMCDiDJ3PdiE1U1"
-          ],
-          "0.2.2": [
-            "bzz://67533a4d1fa38a4e2728b5ea9c67db7176db8d1d49052bd873ce658c75ddb512",
-            "https://test.dapplets.org/dapplet-base/storage/QmQR3B9WBK4xfKRqhBiRK64Go6f73adgifNC7xT4a4BErj"
-          ],
-          "0.2.3": [
-            "bzz://1afa9a4a9bddc38b0742f4188da0041c51de35b04a41e2954420d4422313c14b",
-            "https://test.dapplets.org/dapplet-base/storage/QmXbymo6qkGp84J4CLtvkAr1RdCppgS2mzQVDkqunugMnh"
-          ],
-          "0.2.4": [
-            "bzz://75746c6047616ce18f3b9416d1f7ca78a3841caaf6157bdb4fe759df690bb3b9",
-            "https://test.dapplets.org/dapplet-base/storage/QmQ786xAnENHT53NmAgkjwoEAAAH6JaKDRrArJYwD5j2S8"
-          ],
-          "0.3.1": [
-            "bzz://31533c2ec5feb5d1f05ff95ee970f28ab015e81b5206fad02d32b825e4c77bb3",
-            "https://test.dapplets.org/dapplet-base/storage/QmY7G3YRSVv2YArSfpEZPcraZWK57yhKB8gQZ7QQ3Beg7Z"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmXY39L7NraF2cXzGePxMddQbRD3hmgPcQyeRgkLCoK2u4",
-            "https://test.dapplets.org/dapplet-base/storage/Qmc6xAeJDarHRDAMNPWLUimwaDAKjsXJp1YQTfUc2cyG7K"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmWUTbRNdM3Ho9TngFxuPWGRsGAvKwLMSsmdhUDSq9MTss",
-            "https://test.dapplets.org/dapplet-base/storage/QmVuehXXqKBEkG5XcudLPeBT1ib12aDS3MGcey1pMYysfB"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/QmWwyx2ftQkompcm12CM9ncM1Zg7K2jFRzNGu33y5nEzLd"
-          ],
-          "0.3.5": [
-            "bzz://4e1ef038a78cf741d224c4cbad359665f40f0c1a8e38db39ecf83177100ce2ab"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmTdPTNjXZiR1Q3xve1D7EvCxATCSbedod1mnStXd5vxFL"
-          ]
-        }
-      },
-      "twitter-feature-1.dapplet-base.eth": {
-        "default": {
-          "0.1.6": [
-            "bzz://66a86f6fc491e9dfbe48b42b8e254ef3024bda664891e21f773dde20ff1db445",
-            "https://test.dapplets.org/dapplet-base/storage/QmX4eH5XqAVyeZh5VVZ871W2yrFQmZwWiAd8RKDcPwWHzy"
-          ],
-          "0.1.0": [
-            "bzz://29a84259b2c8eb3d8648ab98699cd7688cc709fabc8a66c64aeaff686f8f753a",
-            "https://test.dapplets.org/dapplet-base/storage/QmSTsvDbSkdN4rxv16FPrqxyu2x2fMxprwbAExWsMjxijU"
-          ],
-          "0.1.1": [
-            "bzz://10e3d72e919cf2c2e830555c33da79435006b34eac8e6459bb92d241b02182c8",
-            "https://test.dapplets.org/dapplet-base/storage/QmSAyR5qkhosPx7MQHAqsepBEtjmER1gd6xJFgcSWADyFc"
-          ],
-          "0.1.2": [
-            "bzz://05ec8d19a8752f95cd4b1ed3408fe016680592835862bb9c0baf7da0fa9500d7",
-            "https://test.dapplets.org/dapplet-base/storage/QmRjVgXCjwTysWZ6BfC63JxHpG1FmVhr9xXQyoxDptg9KN"
-          ],
-          "0.1.3": [
-            "bzz://5b238857bddf7c0e8e804d5be6d81228957ebfb5b4ff3d6a1c8ae92afd0a87a7",
-            "https://test.dapplets.org/dapplet-base/storage/QmXTmStD6GG9QXh9vh25sSChGh1o6M5ZTVuyMB3qGfWXZh"
-          ],
-          "0.1.4": [
-            "bzz://4dd09b424b54fee69685265cf7edb42dadc524d9694e550800b9147085563569",
-            "https://test.dapplets.org/dapplet-base/storage/QmfNm2f18VswhWHMqY875kyyHFwTT8BewFhuX7c5WC6MU2"
-          ],
-          "0.1.5": [
-            "bzz://eb24f4e8e34613fb112c680d7ce7c6f7af8686fe3d0254b18a81df1c6f99933c",
-            "https://test.dapplets.org/dapplet-base/storage/QmWjZC2Ft27ZMN9MrFEbJaCqh3jbCibvrbw6NGpcPQp2cK"
-          ],
-          "0.1.7": [
-            "bzz://bea081c05700e31b0e5bcc380c632175a287b61dda579c65367cb469b0fe64de",
-            "https://test.dapplets.org/dapplet-base/storage/QmbqZ4g8zmXUCaJjchCft7yeqSx3aJ48saKWeRhg5dda9W"
-          ],
-          "0.3.1": [
-            "bzz://627d3c33354c0345ce35bcfe8a31b966abc09856f2aa3c87f86fbbe0652f48c6",
-            "https://test.dapplets.org/dapplet-base/storage/QmPa7XZzfMPdgRbqh1cHY94Sx7oR8MjGDDjnd37VgVu1Ai"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmVEPpivrJsypWpQpkDfPKZLrZSiEqKpbC1v9QpcbE6ard",
-            "https://test.dapplets.org/dapplet-base/storage/QmWySmEmt5JoPnhHC7fZTo3TVk49DC14j16oBctefby26g"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmaC4oYEBwueUV8nfJfPJQGedf1BGoUgme8tvC69ZaRGst",
-            "https://test.dapplets.org/dapplet-base/storage/QmXLEGEvhNyD1mLDKuXXYgtpJzrRuF4apkSUj1Mht7Q3Kw"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/Qmf4m2kkGZa9SkKWdZkpDkWRw8x3f67buRLqLJW8dJ3DAj"
-          ],
-          "0.3.5": [
-            "bzz://99dbe11a55cf12800fc9dbeaa71fe83abd824476e38f37b7da7c29bbc75fcfc5"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmZxrWuHviFcHxm2a592utyKtBXaojLxzPGsWqJuu8xp5Y"
-          ],
-          "0.3.7": [
-            "https://test.dapplets.org/dapplet-base/storage/QmQv23aMu2W5bTkCDWGAWpfNiQSLt2ewP4X3swSDECsNzu"
-          ]
-        }
-      },
-      "twitter-feature-2.dapplet-base.eth": {
-        "default": {
-          "0.1.4": [
-            "bzz://1c73cc800cead0fec7ba1128dd0fdff3de168ee352ab2f28d8ac0bf5b3cba379",
-            "https://test.dapplets.org/dapplet-base/storage/QmS7wciA3EjRUAvYensw3REPWiBcwg3NXSim5EtcQtvkDM"
-          ],
-          "0.1.0": [
-            "bzz://3c8187918f4d30c51335f13f94714d37ed4d56dfbe7c00768bdbff97bc94b58e",
-            "https://test.dapplets.org/dapplet-base/storage/QmW4iGFVdL6VddRUhQrgKmEi9q8ip7pzEATG2CPnF7hVBT"
-          ],
-          "0.1.1": [
-            "bzz://1694aa3411fabf9090301380d065180952ef9e8e2980eb56facdf470f1dd12ee",
-            "https://test.dapplets.org/dapplet-base/storage/QmUFA74MP3Tcto3uVzsREgDG5VmDZYAKpKRreKkQmZ2rPz"
-          ],
-          "0.1.2": [
-            "bzz://571b5cdfc85052e97fd2d5a5b455183d84c019dc3a51e7b0c34f035789c6700c",
-            "https://test.dapplets.org/dapplet-base/storage/QmQwjCVg4WwEY4fgHR4ooR6DD1svHJoAXaveYwunPfmpeA"
-          ],
-          "0.1.3": [
-            "bzz://060cca0a39ef6c743f69cc88a4ca3d27e2d77b95a41b05416d2ea59a4faecd57",
-            "https://test.dapplets.org/dapplet-base/storage/QmNmgJwvFeLrNfwvACNRj3oCLqpTT69qNjN9j23ggQAz5k"
-          ],
-          "0.1.5": [
-            "bzz://c97d65f92ecdfbe8424e31e2c3f6861f85668985ba1e985df27c1955bc3a5a0e",
-            "https://test.dapplets.org/dapplet-base/storage/QmTYDTAbRFft8gCjBN6LcMpYX7FuHpM5khzHgwdX9i9aoq"
-          ],
-          "0.3.1": [
-            "bzz://6e4c7a190e72a26040fb188d744179fdc39296d7d8a1013e119d9a6c44a66a37",
-            "https://test.dapplets.org/dapplet-base/storage/QmS8Yd2nC3ZdC68FEXFYkJYKtd9ogjr7S8Ztzghmh7ZRCi"
-          ],
-          "0.3.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmQHg3XSYLUauQza4Pph7hcYrkEPJgLK6bh3QWCtMpRnNr",
-            "https://test.dapplets.org/dapplet-base/storage/QmZxcQNFEsM8yB4mNaxupBdCQGVzo4UT5YKY74gqHGYkjT"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmW4e4J3RbqLgGvASeoh3y6vP6iGfFhe9UKWTe6kevHiUu",
-            "https://test.dapplets.org/dapplet-base/storage/QmQdpxypEhYkJ76xPGpg3Nt6Vdzbyw9PCzXaWyVLeC45xE"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/QmWffNatobbLvUwAFaGcbvs5LeoFZJ16M3h7XQ59DADT4k"
-          ],
-          "0.3.5": [
-            "bzz://2e3d5273be7ab337d081968bb89a9d0496b39832f77ee6ccd61b3bb47166dccc"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmPHnAePz5qLNtKrDM86U4weBgD8YyAumKtBvHtSFBkCa6"
-          ],
-          "0.3.7": [
-            "https://test.dapplets.org/dapplet-base/storage/QmUMLUbT4Fd6xmBjwykqu3wGEFdXnLpy3kdqCENPv37Ci9"
-          ]
-        }
-      },
-      "twitter-feature-3.dapplet-base.eth": {
-        "default": {
-          "0.3.1": [
-            "https://test.dapplets.org/dapplet-base/storage/QmdYjPZHE4EuD1zKeTa5vD1mztEDZjuxVwGjDPf4duijPQ",
-            "https://test.dapplets.org/dapplet-base/storage/Qmacz43Urjz1zW2KgHdxAjFwuopvaFdwwZ6i9uQY2VkGYV"
-          ],
-          "0.3.3": [
-            "https://test.dapplets.org/dapplet-base/storage/Qmayf5kZfvX1fQQGev3n5xQYRd3Wpbqrq7vZMb7UJLjnSp",
-            "https://test.dapplets.org/dapplet-base/storage/QmW47tz5zaFMikLjqsPCXkDdhv73JxLswMkguQZuX3DaFs"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/QmNn5hnXxPn499y2oSJh6M72hnEq46jr5hn9wuFzBJyuju"
-          ],
-          "0.3.5": [
-            "bzz://2bc8c2668c34f828878070905aa7642e93445aea9a9092caf5769dfa593d565f"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmRNP3CdoLRHkbKE6RPskfxXBhKUqnkndoQeE7qiyeFUJ7"
-          ]
-        }
-      },
-      "dynamic-adapter.dapplet-base.eth": {
-        "default": {
-          "0.1.0": [
-            "https://test.dapplets.org/dapplet-base/storage/QmaUjZG18vP4AF3sze7Y7wXTmbAiob7rgjRXimq5TyBKRi"
-          ],
-          "0.1.1": [
-            "bzz://d01f16cc9491bfc5b19095092700e3d93f7c8cf383285e40658826f8c42cff76"
-          ],
-          "0.3.4": [
-            "https://test.dapplets.org/dapplet-base/storage/QmRka8kN6eVVMFhQtVUmoHCbyjmo7tzANtyTo1tmTy2Czo"
-          ],
-          "0.3.6": [
-            "https://test.dapplets.org/dapplet-base/storage/QmUFRktCKV7TxefXCcbCdpYtJPpLLadSY6M5ZLyFdj7iV8"
-          ]
-        }
-      },
-      "common-adapter.dapplet-base.eth": {
-        "default": {
-          "0.1.1": [
-            "https://test.dapplets.org/dapplet-base/storage/QmRZq4fRyAMhzrYZa9Mp5eiPwY5FgMxVHh1fCGDMSB6dgn"
-          ],
-          "0.1.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmPGeifMmops2eoG2ZT4MhR2NCVY8LgyCaRXmip6APr6Ff"
-          ]
-        }
-      },
-      "dapplets-org-feature-1.dapplet-base.eth": {
-        "default": {
-          "0.1.1": [
-            "https://test.dapplets.org/dapplet-base/storage/QmP6JonS1YzmEUM5saYzAf4dK4o9zZkdkGopey7NS9nmEb"
-          ],
-          "0.1.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmQQsgr9xf19rYAZN6jX8LkCbPmEQLgii7kGoYipSZosyV"
-          ]
-        }
-      },
-      "account-verify.dapplet-base.eth": {
-        "default": {
-          "0.0.2": [
-            "https://test.dapplets.org/dapplet-base/storage/QmNWfNvt8bs2Y3wUsPvhRbW7itowT3kydvTBt9prxEauoN"
-          ],
-          "0.0.3": [
-            "https://test.dapplets.org/dapplet-base/storage/QmRXBSYxteYhVZ3LSWBqi6WGxKE98KqPpFeRd6syhQVHsq"
-          ]
-        }
+  "modules": {
+    "common-lib.dapplet-base.eth": {
+      "default": {
+        "0.1.1": [
+          "bzz://4ff5b8d9109f6c2a26eb431e7496626b9e15a14b093635067dca100495f17dd5#48871804a992715fad1414ba4a3924b6784443f480051f1a914465d8fb631e8f",
+          "bzz://aecb7bd6ef01070057265ebe418d9f185633c79d9613fb1eb9c8e86fe1ebe6f3#9a84527c819e766a77a558e92bc035655721b6a98c006ed5dd1932536816eaa9",
+          "https://test.dapplets.org/dapplet-base/storage/QmP5hPWnEqhKfw2duKKRStzhGRy22QqnuKfAPE5ZGu91DW#1e4ae94f2ce4e8034bbc101fcddcdfc704046e9521baa336eb835278e1da112e"
+        ],
+        "0.1.0": [
+          "bzz://b7023cfdbd67aa32fbb4122ef4d0c9c4147c868486305651e26046ad34902a89#45a581636f718235e853cbe4b46a0ac0ee836678e0566f59ec40a80044e7c49e",
+          "https://test.dapplets.org/dapplet-base/storage/QmXj7aCjQuphmDsbgEMGAksdAGYV839DV1LSXe96PhD1mC#ade81e904a712a9fead69b20e45675f8830a9de54139e3715242ee7c8430344a"
+        ],
+        "0.3.1": [
+          "bzz://c90aa78c636d5090d0285c44065fb11be79097e19dbbdd1e2dca0ac28ee8c878#0731d11f334f0bd9d64b7da158a5ac7c67574dedd4f4953c2c98f18167f374b8",
+          "https://test.dapplets.org/dapplet-base/storage/QmbZoVrF1iTpH3mfkq46SHRziETjEwBQVGrHoCtxqNkRb1#0c1d8a41e27f8c268b3b8848f349571a9ead9f681bd051e07babb05740ed5017"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmYMEnEjQq3XATrjxSE5fUQ7jEetFzgKSDR2TtozM4zPKu#f8b0045312de1d24bc87bc5f6b29e619ef3082773a180fc5a2591c899f6af8c5",
+          "https://test.dapplets.org/dapplet-base/storage/QmYMSopBFpMBGFwgNKnMuD74JNxCKCpRf9opZK9ysXbE3u#87661f72e3035d595000404e0516ef35bfefc29f9e9f7ae56b6908c5517ab191"
+        ],
+        "0.3.3": [
+          "bzz://4cda2a102a849cc78af9e8ae279c833c5fb95e2fc7450dcb284f84b8263c8321#6e23d5f2059a41f8ed7d58712c0298bb96cf7285a31dde2e4f31e9c0e296a14f",
+          "https://test.dapplets.org/dapplet-base/storage/QmYmxBKktwQUJxK2F5zkko77RTVEGFWtUYQ3Fc4VfD7zCs#01b07de14bc99aa8b2d9399954b642fb7ac50b8140db69f9a21f9a8b5f0fec20"
+        ]
       }
     },
-    "hostnames": {
-      "twitter.com": {
-        "twitter-feature-1.dapplet-base.eth": [
-          "default"
+    "twitter-adapter.dapplet-base.eth": {
+      "default": {
+        "0.2.2": [
+          "bzz://acb721fdf1fdb118e1d49fc952f5d118864fb2e9d7b4bd2fd2c2fefb131926f5#cd3f55d3daf7105ab2b90b630cbba61a7fef8c100ffb1c6e087ed6eaebbde70f",
+          "https://test.dapplets.org/dapplet-base/storage/QmVu5mTooxSjPWSiMtSfFAbj89gudbvQVuV9d7S9zik9Gz#ec174a8f13420b3f15e274af2dda89bb7110d00062566e871d8869a8ff805a1f"
         ],
-        "twitter-feature-2.dapplet-base.eth": [
-          "default"
+        "0.1.0": [
+          "bzz://ef739c697de9d6b999ef2aad464ddcda5c745f2dcc346802be59931540e88c07#80dbc8cb9dd4187e8ef580b3836f46a89cc3feb8521c9bf9da05d38a903950b4",
+          "https://test.dapplets.org/dapplet-base/storage/QmTrhoCUvGU55s9bzPsSbAjnts9ZmCPo6Mhn1cG1xQxSVD#a4d5082a4fb3dd7be7ef3a738f6eda69c4595da3afc049956650515764a47e02"
         ],
-        "dapplets-org-feature-1.dapplet-base.eth": [
-          "default"
+        "0.1.1": [
+          "bzz://9af3e52ef8b3732cd821cbd7ab5d4b3442ed296989f968856108bed7f983d0ce#4c12ab1572aec0195849c416076a3465e6fae3a9772b5829cd100f14f4085f6d",
+          "https://test.dapplets.org/dapplet-base/storage/QmTqGQ65aL4oYtmysrj3AJPTK1EeXmNZzwY96cxMTbAQi2#f2a94a377222f9cc807134cb0b8b32004c0d034750e5f36edb2388a7226dbbf2"
         ],
-        "account-verify.dapplet-base.eth": [
-          "default"
-        ]
-      },
-      "mobile.twitter.com": {
-        "twitter-feature-1.dapplet-base.eth": [
-          "default"
+        "0.2.0": [
+          "bzz://8aec8131c14f33b58d62d0e95b9e44c97eac057658f20fda6e30838cda3a1a61#542d852bc7d80cea29abf17301b795692e6d295672eeb49783c628fc0ae0c0ac",
+          "https://test.dapplets.org/dapplet-base/storage/QmfE47H5EbpiPXW4AuZvLoFTeivNh1JFxwdgf93kx39z3F#c584ca392af555dddc8d39da558c2f98c50413526fa58c2debdbe7ee0e44218d"
         ],
-        "twitter-feature-2.dapplet-base.eth": [
-          "default"
-        ]
-      },
-      "www.twitter.com": {
-        "twitter-feature-1.dapplet-base.eth": [
-          "default"
+        "0.2.1": [
+          "bzz://a143435b470f602e79b68723355d7227f555e33f2d5e32a33a0dd07fc2c37c60#b95d6e9d312448da06ae6d7d3761a18a8a92be0210a4087d12a2a2d58a517764",
+          "https://test.dapplets.org/dapplet-base/storage/QmStq1krTQVdqM3Rj6SEsP2cfGyXzxAur8U4MG7qmNN6wk#01d4636659369f43160442279b3bf8146b54a94995099da9790258692cc44133"
         ],
-        "twitter-feature-2.dapplet-base.eth": [
-          "default"
+        "0.3.1": [
+          "bzz://7af3bb66e4e0fc88ffffbad365a311ef85ba47ec30b386b0469c23471f64494e#de871c734c6c8dae5761dd4638575652bd54832f98b381cc810e4db7593ef2f1",
+          "https://test.dapplets.org/dapplet-base/storage/QmSsFdMmpkRpWgTmSwaEcu5jQnVvEwG4n6fhJAMVtqCJsv#6e084097b0828632090c61e54d7c4d8c8c67d9793fee09508b139c8ec740b62f"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmZ9LQQMEYie63ugQ4PT6ntu1AjAkx4MuYFsb9ZdHM9wwF#fb0d1223e0f3141e4e20660a280f9f9a54ce92ee634d46b5d22f99e29ddd1f66",
+          "https://test.dapplets.org/dapplet-base/storage/QmZYZayFmsNy3K9142WQnRrsD4L39bxGM3Ju8wcvRpbFzL#a0c3c15888f977700419eae1d7a6a50565132cbd71141d6350d207e1117a3463"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmR3eKSvZ6YLiXPH6RANacrcwZmn3YCeCAgR61j2vzybeC#f3f30b84b1089cadc5baa99d15e279b2c230fbf3441bef719a7cd8b56f4388fd",
+          "https://test.dapplets.org/dapplet-base/storage/QmV6UcysNAvsPQDBUS4cY7qmgmwNso3cfAfdLsP2BJkcgE#276e6751661e1576bdc2498848cb984a788070cae6df79f1c716bdb977a647ed"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/QmVigpxYNhg6146Rfex2QGrszyWgsPqEtmrGimoDWCiAvD#a0fc2956ab6c456d0bcf7f84a7eed883e19a67d138fa76375cefe1099d8a187d"
+        ],
+        "0.3.5": [
+          "bzz://655caafbeea61b4dd9ecb70b295568d9efca6fc3ebf3bd6540290221808ab249#d599804d44c8cfebf7c63bae7d453aa8433110221fb5c8fa3c9d6d8386387b0a"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmfDg1oDQrKW4Q3Hqp3C42WcjDvgahof8DSMN88ohTkPpW#87a04910ce9f88e370e882d3708cd3df074e2bf859c2123b560a84e81b8793cd"
         ]
       },
-      "twitter.com/1153830517105713152": {
-        "twitter-feature-3.dapplet-base.eth": [
-          "default"
+      "new": {
+        "0.2.5": [
+          "bzz://f4df81e9ed473ac7d674cb0d2e0ba32323e5401bd02964ace5679b99cde890c9#f734850e8a58776790535603d302abceb01672d583caae74fe90c8e25cf0498d",
+          "bzz://d87213ad61f44251effaf8b75eacb12ecd11251831024202d242431df604d792#8900211a41f1f0e0eab829042656bc66570196fc2a578e7bb6edcdfdea7dff4f",
+          "https://test.dapplets.org/dapplet-base/storage/QmXBC578APWuCZ1KTch2BzCnWBVgcGAfBrtXAPTeSybZWM#ed01b1998f42a4f207d5db580ebbffce4aeaa0dc1ba95853a13d851da1d137f5"
+        ],
+        "0.2.1": [
+          "bzz://6bf0971ebd13554ce1e8f03bc19eef1100ac9da0cb162fb22d0bf2cd0eaa545d#448c9181917907f95355fc6f9341a0ea3b38efed71df21bed43d213302b88624",
+          "https://test.dapplets.org/dapplet-base/storage/Qma16TWfYpPorvowXoBAX127gx6JwVvvgFnxEvBrXwGEGJ#1e7118b66d7de4202fdb3213cbbbba3eb8813e99deb4cc8c8e6cc762cba3e952"
+        ],
+        "0.2.2": [
+          "bzz://3070c5b745e3fe84985c1b3ab0821a68280655ee49cf6e79415d6af3736f6330#365cc91e1330894bed3b9052aa424bba923ca06af07a332d126acc870b77066f",
+          "https://test.dapplets.org/dapplet-base/storage/QmPreVEwUZETdRLanp8kuKoaYojURdHYemXPBJsk4XW9EY#84f11c037099409d359d3418c93c9543dc338160ed22cb5f98b1538d53d5d653"
+        ],
+        "0.2.3": [
+          "bzz://3da1428e647d3a428efde360720b202bd10473ffa567810fdac2a7363b6b36c1#fa9ced6555d86a69378e33ebe1a2c47c71346c62b14d2e69bb2019aaaa741d40",
+          "https://test.dapplets.org/dapplet-base/storage/QmQDdw7u6nsTyDJSbqRXLA7yG7eN6qsEoUgqwubDaNLbrx#1f65039e8143471bacc04e406ccf426632173756cec9c002f96a47478df1bd24"
+        ],
+        "0.2.4": [
+          "bzz://7d69088702817e6b7e06eac18b25711a64fb7db90895f413214dcb1dc30a1750#b809cb85fc2f3e8beb2622962c8685ea0c495bb75ed42f0a2f8e0bb35dc0a961",
+          "https://test.dapplets.org/dapplet-base/storage/QmXNQYFyH5z8McVV87J79jLVj8yegfNEzUDTvuVfSk1cA7#353ab01de4d9903503d0a94f2a3624681300edec2b8470751053dc8ca55d0664"
+        ],
+        "0.3.1": [
+          "bzz://cbb31f2efde07a942043edf59daf228bd7b010ca9e082c2779ebe205ae328c18#e224e45b4240f86d72fd08de034f4851d3dda51f7da53851ffc0b5a84156a4f6",
+          "https://test.dapplets.org/dapplet-base/storage/Qmc3emFmbwSLmdMSTJxqxf6ZBoydEtUQGvNgzFWr7fiWB7#d49e6b2c74728d58551ae477ff59b96e27d1aa6164e08a5ddeef13c78132526e"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmTU6jpQBmfFA9dS2hbeAyp3NWe7PYJjdWcG2W6daGUBn4#4f1957f3206789c9238b379cc658dc9d189cd6c5d045d9e900e9b19a9f0ca7b5",
+          "https://test.dapplets.org/dapplet-base/storage/QmSUB5xU9MB3Vo9VWRL7CFdRshrQHGEij9hAuUpsYBt75G#553270c57186da88f7147685e6b46324da3220b944756891e56e31d8d9500ddb"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmZNam5KbqiaFEf9Sh3jDXZsDF4dB6yLCThGC9qsKBiPbw#220aff03790bdb9a866fd4c64156e67fa5c6330cf6faa949034cf9da1797c203",
+          "https://test.dapplets.org/dapplet-base/storage/QmUpJwM7H2rMisxYYVFzt98qNYwAWoY7TzvqYehB63b196#eb97b244b92817036551b6759a843322c2e3b5d4c76f4bec1922b6ae1b10aa22"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/Qmcw6v5TKnX4WyqghJ8nsXefNqFx2zyHW19bUMp2aRTXZR#912a7562fc62aff2ba342af76e66e0192a7a98d02cc9b415d2c648cb91e8eebc"
+        ],
+        "0.3.5": [
+          "bzz://88caefdcb59fd38802597aa545a119c197301ea289ef398896252b9068ee44f0#b7caa563d816acfa2acd18a9070f18ca98328b6398ee6fb53da35b293aa7f07e"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmQjqjwtdusPAS6P2RXCpoobhAxNmc5eTGqywiHanCK4UF#a64929906c3bb474c9d25d661e04e99e74f6c14b348d5e9ad77085f407fb6b6b"
+        ],
+        "0.3.7": [
+          "https://test.dapplets.org/dapplet-base/storage/QmdKt3uCbr61FAGPGiX3RCNVepkreMx6eUx2asgEKJ92uX#7cdc379a378558cfd7fcb855d71274661e5f3af0e0478db43cf2746648d39482"
         ]
       },
-      "dapplets.github.io": {
-        "dapplets-org-feature-1.dapplet-base.eth": [
-          "default"
+      "legacy": {
+        "0.2.5": [
+          "bzz://11bfa350ae1532838995253e2d11c259daa41d248e0d2ca76fffbc4a62df526f#0466b5a4a03ce425ceb26d409adb02ad6ba87a390eac7e74d38a9cf41406937e",
+          "bzz://bf2e7cdc51269704e159cf406cabe0bcca6a977991aa239868272c4526a04536#32a74c5ba131bf36dab62b8107b061a63b3a3fa4245e976d3ab8f6fee655b3ba",
+          "https://test.dapplets.org/dapplet-base/storage/QmNavYm8wkrgPDBF7C1PKzcaoYHuw6pVqAPUHfbZKDWRY8#804a229fd108576b119e707cee78e3de2881af14aa0f245495c3445709bbdfa0"
+        ],
+        "0.2.1": [
+          "bzz://bd370238332fe0470a01a35a746879687a8d967941911b600be5cf404e71bd61#4f75ab603db4a93eb3802e12cde3f1b3e712a5c3c9eef2136e6dc90136c725f0",
+          "https://test.dapplets.org/dapplet-base/storage/QmYPXNttvvKRN86UiZmx7VS7MMZazawcMCDiDJ3PdiE1U1#220a38af74eae076bf02b14aeeabdab33d53d5452b8d8de60be97dbd4e00f934"
+        ],
+        "0.2.2": [
+          "bzz://67533a4d1fa38a4e2728b5ea9c67db7176db8d1d49052bd873ce658c75ddb512#df8ad3bfda03dd6e7f06592b15181450fe0d4b5a226f8d5f410a5525b3dc5fc1",
+          "https://test.dapplets.org/dapplet-base/storage/QmQR3B9WBK4xfKRqhBiRK64Go6f73adgifNC7xT4a4BErj#45a22598a00a69013930561bd151a4c7bdc8bf62b287a87526be474cc82f9f42"
+        ],
+        "0.2.3": [
+          "bzz://1afa9a4a9bddc38b0742f4188da0041c51de35b04a41e2954420d4422313c14b#dd5782792229621c5da3387f4d60e0035d67a64b798b091ad9ed0dfef3d08eae",
+          "https://test.dapplets.org/dapplet-base/storage/QmXbymo6qkGp84J4CLtvkAr1RdCppgS2mzQVDkqunugMnh#cea37015f6e858b8e4ba90043d7a0acdb59984b4b7354d1252728ba09cb9b8aa"
+        ],
+        "0.2.4": [
+          "bzz://75746c6047616ce18f3b9416d1f7ca78a3841caaf6157bdb4fe759df690bb3b9#9b3d83b5a48abae9d7cfbeb4dc6871ee4f02d1382060dba4e84405c99b95d9a0",
+          "https://test.dapplets.org/dapplet-base/storage/QmQ786xAnENHT53NmAgkjwoEAAAH6JaKDRrArJYwD5j2S8#754c075ebc7d3cd563d06612fbdcdd2db5fb3dd7c998d496cd4ff5f6a3bea904"
+        ],
+        "0.3.1": [
+          "bzz://31533c2ec5feb5d1f05ff95ee970f28ab015e81b5206fad02d32b825e4c77bb3#5e6d93b4250925b7a09642a2db7466925b3e33fa42ada11b322d2feb4347e331",
+          "https://test.dapplets.org/dapplet-base/storage/QmY7G3YRSVv2YArSfpEZPcraZWK57yhKB8gQZ7QQ3Beg7Z#77b8cfe447cbd72c21007406f9636be9a6872b2e844b33faa9e33218117ae99d"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmXY39L7NraF2cXzGePxMddQbRD3hmgPcQyeRgkLCoK2u4#bde7252af9a64560f663e66aebda67b391e6deeaac075f5b72e7160181610970",
+          "https://test.dapplets.org/dapplet-base/storage/Qmc6xAeJDarHRDAMNPWLUimwaDAKjsXJp1YQTfUc2cyG7K#cba48c35e2ec83183a91b0b5a3d2acbeb5566eaac4111db9aea93ad3c4f0014b"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmWUTbRNdM3Ho9TngFxuPWGRsGAvKwLMSsmdhUDSq9MTss#81957ccc54de4c9571c7ae624abac086303dbbf10201ab30d8f73f6709cb0b80",
+          "https://test.dapplets.org/dapplet-base/storage/QmVuehXXqKBEkG5XcudLPeBT1ib12aDS3MGcey1pMYysfB#53080fb81d8ac73a083c304a445fd348c55a687910b2947f8f20bd1a0e74f8ba"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/QmWwyx2ftQkompcm12CM9ncM1Zg7K2jFRzNGu33y5nEzLd#f8aeb1bf54f468331e4edc52abd40e64a9840ab1a17e7eae0a34a764f64bc2b6"
+        ],
+        "0.3.5": [
+          "bzz://4e1ef038a78cf741d224c4cbad359665f40f0c1a8e38db39ecf83177100ce2ab#4b62aa8bb91506548b91cd086eb6d3450a9f379b708e9c326b4137ba2e16d9c8"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmTdPTNjXZiR1Q3xve1D7EvCxATCSbedod1mnStXd5vxFL#bd317ba92fe63938b3a8aa5e8042e0d0cdda4cd8cd9b0b88c9b62c05b4fc64f9"
         ]
-      },
-      "www.dapplets.org": {
-        "dapplets-org-feature-1.dapplet-base.eth": [
-          "default"
+      }
+    },
+    "twitter-feature-1.dapplet-base.eth": {
+      "default": {
+        "0.1.6": [
+          "bzz://66a86f6fc491e9dfbe48b42b8e254ef3024bda664891e21f773dde20ff1db445#79d21c16752d2a80f29671f3f8d64106e2997f6b64c48d6b76105076f5d5ad6f",
+          "https://test.dapplets.org/dapplet-base/storage/QmX4eH5XqAVyeZh5VVZ871W2yrFQmZwWiAd8RKDcPwWHzy#e913af1468cda1b65575f634f18b781032c98d60b41c79c8c706f84e9e9eb3ad"
+        ],
+        "0.1.0": [
+          "bzz://29a84259b2c8eb3d8648ab98699cd7688cc709fabc8a66c64aeaff686f8f753a#78a3c7238c57f8657aa457ca5905008814ba9e72177ee7cae60a34b0dbe598e7",
+          "https://test.dapplets.org/dapplet-base/storage/QmSTsvDbSkdN4rxv16FPrqxyu2x2fMxprwbAExWsMjxijU#557a30f44148dcb6de288be16abdb32f088d45ca7f07375154d39881cc82ec37"
+        ],
+        "0.1.1": [
+          "bzz://10e3d72e919cf2c2e830555c33da79435006b34eac8e6459bb92d241b02182c8#242a0f7c15fc3e28929877922617dd4255272bbf62005743f1c082361454f96c",
+          "https://test.dapplets.org/dapplet-base/storage/QmSAyR5qkhosPx7MQHAqsepBEtjmER1gd6xJFgcSWADyFc#6dfd4d4903efa44963ccdfd4b117e69403a30c6e53056071a407c45bf8adf9d9"
+        ],
+        "0.1.2": [
+          "bzz://05ec8d19a8752f95cd4b1ed3408fe016680592835862bb9c0baf7da0fa9500d7#e987c31be561c08ce8021ea75a95932147b1b5eb0107750a4c7933a17bad89a9",
+          "https://test.dapplets.org/dapplet-base/storage/QmRjVgXCjwTysWZ6BfC63JxHpG1FmVhr9xXQyoxDptg9KN#f70a02b765ae330824ccc537aab994a4aa2a4ff652ced7ae1f21cf04f779d99f"
+        ],
+        "0.1.3": [
+          "bzz://5b238857bddf7c0e8e804d5be6d81228957ebfb5b4ff3d6a1c8ae92afd0a87a7#a5bcd232de011800cbc735f55cdddff0f777f0afd8c97ae092528bad89e014a3",
+          "https://test.dapplets.org/dapplet-base/storage/QmXTmStD6GG9QXh9vh25sSChGh1o6M5ZTVuyMB3qGfWXZh#2a6d82bcbf65539c99892c516e7c62021faeb44db7749ff7fd217257cff9e1aa"
+        ],
+        "0.1.4": [
+          "bzz://4dd09b424b54fee69685265cf7edb42dadc524d9694e550800b9147085563569#25abc634913a878d348074faddd481a03ae16891e9be62284bec610ab7561c9d",
+          "https://test.dapplets.org/dapplet-base/storage/QmfNm2f18VswhWHMqY875kyyHFwTT8BewFhuX7c5WC6MU2#fa690ec71c61f37c4fe87a29e87b00b6e55e71bed3585e7acdf8f12dd9964ab6"
+        ],
+        "0.1.5": [
+          "bzz://eb24f4e8e34613fb112c680d7ce7c6f7af8686fe3d0254b18a81df1c6f99933c#8b526333e723837c4e585944fdd83cdc62e98141e324af1c3767f83eb9d750d8",
+          "https://test.dapplets.org/dapplet-base/storage/QmWjZC2Ft27ZMN9MrFEbJaCqh3jbCibvrbw6NGpcPQp2cK#1c603561de738eca50f2bd53617246b62c01ab43aca700ca19f4d60a7850e3e4"
+        ],
+        "0.1.7": [
+          "bzz://bea081c05700e31b0e5bcc380c632175a287b61dda579c65367cb469b0fe64de#45fb8323bcf9b097b2917bfcc03efbdc74923e5e26f73429e3aede383a28f553",
+          "https://test.dapplets.org/dapplet-base/storage/QmbqZ4g8zmXUCaJjchCft7yeqSx3aJ48saKWeRhg5dda9W#7b652545d8b0c5311982e91952624d2fe889b6516c5c189803c019f53094349c"
+        ],
+        "0.3.1": [
+          "bzz://627d3c33354c0345ce35bcfe8a31b966abc09856f2aa3c87f86fbbe0652f48c6#69e050dedd71667bf9ce2eb7288b9467b018a1e319e9f2ca487a64ce69fff7c0",
+          "https://test.dapplets.org/dapplet-base/storage/QmPa7XZzfMPdgRbqh1cHY94Sx7oR8MjGDDjnd37VgVu1Ai#e318b14aaea525117a9fc92923493cb45868072d78e0bf8abe143b5405059284"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmVEPpivrJsypWpQpkDfPKZLrZSiEqKpbC1v9QpcbE6ard#1a07136a6d3c4953373b28113adfae65abec3219fadca66a682b3498878b64b9",
+          "https://test.dapplets.org/dapplet-base/storage/QmWySmEmt5JoPnhHC7fZTo3TVk49DC14j16oBctefby26g#6c9ce3fad70e98c4021f48e3c2be95e7eeac4e52912acea69f23ca5d8f2adec9"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmaC4oYEBwueUV8nfJfPJQGedf1BGoUgme8tvC69ZaRGst#cbea0b980c647a5f49e22cda4ecff2a11c6ca279e3d562dab02c0c6a9d2859ca",
+          "https://test.dapplets.org/dapplet-base/storage/QmXLEGEvhNyD1mLDKuXXYgtpJzrRuF4apkSUj1Mht7Q3Kw#391c83a8be39a55ea8e022ced15183c27d26e0b1745fd2dbef9c57d64f7f8243"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/Qmf4m2kkGZa9SkKWdZkpDkWRw8x3f67buRLqLJW8dJ3DAj#da8f649691dd68a6ee7a722670306ac6fa35dd95371029ecca1ed46af88cb97d"
+        ],
+        "0.3.5": [
+          "bzz://99dbe11a55cf12800fc9dbeaa71fe83abd824476e38f37b7da7c29bbc75fcfc5#d76617e6aa99f7eb04692c54b725e0094e7e5e3430bbc05b35bfc25e84d18548"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmZxrWuHviFcHxm2a592utyKtBXaojLxzPGsWqJuu8xp5Y#cb55679e52ec9eada6ac898e8faee3cea3c54383911cfbf5bd6f32f3ae32c197"
+        ],
+        "0.3.7": [
+          "https://test.dapplets.org/dapplet-base/storage/QmQv23aMu2W5bTkCDWGAWpfNiQSLt2ewP4X3swSDECsNzu#0c9e62ecf034ef91ab25a286bbf19e75ac1bdd589046cf15a79dbc28779af6dc"
         ]
-      },
-      "dapplets.org": {
-        "dapplets-org-feature-1.dapplet-base.eth": [
-          "default"
+      }
+    },
+    "twitter-feature-2.dapplet-base.eth": {
+      "default": {
+        "0.1.4": [
+          "bzz://1c73cc800cead0fec7ba1128dd0fdff3de168ee352ab2f28d8ac0bf5b3cba379#aedc4fafd794f73d39ae41ff25e4f132094d284a75aa0ea8a6b86c231f069d58",
+          "https://test.dapplets.org/dapplet-base/storage/QmS7wciA3EjRUAvYensw3REPWiBcwg3NXSim5EtcQtvkDM#ab181149da733aaf283d4a19b99c5d31eca3e15f16f00be8a7a98384557f53b7"
+        ],
+        "0.1.0": [
+          "bzz://3c8187918f4d30c51335f13f94714d37ed4d56dfbe7c00768bdbff97bc94b58e#2bacd2253eb7b88fafd417f9605d5fc28fea90aedcdb255060a20290067159bc",
+          "https://test.dapplets.org/dapplet-base/storage/QmW4iGFVdL6VddRUhQrgKmEi9q8ip7pzEATG2CPnF7hVBT#30c4ad85eba4aa6dca70106df78073080d6ec92c6885590e77e64ce24d34a48a"
+        ],
+        "0.1.1": [
+          "bzz://1694aa3411fabf9090301380d065180952ef9e8e2980eb56facdf470f1dd12ee#77c55a22b75117361578098ecbaa6798e4339a90cb0df4e60b2a4b3aa75b02af",
+          "https://test.dapplets.org/dapplet-base/storage/QmUFA74MP3Tcto3uVzsREgDG5VmDZYAKpKRreKkQmZ2rPz#3c6ba3ed7531c93addfd18460df9723292b332504a1dcd92f9ac10973dbae23e"
+        ],
+        "0.1.2": [
+          "bzz://571b5cdfc85052e97fd2d5a5b455183d84c019dc3a51e7b0c34f035789c6700c#832afeed91b39321e62bfedc166deffa9489a7c8e756d085d76c04bbdf853544",
+          "https://test.dapplets.org/dapplet-base/storage/QmQwjCVg4WwEY4fgHR4ooR6DD1svHJoAXaveYwunPfmpeA#3150b3eda447ff25e2a59279ccefaa4218cd3cb4a9739a000d9c3ec917e55afe"
+        ],
+        "0.1.3": [
+          "bzz://060cca0a39ef6c743f69cc88a4ca3d27e2d77b95a41b05416d2ea59a4faecd57#07e58496f523e57888098785802589c6aab4a12a39e9402feee1f348cda88c35",
+          "https://test.dapplets.org/dapplet-base/storage/QmNmgJwvFeLrNfwvACNRj3oCLqpTT69qNjN9j23ggQAz5k#393c7e60a2058d300d2a2122db983cd2b014ed451c046e8aceec37032c8ddcbc"
+        ],
+        "0.1.5": [
+          "bzz://c97d65f92ecdfbe8424e31e2c3f6861f85668985ba1e985df27c1955bc3a5a0e#2ab0f3c288c1b773723fa921a989f812131bebb6060ea00724002549f832ae82",
+          "https://test.dapplets.org/dapplet-base/storage/QmTYDTAbRFft8gCjBN6LcMpYX7FuHpM5khzHgwdX9i9aoq#7121301a7895cf127eb83271592fbb52583ce2408a2bf607354a56c7044f96d7"
+        ],
+        "0.3.1": [
+          "bzz://6e4c7a190e72a26040fb188d744179fdc39296d7d8a1013e119d9a6c44a66a37#4448a5ce2d6946852825e8da162e87e8663eaa8b9bd6e5fd4974595a476de494",
+          "https://test.dapplets.org/dapplet-base/storage/QmS8Yd2nC3ZdC68FEXFYkJYKtd9ogjr7S8Ztzghmh7ZRCi#1af96896c76dbfb0fdaaa9c6618f78789d3332b0319f612544ff6a3f890679c8"
+        ],
+        "0.3.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmQHg3XSYLUauQza4Pph7hcYrkEPJgLK6bh3QWCtMpRnNr#c7fbf0aa53571e7e36d9db0f4d166e08e8f56bf058470d81fb63ce0d19150909",
+          "https://test.dapplets.org/dapplet-base/storage/QmZxcQNFEsM8yB4mNaxupBdCQGVzo4UT5YKY74gqHGYkjT#b1dc49c0d0ea60686cfba3abd3d46000252619bb4779609576dabe2210361edf"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmW4e4J3RbqLgGvASeoh3y6vP6iGfFhe9UKWTe6kevHiUu#961bbbb5c0774cdbca6c9454163af0d04d98fb754e17c773501d9087fb7767fd",
+          "https://test.dapplets.org/dapplet-base/storage/QmQdpxypEhYkJ76xPGpg3Nt6Vdzbyw9PCzXaWyVLeC45xE#a0514627c8127a499a3aa5f7c76893287e58117da16cd725677aa71217152252"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/QmWffNatobbLvUwAFaGcbvs5LeoFZJ16M3h7XQ59DADT4k#0fcf78aec0206e7cb501bc6c6a22110809547fffff9f801ee8671f9bc5672879"
+        ],
+        "0.3.5": [
+          "bzz://2e3d5273be7ab337d081968bb89a9d0496b39832f77ee6ccd61b3bb47166dccc#4a178f6e20597cfbaf4007d27306878531c17bf210b43bb64841d7ec3a00a67b"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmPHnAePz5qLNtKrDM86U4weBgD8YyAumKtBvHtSFBkCa6#6e49eef4afc54329202b73aff0cb1e4cb49ac5dbba65592417d4ee4a0f0daf4c"
+        ],
+        "0.3.7": [
+          "https://test.dapplets.org/dapplet-base/storage/QmUMLUbT4Fd6xmBjwykqu3wGEFdXnLpy3kdqCENPv37Ci9#ad8cf3ad2966fa35a0f8e3ed5548e415ef9c3a9de784a596948e48c6bc07dfe7"
         ]
-      },
-      "twitter.com/1230620275848491008": {
-        "twitter-feature-3.dapplet-base.eth": [
-          "default"
+      }
+    },
+    "twitter-feature-3.dapplet-base.eth": {
+      "default": {
+        "0.3.1": [
+          "https://test.dapplets.org/dapplet-base/storage/QmdYjPZHE4EuD1zKeTa5vD1mztEDZjuxVwGjDPf4duijPQ#acab3b0d4aeb57be4c11ce0c2a168b309da4a42ce2cdb93794b339cff83468ce",
+          "https://test.dapplets.org/dapplet-base/storage/Qmacz43Urjz1zW2KgHdxAjFwuopvaFdwwZ6i9uQY2VkGYV#d488ffab14b4846caf0ec4614785affb0def9fba751a539360b160e01ecbc721"
+        ],
+        "0.3.3": [
+          "https://test.dapplets.org/dapplet-base/storage/Qmayf5kZfvX1fQQGev3n5xQYRd3Wpbqrq7vZMb7UJLjnSp#ad5a57b32e73dadb2c4afd0156e76380eba41e6774c4c919967abcadf151af7b",
+          "https://test.dapplets.org/dapplet-base/storage/QmW47tz5zaFMikLjqsPCXkDdhv73JxLswMkguQZuX3DaFs#b2345abdde27ac79c82e241620772a2defaace7119b2ba0c73947a6ddbc7ca3b"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/QmNn5hnXxPn499y2oSJh6M72hnEq46jr5hn9wuFzBJyuju#904f59b5caa5b842cfabff1259b2744d1a8f2e191a2d37271b258e5ff81be86a"
+        ],
+        "0.3.5": [
+          "bzz://2bc8c2668c34f828878070905aa7642e93445aea9a9092caf5769dfa593d565f#825fa69608f4d299a355b5fe2a254cf1688d79d826e50f457f0e222caf1113e3"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmRNP3CdoLRHkbKE6RPskfxXBhKUqnkndoQeE7qiyeFUJ7#711bb022f121e61c611c0f5046a61451b5a4bf2aef24acc89aacf59dc6bcbf0a"
+        ]
+      }
+    },
+    "dynamic-adapter.dapplet-base.eth": {
+      "default": {
+        "0.1.0": [
+          "https://test.dapplets.org/dapplet-base/storage/QmaUjZG18vP4AF3sze7Y7wXTmbAiob7rgjRXimq5TyBKRi#004921b6a65818ee3b8dae3853be5c419df153ad710f6b531c482485816b635a"
+        ],
+        "0.1.1": [
+          "bzz://d01f16cc9491bfc5b19095092700e3d93f7c8cf383285e40658826f8c42cff76#b8c38d8dfde1c8238b28857e4c839cbbc6091c8dbf7c5f4ec49cc4002ae303aa"
+        ],
+        "0.3.4": [
+          "https://test.dapplets.org/dapplet-base/storage/QmRka8kN6eVVMFhQtVUmoHCbyjmo7tzANtyTo1tmTy2Czo#025488ca5686a39b75bfdc456dd39a7dc830d37e9495226cf229cda1e1a36ddf"
+        ],
+        "0.3.6": [
+          "https://test.dapplets.org/dapplet-base/storage/QmUFRktCKV7TxefXCcbCdpYtJPpLLadSY6M5ZLyFdj7iV8#075f5d2b4d0304ca22a689d43da223e0ca338e4dbad9a5ecd6115cdf754fbcf0"
+        ]
+      }
+    },
+    "common-adapter.dapplet-base.eth": {
+      "default": {
+        "0.1.1": [
+          "https://test.dapplets.org/dapplet-base/storage/QmRZq4fRyAMhzrYZa9Mp5eiPwY5FgMxVHh1fCGDMSB6dgn#957d6b539ce148499c351b0c980412fc8c16b0be21afae0c8f774dfd648717a7"
+        ],
+        "0.1.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmPGeifMmops2eoG2ZT4MhR2NCVY8LgyCaRXmip6APr6Ff#815936972aceeb674bde1c8c73d549330b55d35b773fe778829a60316286fdca"
+        ]
+      }
+    },
+    "dapplets-org-feature-1.dapplet-base.eth": {
+      "default": {
+        "0.1.1": [
+          "https://test.dapplets.org/dapplet-base/storage/QmP6JonS1YzmEUM5saYzAf4dK4o9zZkdkGopey7NS9nmEb#f2af7921d39b62d9c1b7bf193f068e6ac0391511f7204e0426c955394d69067e"
+        ],
+        "0.1.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmQQsgr9xf19rYAZN6jX8LkCbPmEQLgii7kGoYipSZosyV#d1b25c8aa324efe9a17b0bfb20f984bda504dd10c8f02ec5d9303492712b2176"
+        ]
+      }
+    },
+    "account-verify.dapplet-base.eth": {
+      "default": {
+        "0.0.2": [
+          "https://test.dapplets.org/dapplet-base/storage/QmNWfNvt8bs2Y3wUsPvhRbW7itowT3kydvTBt9prxEauoN#01ef63afb139317a148eb8c990730ece5eb7b686070a793939151e75780e9ac9"
+        ],
+        "0.0.3": [
+          "https://test.dapplets.org/dapplet-base/storage/QmRXBSYxteYhVZ3LSWBqi6WGxKE98KqPpFeRd6syhQVHsq#60f84826dd45d0865136ef97978ce8e6dce4a2ecb678e7c11d934429c3c80f67"
         ]
       }
     }
+  },
+  "hostnames": {
+    "twitter.com": {
+      "twitter-feature-1.dapplet-base.eth": [
+        "default"
+      ],
+      "twitter-feature-2.dapplet-base.eth": [
+        "default"
+      ],
+      "dapplets-org-feature-1.dapplet-base.eth": [
+        "default"
+      ],
+      "account-verify.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "mobile.twitter.com": {
+      "twitter-feature-1.dapplet-base.eth": [
+        "default"
+      ],
+      "twitter-feature-2.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "www.twitter.com": {
+      "twitter-feature-1.dapplet-base.eth": [
+        "default"
+      ],
+      "twitter-feature-2.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "twitter.com/1153830517105713152": {
+      "twitter-feature-3.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "dapplets.github.io": {
+      "dapplets-org-feature-1.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "www.dapplets.org": {
+      "dapplets-org-feature-1.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "dapplets.org": {
+      "dapplets-org-feature-1.dapplet-base.eth": [
+        "default"
+      ]
+    },
+    "twitter.com/1230620275848491008": {
+      "twitter-feature-3.dapplet-base.eth": [
+        "default"
+      ]
+    }
   }
+}
