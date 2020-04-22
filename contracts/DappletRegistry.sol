@@ -1,4 +1,4 @@
-pragma solidity >=0.4.25 <0.7.0;
+pragma solidity ^0.6.6;
 pragma experimental ABIEncoderV2;
 
 // ToDo: maybe hash is better to use?
