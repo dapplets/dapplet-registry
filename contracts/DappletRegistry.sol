@@ -12,14 +12,14 @@ contract DappletRegistry {
 
     struct ModuleBranchInfo {
         string[] versions; // ToDo: fix double storing of versions
-        mapping(string => string[]) urisByVersion;
+        mapping(string => bytes[]) urisByVersion;
     }
 
     struct AddModuleInput {
         string name;
         string branch;
         string version;
-        string uri;
+        bytes cid;
     }
 
     // ToDo: read operations are free, because of it's better to optimize writing.
@@ -43,7 +43,7 @@ contract DappletRegistry {
         string memory name,
         string memory branch,
         string memory version
-    ) public view returns (string[] memory) {
+    ) public view returns (bytes[] memory) {
         return _infoByName[name].infoByBranches[branch].urisByVersion[version];
     }
 
@@ -62,14 +62,14 @@ contract DappletRegistry {
         string name,
         string branch,
         string version,
-        string uri
+        bytes cid
     );
 
     function addModule(
         string memory name,
         string memory branch,
         string memory version,
-        string memory uri
+        bytes memory cid
     ) public {
         // ownership checking
         require(
@@ -95,9 +95,9 @@ contract DappletRegistry {
         // ToDo: check previous versions
 
         // ToDo: check existence of the uri? Dima: create map uri => boolean;
-        info.urisByVersion[version].push(uri);
+        info.urisByVersion[version].push(cid);
 
-        emit ModuleAdded(name, branch, version, uri);
+        emit ModuleAdded(name, branch, version, cid);
     }
 
     function addModules(AddModuleInput[] memory modules) public {
@@ -106,7 +106,7 @@ contract DappletRegistry {
                 modules[i].name,
                 modules[i].branch,
                 modules[i].version,
-                modules[i].uri
+                modules[i].cid
             );
         }
     }
