@@ -1,6 +1,7 @@
 pragma solidity ^0.6.6;
 pragma experimental ABIEncoderV2;
 
+
 // ToDo: maybe hash is better to use?
 // hash(name+branch, version)
 
@@ -12,14 +13,14 @@ contract DappletRegistry {
 
     struct ModuleBranchInfo {
         string[] versions; // ToDo: fix double storing of versions
-        mapping(string => bytes[]) urisByVersion;
+        mapping(string => string[]) urisByVersion;
     }
 
     struct AddModuleInput {
         string name;
         string branch;
         string version;
-        bytes cid;
+        string uri;
     }
 
     // ToDo: read operations are free, because of it's better to optimize writing.
@@ -43,7 +44,7 @@ contract DappletRegistry {
         string memory name,
         string memory branch,
         string memory version
-    ) public view returns (bytes[] memory) {
+    ) public view returns (string[] memory) {
         return _infoByName[name].infoByBranches[branch].urisByVersion[version];
     }
 
@@ -58,18 +59,13 @@ contract DappletRegistry {
         return _modulesByLocation[location];
     }
 
-    event ModuleAdded(
-        string name,
-        string branch,
-        string version,
-        bytes cid
-    );
+    event ModuleAdded(string name, string branch, string version, string uri);
 
     function addModule(
         string memory name,
         string memory branch,
         string memory version,
-        bytes memory cid
+        string memory uri
     ) public {
         // ownership checking
         require(
@@ -95,9 +91,9 @@ contract DappletRegistry {
         // ToDo: check previous versions
 
         // ToDo: check existence of the uri? Dima: create map uri => boolean;
-        info.urisByVersion[version].push(cid);
+        info.urisByVersion[version].push(uri);
 
-        emit ModuleAdded(name, branch, version, cid);
+        emit ModuleAdded(name, branch, version, uri);
     }
 
     function addModules(AddModuleInput[] memory modules) public {
@@ -106,7 +102,7 @@ contract DappletRegistry {
                 modules[i].name,
                 modules[i].branch,
                 modules[i].version,
-                modules[i].cid
+                modules[i].uri
             );
         }
     }
@@ -158,7 +154,11 @@ contract DappletRegistry {
         }
     }
 
-    function areEqual(string memory a, string memory b) public pure returns(bool) {
+    function areEqual(string memory a, string memory b)
+        public
+        pure
+        returns (bool)
+    {
         // ToDo: it's expensive probably
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
