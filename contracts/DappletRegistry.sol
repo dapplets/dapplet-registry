@@ -51,10 +51,8 @@ contract DappletRegistry {
         string memory branch,
         string memory version
     ) public view returns (bytes32 hash, string[] memory uris) {
-        return (
-            infoByName[name].infoByBranches[branch].hashByVersion[version],
-            urisByHash[hash].uris
-        );
+        hash = infoByName[name].infoByBranches[branch].hashByVersion[version];
+        uris = urisByHash[hash].uris;
     }
 
     struct HashUri {
@@ -286,13 +284,14 @@ contract DappletRegistry {
             "This action can be done only by object's owner"
         );
 
+        urisByHash[hash].owner = msg.sender;
         urisByHash[hash].uris.push(uri);
     }
 
     /// Remove URI of object's hash by its array index
     /// @param hash keccak-256 hash of object
     /// @param uriIndex index of URI in urisByHash[hash].uris array
-    function removeHashUri(bytes32 hash, uint256 uriIndex) public {
+    function removeHashUri(bytes32 hash, uint256 uriIndex) public { // ToDo: add uri
         require(
             urisByHash[hash].owner != address(0x0),
             "No objects with this hash exist"
