@@ -139,6 +139,11 @@ contract DappletRegistry {
             "Can not register a module with a foreign manifest."
         );
 
+        require(
+            info.hashByVersion[version] !== bytes32(0x0),
+            "Module already exists."
+        );
+
         // owning
         if (infoByName[name].owner == address(0x0)) {
             infoByName[name].owner = msg.sender;
