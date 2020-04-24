@@ -232,13 +232,16 @@ contract DappletRegistry {
     /// Remove location of module
     /// @param moduleName name of module
     /// @param location location of module to be removed
-    function removeLocation(string memory moduleName, string memory location)
-        public
-    {
+    function removeLocation(
+        string memory location,
+        uint256 moduleNameIndex,
+        string memory moduleName
+    ) public {
         require(
             infoByName[moduleName].owner != address(0x0),
             "No modules with this name exist"
         );
+
         require(
             infoByName[moduleName].owner == msg.sender,
             "This action can be done only by module's owner"
@@ -246,14 +249,16 @@ contract DappletRegistry {
 
         string[] storage modules = modulesByLocation[location];
 
-        // ToDo: optimize it (map?)
-        for (uint256 i = 0; i < modules.length; i++) {
-            if (areEqual(modules[i], moduleName)) {
-                modules[i] = modules[modules.length - 1];
-                modules.pop();
-                break;
-            }
-        }
+        require(modules.length > moduleNameIndex, "Invalid index.");
+
+        require(
+            areEqual(modules[moduleNameIndex], moduleName),
+            "The module name found by the index is not the same."
+        );
+
+        // URI removing by index
+        modules[moduleNameIndex] = modules[modules.length - 1];
+        modules.pop();
     }
 
     /////////////////////////////////////
@@ -291,17 +296,25 @@ contract DappletRegistry {
     /// Remove URI of object's hash by its array index
     /// @param hash keccak-256 hash of object
     /// @param uriIndex index of URI in urisByHash[hash].uris array
-    function removeHashUri(bytes32 hash, uint256 uriIndex) public { // ToDo: add uri
+    function removeHashUri(bytes32 hash, uint256 uriIndex, string memory uri) public {
         require(
             urisByHash[hash].owner != address(0x0),
             "No objects with this hash exist"
         );
+
         require(
             urisByHash[hash].owner == msg.sender,
             "This action can be done only by object's owner"
         );
 
         string[] storage uris = urisByHash[hash].uris;
+
+        require(uris.length > uriIndex, "Invalid index.");
+
+        require(
+            areEqual(uris[uriIndex], uri),
+            "The address found by the index is not the same."
+        );
 
         // URI removing by index
         uris[uriIndex] = uris[uris.length - 1];
