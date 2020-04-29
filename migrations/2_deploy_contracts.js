@@ -6,9 +6,31 @@ const array_chunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk
 
 module.exports = function (deployer) {
   deployer.deploy(DappletRegistry)
+    .then((instance) => initHashUris(instance))
     .then((instance) => initModules(instance))
     .then((instance) => initLocations(instance));
 };
+
+async function initHashUris(registry) {
+  const hashUris = [];
+
+  for (const hash in testData.hashUris) {
+    for (const uri of testData.hashUris[hash]) {
+      hashUris.push({ hash: '0x' + hash, uri });
+    }
+  }
+
+  const amountOfGas = await registry.addHashUris.estimateGas(hashUris, { gas: 100000000 });
+  const chunkSize = Math.ceil(hashUris.length / Math.ceil(amountOfGas / 5000000));
+  const chunks = array_chunks(hashUris, chunkSize);
+
+  for (let i = 0; i < chunks.length; i++) {
+    await registry.addHashUris(chunks[i]);
+    console.log(`Deployed ${i + 1} / ${chunks.length} chunks of hash-uris.`);
+  }
+
+  return registry;
+}
 
 async function initModules(registry) {
   const modules = [];
@@ -16,10 +38,8 @@ async function initModules(registry) {
   for (const name in testData.modules) {
     for (const branch in testData.modules[name]) {
       for (const version in testData.modules[name][branch]) {
-        const uris = testData.modules[name][branch][version];
-        for (const uri of uris) {
-          modules.push({ name, branch, version, uri });
-        }
+        const manifestHash = '0x' + testData.modules[name][branch][version];
+        modules.push({ name, branch, version, manifestHash });
       }
     }
   }
@@ -40,9 +60,9 @@ async function initLocations(registry) {
   const locations = [];
 
   for (const location in testData.hostnames) {
-    for (const name in testData.hostnames[location]) {
-      for (const branch of testData.hostnames[location][name]) {
-        locations.push({ name, branch, location });
+    for (const moduleName in testData.hostnames[location]) {
+      for (const branch of testData.hostnames[location][moduleName]) {
+        locations.push({ moduleName, branch, location });
       }
     }
   }
