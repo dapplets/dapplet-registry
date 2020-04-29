@@ -139,11 +139,6 @@ contract DappletRegistry {
             "Can not register a module with a foreign manifest."
         );
 
-        require(
-            info.hashByVersion[version] !== bytes32(0x0),
-            "Module already exists."
-        );
-
         // owning
         if (infoByName[name].owner == address(0x0)) {
             infoByName[name].owner = msg.sender;
@@ -179,6 +174,23 @@ contract DappletRegistry {
                 input[i].manifestHash
             );
         }
+    }
+
+    /// Transfer ownership of a module namespace
+    /// @param moduleName name of module
+    /// @param newOwner address of new owner
+    function transferOwnership(string memory moduleName, address newOwner) public {
+        require(
+            infoByName[moduleName].owner != address(0x0),
+            "No modules with this name exist"
+        );
+
+        require(
+            infoByName[moduleName].owner == msg.sender,
+            "This action can be done only by module's owner"
+        );
+
+        infoByName[moduleName].owner = newOwner;
     }
 
     /////////////////////////////////////
@@ -296,6 +308,19 @@ contract DappletRegistry {
 
         urisByHash[hash].owner = msg.sender;
         urisByHash[hash].uris.push(uri);
+    }
+
+    struct AddHashUrisInput {
+        bytes32 hash;
+        string uri;
+    }
+
+    /// Batch call of addHashUri() function
+    /// @param input array of addHashUri() parameters
+    function addHashUris(AddHashUrisInput[] memory input) public {
+        for (uint256 i = 0; i < input.length; i++) {
+            addHashUri(input[i].hash, input[i].uri);
+        }
     }
 
     /// Remove URI of object's hash by its array index
