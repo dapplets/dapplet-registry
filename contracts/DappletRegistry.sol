@@ -21,11 +21,12 @@ contract DappletRegistry {
        bool initialized;
        string title;
        string description;
-       string icon;
        string mod_type;
        string author;
        bytes32 distHash; // hash of bundle
        string[] distUris;
+       bytes32 iconHash;
+       string[] iconUris;
        string[2][] dependencies;
     }
 

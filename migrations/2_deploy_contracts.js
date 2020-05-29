@@ -20,13 +20,15 @@ async function initModules(registry) {
       mod_type: d.type,
       distHash: (d.dist.hash.indexOf('0x') !== 0) ? '0x' + d.dist.hash : d.dist.hash,
       distUris: d.dist.uris,
+      iconHash: (d.icon) ? ((d.icon.hash.indexOf('0x') !== 0) ? '0x' + d.icon.hash : d.icon.hash) : '0x0000000000000000000000000000000000000000000000000000000000000000',
+      iconUris: d.icon ? d.icon.uris : [],
       dependencies: Object.entries(d.dependencies || {}).map(d => ([d[0], (typeof d[1] === 'string') ? d[1] : d[1]['default']]))
     }
   }))
 
   // const amountOfGas = await registry.addModules.estimateGas(modules, { gas: 100000000 });
   // const chunkSize = Math.ceil(modules.length / Math.ceil(amountOfGas / 5000000));
-  const chunks = array_chunks(modules, 3);
+  const chunks = array_chunks(modules, 15);
 
   for (let i = 0; i < chunks.length; i++) {
     await registry.addModules(chunks[i]);
