@@ -23,6 +23,7 @@ contract DappletRegistry {
        string description;
        string icon;
        string mod_type;
+       string author;
        bytes32 distHash; // hash of bundle
        string[] distUris;
        string[2][] dependencies;

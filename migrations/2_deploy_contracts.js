@@ -14,6 +14,7 @@ async function initModules(registry) {
   const modules = dump.map(d => ({
     name: d.name, branch: d.branch, version: d.version, manifest: {
       title: d.title,
+      author: d.author,
       description: d.description,
       icon: d.icon || '', // ToDo: load to swarm
       mod_type: d.type,
