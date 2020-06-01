@@ -19,6 +19,9 @@ contract DappletRegistry {
 
     struct Manifest {
        bool initialized;
+       string name;
+       string branch;
+       string version;
        string title;
        string description;
        string mod_type;
@@ -40,6 +43,30 @@ contract DappletRegistry {
 
     // // ToDo: does public accessor generate setter?
     mapping(string => ModuleNameInfo) public infoByName;
+
+    function getManifests(string memory location) public view returns (Manifest[] memory) {
+        uint256 n = 0;
+        string memory DEFAULT_BRANCH = "default";
+
+        string[] memory names = getModules(location);
+        for (uint256 i = 0; i < names.length; i++) {
+            n += getVersions(names[i], DEFAULT_BRANCH).length;
+        }
+
+        Manifest[] memory manifests = new Manifest[](n);
+        for (uint256 i = 0; i < names.length; i++) {
+            string[] memory versions = getVersions(names[i], DEFAULT_BRANCH);
+            for (uint256 j = 0; j < versions.length; j++) {
+                Manifest memory manifest = resolveToManifest(names[i], DEFAULT_BRANCH, versions[j]);
+                manifest.name = names[i];
+                manifest.branch = DEFAULT_BRANCH;
+                manifest.version = versions[j];
+                manifests[--n] = manifest;
+            }
+        }
+
+        return manifests;
+    }
 
     /// Get versions of specific module's branch
     /// @param name name of module

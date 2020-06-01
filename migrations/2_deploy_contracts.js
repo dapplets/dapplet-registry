@@ -13,6 +13,9 @@ module.exports = function (deployer) {
 async function initModules(registry) {
   const modules = dump.map(d => ({
     name: d.name, branch: d.branch, version: d.version, manifest: {
+      name: d.name,
+      branch: d.branch,
+      version: d.version,
       title: d.title,
       author: d.author,
       description: d.description,
@@ -28,7 +31,7 @@ async function initModules(registry) {
 
   // const amountOfGas = await registry.addModules.estimateGas(modules, { gas: 100000000 });
   // const chunkSize = Math.ceil(modules.length / Math.ceil(amountOfGas / 5000000));
-  const chunks = array_chunks(modules, 15);
+  const chunks = array_chunks(modules, 10);
 
   for (let i = 0; i < chunks.length; i++) {
     await registry.addModules(chunks[i]);
