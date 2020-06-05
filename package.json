@@ -15,7 +15,13 @@
   "author": "Dapplets Team",
   "license": "MIT",
   "devDependencies": {
+    "@truffle/hdwallet-provider": "^1.0.34",
+    "eth-gas-reporter": "^0.2.17",
+    "lodash": "^4.17.15",
     "truffle": "^5.1.22",
-    "@truffle/hdwallet-provider": "^1.0.34"
+    "web3": "^1.2.8"
+  },
+  "dependencies": {
+    "semver": "^7.3.2"
   }
 }

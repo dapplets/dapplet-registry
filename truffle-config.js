@@ -11,12 +11,14 @@ module.exports = {
     development: {
       host: "127.0.0.1",
       port: 8545,
-      network_id: "*"
+      network_id: "*",
+      gas: 100000000
     },
     test: {
       host: "127.0.0.1",
       port: 8545,
-      network_id: "*"
+      network_id: "*",
+      gas: 100000000
     },
     rinkeby: {
       provider: function () {
@@ -25,5 +27,11 @@ module.exports = {
       network_id: '4',
       gas: 10000000
     }
-  }
+  },
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   reporterOptions : { 
+  //     showTimeSpent: true
+  //    }
+  // }
 };
