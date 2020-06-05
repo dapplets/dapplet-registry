@@ -34,13 +34,6 @@ contract DappletRegistry {
 
     // Q&A: Are Interfaces - Modules? 
 
-    struct Dependency {
-        string name;
-        uint32 major;
-        uint32 minor;
-        uint32 patch;
-    }
-
     struct VersionInfo {
        string branch;
        uint32 major;
@@ -48,7 +41,7 @@ contract DappletRegistry {
        uint32 patch;
        uint96 flags;
        StorageRef binary;
-       Dependency[] dependencies; // key of module 
+       bytes32[] dependencies; // key of module 
        bytes32[] interfaces; //Exported interfaces. no duplicates.
     }
     
@@ -144,16 +137,8 @@ contract DappletRegistry {
         m.description = mInfo.description;
         m.owner = owner;
         for (uint i = 0; i < mInfo.versions.length; ++i) {
-            m.versions.push(); // VersionInfo adding  
-            VersionInfo storage vi = m.versions[m.versions.length - 1];
-            vi.branch = mInfo.versions[i].branch;
-            vi.major = mInfo.versions[i].major;
-            vi.minor = mInfo.versions[i].minor;
-            vi.patch = mInfo.versions[i].patch;
-            vi.flags = mInfo.versions[i].flags;
-            vi.binary = mInfo.versions[i].binary;
-            //vi.dependencies = mInfo.versions[i].dependencies;
-            vi.interfaces = mInfo.versions[i].interfaces;
+            m.versions.push(mInfo.versions[i]); // VersionInfo adding  
+            versionIdxByBranch[keccak256(abi.encodePacked(mInfo.name, mInfo.versions[i].branch))].push(m.versions.length - 1); // Add version index for fast filtering by branches
         }
         m.interfaces = mInfo.interfaces;
         m.icon = mInfo.icon;
@@ -227,7 +212,7 @@ contract DappletRegistry {
        bytes32 owner;
        StorageRef icon;
        StorageRef binary;
-       Dependency[] dependencies;
+       bytes32[] dependencies;
     }
 
     function resolveToManifest(string memory name, string memory branch, Version memory version) public view returns (ResolveToManifestOutput memory) { 
@@ -253,10 +238,7 @@ contract DappletRegistry {
                 output.owner = m.owner;
                 output.icon = m.icon;
                 output.binary = vi.binary;
-                output.dependencies = new Dependency[](vi.dependencies.length);
-                for (uint j = 0; j < vi.dependencies.length; ++j) {
-                    output.dependencies[j] = vi.dependencies[j];
-                }
+                output.dependencies = vi.dependencies;
                 return output;
             }
         }
