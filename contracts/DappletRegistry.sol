@@ -36,9 +36,9 @@ contract DappletRegistry {
 
     struct VersionInfo {
        string branch;
-       uint32 major;
-       uint32 minor;
-       uint32 patch;
+       uint8 major;
+       uint8 minor;
+       uint8 patch;
        uint96 flags;
        StorageRef binary;
        bytes32[] dependencies; // key of module 
@@ -46,9 +46,9 @@ contract DappletRegistry {
     }
     
     struct Version {
-       uint32 major;
-       uint32 minor;
-       uint32 patch;
+       uint8 major;
+       uint8 minor;
+       uint8 patch;
     }
 
     mapping(bytes32 => uint) moduleIdxs;
@@ -187,15 +187,18 @@ contract DappletRegistry {
         return names;
     }
     
-    function getVersions(string memory name, string memory branch) public view returns (Version[] memory) { 
+    function getVersions(string memory name, string memory branch, uint8 filter) public view returns (bytes memory) { 
         bytes32 mKey = keccak256(abi.encodePacked(name));
         require(moduleIdxs[mKey] != 0, 'The module does not exist');
         ModuleInfo memory m = modules[moduleIdxs[mKey]]; // WARNING! indexes are started from 1.
         uint[] memory indexes = versionIdxByBranch[keccak256(abi.encodePacked(name, branch))];
-        Version[] memory versions = new Version[](indexes.length);
+        bytes memory versions = new bytes(indexes.length * 4);
         for (uint i = 0; i < indexes.length; ++i) {
             VersionInfo memory vi = m.versions[indexes[i]];
-            versions[i] = Version(vi.major, vi.minor, vi.patch);
+            versions[4 * i] = byte(vi.major);
+            versions[4 * i + 1] = byte(vi.minor);
+            versions[4 * i + 2] = byte(vi.patch);
+            versions[4 * i + 3] = byte(0x0);
         }
         return versions;
     }
@@ -203,9 +206,9 @@ contract DappletRegistry {
     struct ResolveToManifestOutput {
        string name;
        string branch;
-       uint32 major;
-       uint32 minor;
-       uint32 patch;
+       uint8 major;
+       uint8 minor;
+       uint8 patch;
        uint8 moduleType;
        string title;
        string description;
