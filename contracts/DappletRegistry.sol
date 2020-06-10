@@ -3,11 +3,6 @@ pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
 contract DappletRegistry {
 
-    // struct TypedURI {
-    //   bytes2 typ;
-    //     bytes uri;
-    // }
-
     event ModuleInfoAdded (
         string[] contextIds,
         bytes32 owner,
@@ -21,48 +16,64 @@ contract DappletRegistry {
 
     // ToDo: introduce mapping for alternative sources,
     struct ModuleInfo {
-       string name;
-       uint8 moduleType;
-       string title;
-       string description;
-       bytes32 owner;
-       VersionInfo[] versions;
-       string[] interfaces; //Exported interfaces in all versions. no duplicates.
-       StorageRef icon;
-       uint flags;
+        uint8 moduleType;
+        string name;
+        string title;
+        string description;
+        bytes32 owner;
+        string[] interfaces; //Exported interfaces in all versions. no duplicates.
+        StorageRef icon;
+        uint flags;
     }
-
-    // Q&A: Are Interfaces - Modules? 
 
     struct VersionInfo {
-       string branch;
-       uint8 major;
-       uint8 minor;
-       uint8 patch;
-       uint96 flags;
-       StorageRef binary;
-       bytes32[] dependencies; // key of module 
-       bytes32[] interfaces; //Exported interfaces. no duplicates.
+        uint  modIdx;
+        string branch;
+        uint8 major;
+        uint8 minor;
+        uint8 patch;
+        uint8 flags;
+        StorageRef binary;
+        bytes32[] dependencies; // key of module 
+        bytes32[] interfaces; //Exported interfaces. no duplicates.
     }
     
-    struct Version {
-       uint8 major;
-       uint8 minor;
-       uint8 patch;
+    struct VersionInfoDto {
+        string branch;
+        uint8 major;
+        uint8 minor;
+        uint8 patch;
+        uint8 flags;
+        StorageRef binary;
+        DependencyDto[] dependencies; // key of module 
+        bytes32[] interfaces; //Exported interfaces. no duplicates.
+    }
+    
+    struct DependencyDto {
+        string name;
+        string branch;
+        uint8 major;
+        uint8 minor;
+        uint8 patch;
     }
 
+    mapping(bytes32 => bytes) versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
+    mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
+    mapping(bytes32 => uint32[]) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint) moduleIdxs;
     ModuleInfo[] modules;
-    VersionInfo[] versions;
 
-    mapping(bytes32 => uint32[]) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
-    mapping(bytes32 => uint32) modsByName;
-    mapping(bytes32 => uint) userTags;
+    constructor() public {
+        modules.push(); // Zero index is reserved
+    }
 
-    string[] contentTypes;   //upto 65535 types;
-    mapping(string => uint16) contentTypeMap;  //reverse type->index mapping
-    
-    mapping(bytes32 => uint[]) versionIdxByBranch; // key - keccak256(name,branch), value - array of indexes of element in "modules[i].versions" array
+
+    function getModuleInfoBatch(string[] memory ctxIds, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[][] memory mod_info) {
+        mod_info = new ModuleInfo[][](ctxIds.length);
+        for (uint i = 0; i < ctxIds.length; ++i) {
+            mod_info[i] = getModuleInfo(ctxIds[i], users, maxBufLen);
+        }
+    }
 
     //Very naive impl.
     function getModuleInfo(string memory ctxId, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[] memory mod_info) {
@@ -120,30 +131,15 @@ contract DappletRegistry {
     //     }
     // }
     
-    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, bytes32 userId) public {
+    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos, bytes32 userId) public {
         require(_isEnsOwner(userId));
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(moduleIdxs[mKey] == 0, 'The module already exists'); // module does not exist
         bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
         
         // ModuleInfo adding
-        modules.push();
-        ModuleInfo storage m = modules[modules.length - 1];
-        
-        // Copy every property because of error "Copying of type struct to storage not yet supported."
-        m.moduleType = mInfo.moduleType;
-        m.name = mInfo.name;
-        m.title = mInfo.title;
-        m.description = mInfo.description;
-        m.owner = owner;
-        for (uint i = 0; i < mInfo.versions.length; ++i) {
-            m.versions.push(mInfo.versions[i]); // VersionInfo adding  
-            versionIdxByBranch[keccak256(abi.encodePacked(mInfo.name, mInfo.versions[i].branch))].push(m.versions.length - 1); // Add version index for fast filtering by branches
-        }
-        m.interfaces = mInfo.interfaces;
-        m.icon = mInfo.icon;
-        m.flags = mInfo.flags;
-        
+        mInfo.owner = owner;
+        modules.push(mInfo);
         uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
         moduleIdxs[mKey] = mIdx;
         
@@ -154,9 +150,14 @@ contract DappletRegistry {
         }
         
         emit ModuleInfoAdded(contextIds, owner, mIdx);
+        
+        // Versions Adding
+        for (uint i = 0; i < vInfos.length; ++i) {
+            _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
+        }
     }
     
-    function addModuleVersion(string memory mod_name, VersionInfo memory vInfo, bytes32 userId) public {
+    function addModuleVersion(string memory mod_name, VersionInfoDto memory vInfo, bytes32 userId) public {
         require(_isEnsOwner(userId));
         // ******** TODO: check existing versions and version sorting
         bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
@@ -166,10 +167,28 @@ contract DappletRegistry {
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == owner, 'You are not the owner of this module');
         
-        m.versions.push(vInfo);
+        _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
+    }
+    
+    function _addModuleVersionNoChecking(uint moduleIdx, string memory mod_name, VersionInfoDto memory v) private {
         
-        // Add version index for fast filtering by branches
-        versionIdxByBranch[keccak256(abi.encodePacked(mod_name, vInfo.branch))].push(m.versions.length - 1);
+        bytes32[] memory deps = new bytes32[](v.dependencies.length);
+        for (uint i = 0; i < v.dependencies.length; ++i) {
+            DependencyDto memory d = v.dependencies[i];
+            bytes32 dKey = keccak256(abi.encodePacked(d.name, d.branch, d.major, d.minor, d.patch));
+            require(versions[dKey].modIdx != 0, "Dependency doesn't exist");
+            deps[i] = dKey;
+        }
+        
+        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
+        bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
+        versions[vKey] = vInfo;
+        
+        bytes32 nbKey = keccak256(abi.encodePacked(mod_name, vInfo.branch));
+        versionNumbers[nbKey].push(byte(vInfo.major));
+        versionNumbers[nbKey].push(byte(vInfo.minor));
+        versionNumbers[nbKey].push(byte(vInfo.patch));
+        versionNumbers[nbKey].push(byte(0x0));
     }
     
     function _isEnsOwner(bytes32 userId) private pure returns(bool) {
@@ -187,89 +206,35 @@ contract DappletRegistry {
         return names;
     }
     
-    function getVersions(string memory name, string memory branch, uint8 filter) public view returns (bytes memory) { 
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        require(moduleIdxs[mKey] != 0, 'The module does not exist');
-        ModuleInfo memory m = modules[moduleIdxs[mKey]]; // WARNING! indexes are started from 1.
-        uint[] memory indexes = versionIdxByBranch[keccak256(abi.encodePacked(name, branch))];
-        bytes memory versions = new bytes(indexes.length * 4);
-        for (uint i = 0; i < indexes.length; ++i) {
-            VersionInfo memory vi = m.versions[indexes[i]];
-            versions[4 * i] = byte(vi.major);
-            versions[4 * i + 1] = byte(vi.minor);
-            versions[4 * i + 2] = byte(vi.patch);
-            versions[4 * i + 3] = byte(0x0);
-        }
-        return versions;
-    }
-
-    struct ResolveToManifestOutput {
-       string name;
-       string branch;
-       uint8 major;
-       uint8 minor;
-       uint8 patch;
-       uint8 moduleType;
-       string title;
-       string description;
-       bytes32 owner;
-       StorageRef icon;
-       StorageRef binary;
-       bytes32[] dependencies;
-    }
-
-    function resolveToManifest(string memory name, string memory branch, Version memory version) public view returns (ResolveToManifestOutput memory) { 
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        require(moduleIdxs[mKey] != 0, 'The module does not exist');
-        ModuleInfo memory m = modules[moduleIdxs[mKey]]; // WARNING! indexes are started from 1.
-        uint[] memory indexes = versionIdxByBranch[keccak256(abi.encodePacked(name, branch))];
-        bytes32 vHash = keccak256(abi.encodePacked(version.major, version.minor, version.patch));
+    function getVersionNumbers(string memory name, string memory branch) public view returns (bytes memory) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        return versionNumbers[key];
+    } 
+    
+    // instead of resolveToManifest
+    function getVersionInfo(string memory name, string memory branch, uint8 major, uint8 minor, uint8 patch) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch, major, minor, patch));
+        VersionInfo memory v = versions[key];
         
-        // ToDo: get rid of loop
-        for (uint i = indexes.length - 1; i >= 0; --i) {
-            VersionInfo memory vi = m.versions[indexes[i]];
-            if (vHash == keccak256(abi.encodePacked(vi.major, vi.minor, vi.patch))) {
-                ResolveToManifestOutput memory output;
-                output.name = m.name;
-                output.branch = vi.branch;
-                output.major = vi.major;
-                output.minor = vi.minor;
-                output.patch = vi.patch;
-                output.moduleType = m.moduleType;
-                output.title = m.title;
-                output.description = m.description;
-                output.owner = m.owner;
-                output.icon = m.icon;
-                output.binary = vi.binary;
-                output.dependencies = vi.dependencies;
-                return output;
-            }
+        DependencyDto[] memory deps = new DependencyDto[](v.dependencies.length);
+        for (uint i = 0; i < v.dependencies.length; ++i) {
+            VersionInfo memory depVi = versions[v.dependencies[i]];
+            ModuleInfo memory depMod = modules[depVi.modIdx];
+            deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.major, depVi.minor, depVi.patch);
+        }
+        
+        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
+        moduleType = modules[v.modIdx].moduleType;
+    }
+    
+    function getVersions(string memory name, string memory branch) public view returns (VersionInfo[] memory out) {
+        bytes memory versionBytes = getVersionNumbers(name,branch);
+        out = new VersionInfo[](versionBytes.length/4);
+        for(uint i=0; i<versionBytes.length; i+=4){
+           bytes32 key = keccak256(abi.encodePacked(name, branch, versionBytes[i], versionBytes[i+1], versionBytes[i+2]));  //OPTIMIZE IT! mit assebly?
+           out[i>>2] = versions[key];
         }
     }
-    
-    // function addContextId(string memory contextId, string memory moduleName) public {
-        
-    // }
-    
-    // function addLocation(string memory moduleName, bytes32 contextId) public { 
-    //     bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-    //     uint mIdx = moduleIdxs[mKey];
-    //     require(mIdx != 0, 'The module does not exist');
-    //     bytes32 key = keccak256(abi.encodePacked(contextId, bytes32(uint(msg.sender))));
-    //     modsByContextType[key].push(mIdx);
-    // }
-    
-    // function setVersionTags(uint tags, bytes32 vKey, bytes32 userId) public {
-    //     require(versionInfo[vKey].moduleIdx > 0);
-    //     bytes32 key = keccak256(abi.encodePacked(vKey,userId));
-    //     userTags[key] |= tags;
-    // }
-    
-    // function clearVersionTags(uint tags, bytes32 vKey, bytes32 userId) public {
-    //     require(versionInfo[vKey].moduleIdx > 0);
-    //     bytes32 key = keccak256(abi.encodePacked(vKey,userId));
-    //     userTags[key] &= tags;
-    // }
     
     /*
     

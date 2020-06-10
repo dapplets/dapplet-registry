@@ -20,14 +20,14 @@ contract('DappletRegistry', (accounts) => {
 
   it('should return module versions by name+branch', async () => {
     const contract = await DappletRegistry.deployed();
-    const versions = await contract.getVersions("twitter-feature-1.dapplet-base.eth", "default");
-    assert.isArray(versions);
+    const versions = await contract.getVersionNumbers("twitter-feature-1.dapplet-base.eth", "default");
+    assert.isString(versions);
     console.log(versions);
   });
 
   it('should return versionInfo by name+branch+version', async () => {
     const contract = await DappletRegistry.deployed();
-    const versionInfo = await contract.resolveToManifest("twitter-feature-1.dapplet-base.eth", "default", { major: 0, minor: 3, patch: 8 });
+    const versionInfo = await contract.getVersionInfo("twitter-feature-1.dapplet-base.eth", "default", 0,3,8);
     console.log(versionInfo);
   });
 
@@ -43,19 +43,6 @@ contract('DappletRegistry', (accounts) => {
         title: 'instagram-adapter-test',
         description: 'instagram-adapter-test',
         owner: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        versions: [{
-          branch: 'default',
-          major: 0,
-          minor: 0,
-          patch: 1,
-          flags: 0,
-          binary: {
-            hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-            uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
-          },
-          dependencies: [],
-          interfaces: []
-        }],
         interfaces: ['identity-adapter-test'],
         icon: {
           hash: '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -63,6 +50,19 @@ contract('DappletRegistry', (accounts) => {
         },
         flags: 0
       },
+      [{
+        branch: 'default',
+        major: 0,
+        minor: 0,
+        patch: 1,
+        flags: 0,
+        binary: {
+          hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+        },
+        dependencies: [],
+        interfaces: []
+      }],
       "0x0000000000000000000000000000000000000000000000000000000000000000"
     );
 
@@ -75,19 +75,6 @@ contract('DappletRegistry', (accounts) => {
         title: 'twitter-adapter-test',
         description: 'twitter-adapter-test',
         owner: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        versions: [{
-          branch: 'default',
-          major: 0,
-          minor: 0,
-          patch: 1,
-          flags: 0,
-          binary: {
-            hash: '0x0000000000000000000000000000000000000000000000000000000000000002',
-            uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
-          },
-          dependencies: [],
-          interfaces: []
-        }],
         interfaces: ['identity-adapter-test'],
         icon: {
           hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -95,6 +82,19 @@ contract('DappletRegistry', (accounts) => {
         },
         flags: 0
       },
+      [{
+        branch: 'default',
+        major: 0,
+        minor: 0,
+        patch: 1,
+        flags: 0,
+        binary: {
+          hash: '0x0000000000000000000000000000000000000000000000000000000000000002',
+          uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+        },
+        dependencies: [],
+        interfaces: []
+      }],
       "0x0000000000000000000000000000000000000000000000000000000000000000"
     );
 
@@ -107,19 +107,6 @@ contract('DappletRegistry', (accounts) => {
         title: 'identity-feature-test',
         description: 'identity-feature-test',
         owner: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        versions: [{
-          branch: 'default',
-          major: 0,
-          minor: 0,
-          patch: 1,
-          flags: 0,
-          binary: {
-            hash: '0x0000000000000000000000000000000000000000000000000000000000000003',
-            uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
-          },
-          dependencies: [],
-          interfaces: []
-        }],
         interfaces: [],
         icon: {
           hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -127,6 +114,19 @@ contract('DappletRegistry', (accounts) => {
         },
         flags: 0
       },
+      [{
+        branch: 'default',
+        major: 0,
+        minor: 0,
+        patch: 1,
+        flags: 0,
+        binary: {
+          hash: '0x0000000000000000000000000000000000000000000000000000000000000003',
+          uris: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+        },
+        dependencies: [],
+        interfaces: []
+      }],
       "0x0000000000000000000000000000000000000000000000000000000000000000"
     );
 

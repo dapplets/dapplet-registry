@@ -29,27 +29,45 @@ const moduleTags = {
 const moduleTypes = {
   "FEATURE": 1,
   "ADAPTER": 2,
-  "RESOLVER": 3,
-  "LIBRARY": 4,
-  "INTERFACE": 5
+  "RESOLVER": 2, // It's adapter too
+  "LIBRARY": 3,
+  "INTERFACE": 4
 };
+
+const modulesOrder = [
+  'common-lib.dapplet-base.eth',
+  'dynamic-adapter.dapplet-base.eth',
+  'common-adapter.dapplet-base.eth',
+  'twitter-adapter.dapplet-base.eth',
+  'dapplets-org-feature-1.dapplet-base.eth',
+  'twitter-feature-1.dapplet-base.eth',
+  'twitter-feature-2.dapplet-base.eth',
+  'twitter-feature-3.dapplet-base.eth',
+  'account-verify.dapplet-base.eth'
+];
 
 async function initModulesNew(registry) {
   const dumpByNames = _.groupBy(dump, x => x.name);
 
-  const inputs = Object.entries(dumpByNames).map(([name, manifests]) => {
+  const inputs = modulesOrder.map(name => {
+    const manifests = dumpByNames[name];
 
-    console.log(moduleTypes[manifests[manifests.length - 1].type]);
-    
     return ({
-    contextId: moduleTags[name] || [],
-    mInfo: {
-      moduleType: moduleTypes[manifests[manifests.length - 1].type],
-      name: manifests[manifests.length - 1].name,
-      title: manifests[manifests.length - 1].title,
-      description: manifests[manifests.length - 1].description,
-      owner: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      versions: manifests.map(m => ({
+      contextId: moduleTags[name] || [],
+      mInfo: {
+        moduleType: moduleTypes[manifests[manifests.length - 1].type],
+        name: manifests[manifests.length - 1].name,
+        title: manifests[manifests.length - 1].title,
+        description: manifests[manifests.length - 1].description,
+        owner: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        interfaces: [],
+        icon: {
+          hash: manifests[manifests.length - 1].icon && manifests[manifests.length - 1].icon.hash || "0x0000000000000000000000000000000000000000000000000000000000000000",
+          uris: manifests[manifests.length - 1].icon && manifests[manifests.length - 1].icon.uris.map(x => web3.utils.utf8ToHex(x)) || [],
+        },
+        flags: 0
+      },
+      vInfos: manifests.map(m => ({
         branch: m.branch,
         major: semver.major(m.version),
         minor: semver.minor(m.version),
@@ -59,25 +77,26 @@ async function initModulesNew(registry) {
           hash: m.dist.hash,
           uris: m.dist.uris.map(x => web3.utils.utf8ToHex(x))
         },
-        dependencies: [],
+        dependencies: m.dependencies && Object.entries(m.dependencies).map(([k, v]) => ({
+          name: k, 
+          branch: "default",
+          major: semver.major(typeof v === 'string' ? v : v.default),
+          minor: semver.minor(typeof v === 'string' ? v : v.default),
+          patch: semver.patch(typeof v === 'string' ? v : v.default)
+        })) || [],
         interfaces: []
       })),
-      interfaces: [],
-      icon: {
-        hash: manifests[manifests.length - 1].icon && manifests[manifests.length - 1].icon.hash || "0x0000000000000000000000000000000000000000000000000000000000000000",
-        uris: manifests[manifests.length - 1].icon && manifests[manifests.length - 1].icon.uris.map(x => web3.utils.utf8ToHex(x)) || [],
-      },
-      flags: 0
-    },
-    userId: "0x0000000000000000000000000000000000000000000000000000000000000000"
-  })
-  
-});
+      userId: "0x0000000000000000000000000000000000000000000000000000000000000000"
+    })
+
+  });
+
+  //console.log(inputs.map(i => i.vInfos.map(v => v.dependencies.map(d => `${d.name}#${d.branch}@${d.major}.${d.minor}.${d.patch}`))));
 
   let i = 0;
   for (const input of inputs) {
     console.log(`Deploying ${++i}/${inputs.length}`);
-    await registry.addModuleInfo(input.contextId, input.mInfo, input.userId);
+    await registry.addModuleInfo(input.contextId, input.mInfo, input.vInfos, input.userId);
   }
 }
 
