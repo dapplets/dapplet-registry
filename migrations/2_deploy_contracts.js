@@ -91,59 +91,20 @@ async function initModulesNew(registry) {
 
   });
 
-  //console.log(inputs.map(i => i.vInfos.map(v => v.dependencies.map(d => `${d.name}#${d.branch}@${d.major}.${d.minor}.${d.patch}`))));
-
   let i = 0;
   for (const input of inputs) {
-    console.log(`Deploying ${++i}/${inputs.length}`);
-    await registry.addModuleInfo(input.contextId, input.mInfo, input.vInfos, input.userId);
-  }
-}
-
-async function initModules(registry) {
-  const modules = dump.map(d => ({
-    name: d.name, branch: d.branch, version: d.version, manifest: {
-      name: d.name,
-      branch: d.branch,
-      version: d.version,
-      title: d.title,
-      author: d.author,
-      description: d.description,
-      icon: d.icon || '', // ToDo: load to swarm
-      mod_type: d.type,
-      distHash: (d.dist.hash.indexOf('0x') !== 0) ? '0x' + d.dist.hash : d.dist.hash,
-      distUris: d.dist.uris,
-      iconHash: (d.icon) ? ((d.icon.hash.indexOf('0x') !== 0) ? '0x' + d.icon.hash : d.icon.hash) : '0x0000000000000000000000000000000000000000000000000000000000000000',
-      iconUris: d.icon ? d.icon.uris : [],
-      dependencies: Object.entries(d.dependencies || {}).map(d => ([d[0], (typeof d[1] === 'string') ? d[1] : d[1]['default']]))
+    let deployed = false;
+    const chunks = _.chunk(input.vInfos, 25);
+    let j = 0;
+    for (const chunk of chunks) {
+      if (!deployed) {
+        console.log(`Deploying ModuleInfo: ${++i}/${inputs.length}`);
+        await registry.addModuleInfo(input.contextId, input.mInfo, chunk, input.userId);
+        deployed = true;
+      } else {
+        await registry.addModuleVersionBatch(chunk.map(() => input.mInfo.name), chunk, chunk.map(() => input.userId));
+      }
+      console.log(`    Version: ${++j}/${chunks.length}`);
     }
-  }))
-
-  // const amountOfGas = await registry.addModules.estimateGas(modules, { gas: 100000000 });
-  // const chunkSize = Math.ceil(modules.length / Math.ceil(amountOfGas / 5000000));
-  const chunks = array_chunks(modules, 10);
-
-  for (let i = 0; i < chunks.length; i++) {
-    await registry.addModules(chunks[i]);
-    console.log(`Deployed ${i + 1} / ${chunks.length} chunks of modules.`);
   }
-
-  return registry;
-}
-
-async function initLocations(registry) {
-  const locationsRaw = [...new Set(dump.map(item => item.name))].map(name => ({ moduleName: name, locations: dump.find(d => d.name === name).locations }));
-  const locations = [].concat(...locationsRaw.map(x => x.locations.map(l => ({ moduleName: x.moduleName, location: l }))));
-
-
-  const amountOfGas = await registry.addLocations.estimateGas(locations, { gas: 100000000 });
-  const chunkSize = Math.ceil(locations.length / Math.ceil(amountOfGas / 5000000));
-  const chunks = array_chunks(locations, chunkSize);
-
-  for (let i = 0; i < chunks.length; i++) {
-    await registry.addLocations(chunks[i]);
-    console.log(`Deployed ${i + 1} / ${chunks.length} chunks of locations.`);
-  }
-
-  return registry;
 }

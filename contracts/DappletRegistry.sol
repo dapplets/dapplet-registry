@@ -60,13 +60,12 @@ contract DappletRegistry {
     mapping(bytes32 => bytes) versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
     mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32[]) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
-    mapping(bytes32 => uint) moduleIdxs;
+    mapping(bytes32 => uint32) moduleIdxs;
     ModuleInfo[] modules;
 
     constructor() public {
         modules.push(); // Zero index is reserved
     }
-
 
     function getModuleInfoBatch(string[] memory ctxIds, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[][] memory mod_info) {
         mod_info = new ModuleInfo[][](ctxIds.length);
@@ -86,7 +85,138 @@ contract DappletRegistry {
             //ToDo: strip contentType indexes?
         }
     }
+
+    function getModuleInfoByName(string memory mod_name) public view returns (ModuleInfo memory) {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        require(moduleIdxs[mKey] != 0, 'The module does not exist');
+        return modules[moduleIdxs[mKey]];
+    }
+        
+    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos, bytes32 userId) public {
+        require(_isEnsOwner(userId));
+        bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
+        require(moduleIdxs[mKey] == 0, 'The module already exists'); // module does not exist
+        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+        
+        // ModuleInfo adding
+        mInfo.owner = owner;
+        modules.push(mInfo);
+        uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
+        moduleIdxs[mKey] = mIdx;
+        
+        // ContextId adding
+        for (uint i = 0; i < contextIds.length; ++i) {
+            bytes32 key = keccak256(abi.encodePacked(contextIds[i], owner));
+            modsByContextType[key].push(mIdx);
+        }
+        
+        emit ModuleInfoAdded(contextIds, owner, mIdx);
+        
+        // Versions Adding
+        for (uint i = 0; i < vInfos.length; ++i) {
+            _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
+        }
+    }
     
+    function addModuleVersion(string memory mod_name, VersionInfoDto memory vInfo, bytes32 userId) public {
+        require(_isEnsOwner(userId));
+        // ******** TODO: check existing versions and version sorting
+        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        uint32 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, 'The module does not exist');
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == owner, 'You are not the owner of this module');
+        
+        _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
+    }
+
+    function addModuleVersionBatch(string[] memory mod_name, VersionInfoDto[] memory vInfo, bytes32[] memory userId) public {
+        require(mod_name.length == vInfo.length && vInfo.length == userId.length, "Number of elements must be equal");
+        for (uint i = 0; i < mod_name.length; ++i) {
+            addModuleVersion(mod_name[i], vInfo[i], userId[i]);
+        }
+    }
+    
+    function getVersionNumbers(string memory name, string memory branch) public view returns (bytes memory) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        return versionNumbers[key];
+    } 
+    
+    // instead of resolveToManifest
+    function getVersionInfo(string memory name, string memory branch, uint8 major, uint8 minor, uint8 patch) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch, major, minor, patch));
+        VersionInfo memory v = versions[key];
+        
+        DependencyDto[] memory deps = new DependencyDto[](v.dependencies.length);
+        for (uint i = 0; i < v.dependencies.length; ++i) {
+            VersionInfo memory depVi = versions[v.dependencies[i]];
+            ModuleInfo memory depMod = modules[depVi.modIdx];
+            deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.major, depVi.minor, depVi.patch);
+        }
+        
+        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
+        moduleType = modules[v.modIdx].moduleType;
+    }
+    
+    // function getVersions(string memory name, string memory branch) public view returns (VersionInfo[] memory out) {
+    //     bytes memory versionBytes = getVersionNumbers(name,branch);
+    //     out = new VersionInfo[](versionBytes.length/4);
+    //     for(uint i=0; i<versionBytes.length; i+=4){
+    //        bytes32 key = keccak256(abi.encodePacked(name, branch, versionBytes[i], versionBytes[i+1], versionBytes[i+2]));  //OPTIMIZE IT! mit assebly?
+    //        out[i>>2] = versions[key];
+    //     }
+    // }
+
+    function transferOwnership(string memory mod_name, bytes32 oldUserId, bytes32 newUserId) public {
+        require(_isEnsOwner(oldUserId));
+        require(_isEnsOwner(newUserId));
+        bytes32 oldOwnerId = oldUserId == 0 ? bytes32(uint(msg.sender)) : oldUserId;
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        uint32 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, 'The module does not exist');
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == oldOwnerId, 'You are not the owner of this module');
+        
+        m.owner = newUserId;
+    }
+
+    function addContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
+        require(_isEnsOwner(userId));
+        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        uint32 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, 'The module does not exist');
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == owner, 'You are not the owner of this module');
+
+        // ContextId adding
+        bytes32 key = keccak256(abi.encodePacked(contextId, owner));
+        modsByContextType[key].push(moduleIdx);
+    }
+
+    function removeContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
+        require(_isEnsOwner(userId));
+        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        uint32 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, 'The module does not exist');
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == owner, 'You are not the owner of this module');
+
+        // ContextId adding
+        bytes32 key = keccak256(abi.encodePacked(contextId, owner));
+        uint32[] storage modules = modsByContextType[key];
+
+        for (uint i = 0; i < modules.length; ++i) {
+            if (modules[i] == moduleIdx) {
+                modules[i] = modules[modules.length - 1];
+                modules.pop();
+                break;
+            }
+        }
+    }
+
     function _fetchModulesByUsersTags(string[] memory interfaces, bytes32[] memory users, uint[] memory outbuf, uint _bufLen) internal view returns (uint) {
         uint bufLen = _bufLen;
         
@@ -123,55 +253,7 @@ contract DappletRegistry {
         return bufLen;
     }
     
-    
-    // function getModuleInfo(uint32[] memory indexes) public view returns (ModuleInfo[] memory infos) {
-    //     infos = new ModuleInfo[](indexes.length);
-    //     for(uint i = 0; i<infos.length; ++i) {
-    //         infos[i] = modules[indexes[i]];
-    //     }
-    // }
-    
-    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos, bytes32 userId) public {
-        require(_isEnsOwner(userId));
-        bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
-        require(moduleIdxs[mKey] == 0, 'The module already exists'); // module does not exist
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
-        
-        // ModuleInfo adding
-        mInfo.owner = owner;
-        modules.push(mInfo);
-        uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
-        moduleIdxs[mKey] = mIdx;
-        
-        // ContextId adding
-        for (uint i = 0; i < contextIds.length; ++i) {
-            bytes32 key = keccak256(abi.encodePacked(contextIds[i], owner));
-            modsByContextType[key].push(mIdx);
-        }
-        
-        emit ModuleInfoAdded(contextIds, owner, mIdx);
-        
-        // Versions Adding
-        for (uint i = 0; i < vInfos.length; ++i) {
-            _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
-        }
-    }
-    
-    function addModuleVersion(string memory mod_name, VersionInfoDto memory vInfo, bytes32 userId) public {
-        require(_isEnsOwner(userId));
-        // ******** TODO: check existing versions and version sorting
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, 'The module does not exist');
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == owner, 'You are not the owner of this module');
-        
-        _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
-    }
-    
     function _addModuleVersionNoChecking(uint moduleIdx, string memory mod_name, VersionInfoDto memory v) private {
-        
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
@@ -194,48 +276,7 @@ contract DappletRegistry {
     function _isEnsOwner(bytes32 userId) private pure returns(bool) {
         return userId >= 0; //ToDo: NOT_IMPLEMENTED
     }
-    
-    function getModules(string memory ctxId, bytes32[] memory users, uint32 maxBufLen) public view returns (string[] memory) {
-        ModuleInfo[] memory mi = getModuleInfo(ctxId, users, maxBufLen);
-        string[] memory names = new string[](mi.length);
-        
-        for (uint i = 0; i < mi.length; ++i) {
-            names[i] = mi[i].name;
-        }
-        
-        return names;
-    }
-    
-    function getVersionNumbers(string memory name, string memory branch) public view returns (bytes memory) {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
-        return versionNumbers[key];
-    } 
-    
-    // instead of resolveToManifest
-    function getVersionInfo(string memory name, string memory branch, uint8 major, uint8 minor, uint8 patch) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 key = keccak256(abi.encodePacked(name, branch, major, minor, patch));
-        VersionInfo memory v = versions[key];
-        
-        DependencyDto[] memory deps = new DependencyDto[](v.dependencies.length);
-        for (uint i = 0; i < v.dependencies.length; ++i) {
-            VersionInfo memory depVi = versions[v.dependencies[i]];
-            ModuleInfo memory depMod = modules[depVi.modIdx];
-            deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.major, depVi.minor, depVi.patch);
-        }
-        
-        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
-        moduleType = modules[v.modIdx].moduleType;
-    }
-    
-    function getVersions(string memory name, string memory branch) public view returns (VersionInfo[] memory out) {
-        bytes memory versionBytes = getVersionNumbers(name,branch);
-        out = new VersionInfo[](versionBytes.length/4);
-        for(uint i=0; i<versionBytes.length; i+=4){
-           bytes32 key = keccak256(abi.encodePacked(name, branch, versionBytes[i], versionBytes[i+1], versionBytes[i+2]));  //OPTIMIZE IT! mit assebly?
-           out[i>>2] = versions[key];
-        }
-    }
-    
+
     /*
     
     FUNCTIONS TO BE IMPLEMENTED:
@@ -245,9 +286,9 @@ contract DappletRegistry {
     +function getVersions(string memory name, string memory branch) public view returns (string[] memory) { }
     +function resolveToManifest(string memory name, string memory branch, string memory version) public view returns (VersionInfo memory) { }
     +function addModule(Manifest memory manifest) public { }
-    function transferOwnership(string memory moduleName, address newOwner) public { }
-    function addLocation(string memory moduleName, string memory location) public { }
-    function removeLocation(string memory location, uint256 moduleNameIndex, string memory moduleName) public { }
+    +function transferOwnership(string memory moduleName, address newOwner) public { }
+    +function addLocation(string memory moduleName, string memory location) public { }
+    +function removeLocation(string memory location, uint256 moduleNameIndex, string memory moduleName) public { }
     function addDistUri(string memory name, string memory branch, string memory version, string memory distUri) public { }
     function removeHashUri(string memory name, string memory branch, string memory version, string memory distUri) public { }
     
