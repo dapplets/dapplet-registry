@@ -9,6 +9,7 @@
   "scripts": {
     "test": "truffle test",
     "migrate": "truffle migrate --skip-dry-run --reset",
+    "migrate:localhost": "truffle migrate --network localhost --skip-dry-run --reset",
     "migrate:rinkeby": "truffle migrate --network rinkeby --skip-dry-run --reset",
     "compile": "truffle compile"
   },

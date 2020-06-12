@@ -15,15 +15,15 @@ module.exports = function (deployer) {
 };
 
 const moduleTags = {
-  'common-adapter.dapplet-base.eth': [],
+  'common-adapter.dapplet-base.eth': ["dapplets.org", "127.0.0.1", "forum.dapplets.org", "youtube.com", "twitter.com", "mobile.twitter.com"],
   'common-lib.dapplet-base.eth': [],
-  'dapplets-org-feature-1.dapplet-base.eth': [],
+  'dapplets-org-feature-1.dapplet-base.eth': ["common-adapter.dapplet-base.eth"],
   'dynamic-adapter.dapplet-base.eth': [],
   "twitter-adapter.dapplet-base.eth": ["twitter.com", "www.twitter.com", "mobile.twitter.com"],
   'twitter-feature-1.dapplet-base.eth': ["twitter-adapter.dapplet-base.eth"],
   'twitter-feature-2.dapplet-base.eth': ["twitter-adapter.dapplet-base.eth"],
-  'twitter-feature-3.dapplet-base.eth': ["twitter-adapter.dapplet-base.eth"],
-  'account-verify.dapplet-base.eth': ["twitter-adapter.dapplet-base.eth"]
+  'twitter-feature-3.dapplet-base.eth': ["twitter.com/1153830517105713152"],
+  'account-verify.dapplet-base.eth': ["identity-adapter.dapplet-base.eth"]
 };
 
 const moduleTypes = {
@@ -35,6 +35,7 @@ const moduleTypes = {
 };
 
 const modulesOrder = [
+  'identity-adapter.dapplet-base.eth',
   'common-lib.dapplet-base.eth',
   'dynamic-adapter.dapplet-base.eth',
   'common-adapter.dapplet-base.eth',

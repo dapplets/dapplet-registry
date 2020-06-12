@@ -14,8 +14,10 @@ module.exports = {
       network_id: "*",
       gas: 100000000
     },
-    test: {
-      host: "127.0.0.1",
+
+    // ganache-cli -l 100000000 -m "mnemonic" -h "192.168.100.150" -v
+    localhost: {
+      host: "192.168.100.150",
       port: 8545,
       network_id: "*",
       gas: 100000000

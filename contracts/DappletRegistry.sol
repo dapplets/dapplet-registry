@@ -46,7 +46,7 @@ contract DappletRegistry {
         uint8 flags;
         StorageRef binary;
         DependencyDto[] dependencies; // key of module 
-        bytes32[] interfaces; //Exported interfaces. no duplicates.
+        DependencyDto[] interfaces; //Exported interfaces. no duplicates.
     }
     
     struct DependencyDto {
@@ -147,6 +147,7 @@ contract DappletRegistry {
     function getVersionInfo(string memory name, string memory branch, uint8 major, uint8 minor, uint8 patch) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
         bytes32 key = keccak256(abi.encodePacked(name, branch, major, minor, patch));
         VersionInfo memory v = versions[key];
+        require(v.modIdx != 0, "Version doesn't exist");
         
         DependencyDto[] memory deps = new DependencyDto[](v.dependencies.length);
         for (uint i = 0; i < v.dependencies.length; ++i) {
@@ -154,8 +155,15 @@ contract DappletRegistry {
             ModuleInfo memory depMod = modules[depVi.modIdx];
             deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.major, depVi.minor, depVi.patch);
         }
+
+        DependencyDto[] memory interfaces = new DependencyDto[](v.interfaces.length);
+        for (uint i = 0; i < v.interfaces.length; ++i) {
+            VersionInfo memory intVi = versions[v.interfaces[i]];
+            ModuleInfo memory intMod = modules[intVi.modIdx];
+            interfaces[i] = DependencyDto(intMod.name, intVi.branch, intVi.major, intVi.minor, intVi.patch);
+        }
         
-        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
+        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, interfaces);
         moduleType = modules[v.modIdx].moduleType;
     }
     
@@ -261,8 +269,29 @@ contract DappletRegistry {
             require(versions[dKey].modIdx != 0, "Dependency doesn't exist");
             deps[i] = dKey;
         }
+
+        bytes32[] memory interfaces = new bytes32[](v.interfaces.length);
+        for (uint i = 0; i < v.interfaces.length; ++i) {
+            DependencyDto memory interf = v.interfaces[i];
+            bytes32 iKey = keccak256(abi.encodePacked(interf.name, interf.branch, interf.major, interf.minor, interf.patch));
+            require(versions[iKey].modIdx != 0, "Interface doesn't exist");
+            interfaces[i] = iKey;
+            
+            // add interface name to ModuleInfo if not exist
+            bool isInterfaceExist = false;
+            for (uint j = 0; j < modules[moduleIdx].interfaces.length; ++j) {
+                if (keccak256(abi.encodePacked(modules[moduleIdx].interfaces[j])) == keccak256(abi.encodePacked(interf.name))) {
+                    isInterfaceExist = true;
+                    break;
+                }
+            }
+
+            if (isInterfaceExist == false) {
+                modules[moduleIdx].interfaces.push(interf.name);
+            }
+        }
         
-        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, v.interfaces);
+        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, interfaces);
         bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
         versions[vKey] = vInfo;
         
