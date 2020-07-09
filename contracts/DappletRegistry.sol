@@ -262,6 +262,9 @@ contract DappletRegistry {
     }
     
     function _addModuleVersionNoChecking(uint moduleIdx, string memory mod_name, VersionInfoDto memory v) private {
+        bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
+        //require(versions[vKey].modIdx == 0, "Version already exists");
+
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
@@ -292,7 +295,6 @@ contract DappletRegistry {
         }
         
         VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, interfaces);
-        bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
         versions[vKey] = vInfo;
         
         bytes32 nbKey = keccak256(abi.encodePacked(mod_name, vInfo.branch));
