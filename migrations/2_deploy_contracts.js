@@ -9,7 +9,7 @@ const array_chunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk
 
 module.exports = function (deployer) {
   deployer.deploy(DappletRegistry)
-    .then((instance) => initModulesNew(instance))
+    //.then((instance) => initModulesNew(instance))
   //.then((instance) => initModules(instance))
   //.then((instance) => initLocations(instance));
 };
