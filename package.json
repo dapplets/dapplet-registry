@@ -11,6 +11,7 @@
     "migrate": "truffle migrate --skip-dry-run --reset",
     "migrate:localhost": "truffle migrate --network localhost --skip-dry-run --reset",
     "migrate:rinkeby": "truffle migrate --network rinkeby --skip-dry-run --reset",
+    "migrate:aurora": "truffle migrate --network aurora --skip-dry-run --reset",
     "compile": "truffle compile"
   },
   "author": "Dapplets Team",
@@ -20,7 +21,8 @@
     "eth-gas-reporter": "^0.2.17",
     "lodash": "^4.17.15",
     "truffle": "^5.1.22",
-    "web3": "^1.2.8"
+    "web3": "^1.2.8",
+    "web3-provider-engine": "*"
   },
   "dependencies": {
     "semver": "^7.3.2"

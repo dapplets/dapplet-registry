@@ -1,4 +1,5 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
+const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker')
 const config = require('./config.json');
 
 module.exports = {
@@ -28,6 +29,16 @@ module.exports = {
       },
       network_id: '4',
       gas: 10000000
+    },
+    aurora: {
+      provider: function () {
+        const provider = new HDWalletProvider(config.rinkeby_mnemonic, 'https://testnet.aurora.dev', 0, 3, true);
+        provider.engine.addProvider(new NonceTrackerSubprovider());
+        return provider;
+      },
+      network_id: 0x4e454153,
+      gas: 10000000,
+      from: '0x692a4d7B7BE2dc1623155E90B197a82D114a74f3'
     }
   },
   // mocha: {
