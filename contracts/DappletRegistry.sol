@@ -92,11 +92,11 @@ contract DappletRegistry {
         return modules[moduleIdxs[mKey]];
     }
         
-    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos, bytes32 userId) public {
-        require(_isEnsOwner(userId));
+    function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos) public {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(moduleIdxs[mKey] == 0, 'The module already exists'); // module does not exist
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+        
+        bytes32 owner = bytes32(uint(msg.sender));
         
         // ModuleInfo adding
         mInfo.owner = owner;
@@ -118,23 +118,21 @@ contract DappletRegistry {
         }
     }
     
-    function addModuleVersion(string memory mod_name, VersionInfoDto memory vInfo, bytes32 userId) public {
-        require(_isEnsOwner(userId));
+    function addModuleVersion(string memory mod_name, VersionInfoDto memory vInfo) public {
         // ******** TODO: check existing versions and version sorting
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == owner, 'You are not the owner of this module');
+        require(m.owner == bytes32(uint(msg.sender)), 'You are not the owner of this module');
         
         _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
     }
 
-    function addModuleVersionBatch(string[] memory mod_name, VersionInfoDto[] memory vInfo, bytes32[] memory userId) public {
-        require(mod_name.length == vInfo.length && vInfo.length == userId.length, "Number of elements must be equal");
+    function addModuleVersionBatch(string[] memory mod_name, VersionInfoDto[] memory vInfo) public {
+        require(mod_name.length == vInfo.length, "Number of elements must be equal");
         for (uint i = 0; i < mod_name.length; ++i) {
-            addModuleVersion(mod_name[i], vInfo[i], userId[i]);
+            addModuleVersion(mod_name[i], vInfo[i]);
         }
     }
     
@@ -176,21 +174,17 @@ contract DappletRegistry {
     //     }
     // }
 
-    function transferOwnership(string memory mod_name, bytes32 oldUserId, bytes32 newUserId) public {
-        require(_isEnsOwner(oldUserId));
-        require(_isEnsOwner(newUserId));
-        bytes32 oldOwnerId = oldUserId == 0 ? bytes32(uint(msg.sender)) : oldUserId;
+    function transferOwnership(string memory mod_name, bytes32 newUserId) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == oldOwnerId, 'You are not the owner of this module');
+        require(m.owner == bytes32(uint(msg.sender)), 'You are not the owner of this module');
         
         m.owner = newUserId;
     }
 
     function addContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
-        require(_isEnsOwner(userId));
         bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
@@ -204,7 +198,6 @@ contract DappletRegistry {
     }
 
     function removeContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
-        require(_isEnsOwner(userId));
         bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
@@ -214,12 +207,12 @@ contract DappletRegistry {
 
         // ContextId adding
         bytes32 key = keccak256(abi.encodePacked(contextId, owner));
-        uint32[] storage modules = modsByContextType[key];
+        uint32[] storage _modules = modsByContextType[key];
 
         for (uint i = 0; i < modules.length; ++i) {
-            if (modules[i] == moduleIdx) {
-                modules[i] = modules[modules.length - 1];
-                modules.pop();
+            if (_modules[i] == moduleIdx) {
+                _modules[i] = _modules[modules.length - 1];
+                _modules.pop();
                 break;
             }
         }
@@ -301,25 +294,4 @@ contract DappletRegistry {
         versionNumbers[nbKey].push(byte(vInfo.patch));
         versionNumbers[nbKey].push(byte(0x0));
     }
-    
-    function _isEnsOwner(bytes32 userId) private pure returns(bool) {
-        return userId >= 0; //ToDo: NOT_IMPLEMENTED
-    }
-
-    /*
-    
-    FUNCTIONS TO BE IMPLEMENTED:
-    
-    +function getManifests(string memory location, bytes32[] memory users) public view returns (ModuleInfo[] memory) { } // for popup
-    +function getModules(string memory location, bytes32[] memory users) public view returns (string[] memory) { }
-    +function getVersions(string memory name, string memory branch) public view returns (string[] memory) { }
-    +function resolveToManifest(string memory name, string memory branch, string memory version) public view returns (VersionInfo memory) { }
-    +function addModule(Manifest memory manifest) public { }
-    +function transferOwnership(string memory moduleName, address newOwner) public { }
-    +function addLocation(string memory moduleName, string memory location) public { }
-    +function removeLocation(string memory location, uint256 moduleNameIndex, string memory moduleName) public { }
-    function addDistUri(string memory name, string memory branch, string memory version, string memory distUri) public { }
-    function removeHashUri(string memory name, string memory branch, string memory version, string memory distUri) public { }
-    
-    */
 }
