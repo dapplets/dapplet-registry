@@ -18,11 +18,8 @@ contract DappletRegistry {
     struct ModuleInfo {
         uint8 moduleType;
         string name;
-        string title;
-        string description;
         bytes32 owner;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
-        StorageRef icon;
         uint flags;
     }
 
@@ -32,10 +29,13 @@ contract DappletRegistry {
         uint8 major;
         uint8 minor;
         uint8 patch;
-        uint8 flags;
+        string title;
+        string description;
+        StorageRef icon;
         StorageRef binary;
         bytes32[] dependencies; // key of module 
         bytes32[] interfaces; //Exported interfaces. no duplicates.
+        uint8 flags;
     }
     
     struct VersionInfoDto {
@@ -43,10 +43,13 @@ contract DappletRegistry {
         uint8 major;
         uint8 minor;
         uint8 patch;
-        uint8 flags;
+        string title;
+        string description;
+        StorageRef icon;
         StorageRef binary;
         DependencyDto[] dependencies; // key of module 
         DependencyDto[] interfaces; //Exported interfaces. no duplicates.
+        uint8 flags;
     }
     
     struct DependencyDto {
@@ -161,7 +164,7 @@ contract DappletRegistry {
             interfaces[i] = DependencyDto(intMod.name, intVi.branch, intVi.major, intVi.minor, intVi.patch);
         }
         
-        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, interfaces);
+        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.title, v.description, v.icon, v.binary, deps, interfaces, v.flags);
         moduleType = modules[v.modIdx].moduleType;
     }
     
@@ -280,7 +283,7 @@ contract DappletRegistry {
             }
         }
         
-        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.flags, v.binary, deps, interfaces);
+        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.title, v.description, v.icon, v.binary, deps, interfaces, v.flags);
         bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
         versions[vKey] = vInfo;
         
