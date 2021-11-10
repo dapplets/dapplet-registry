@@ -184,29 +184,25 @@ contract DappletRegistry {
         m.owner = newUserId;
     }
 
-    function addContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+    function addContextId(string memory mod_name, string memory contextId) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == owner, 'You are not the owner of this module');
 
         // ContextId adding
-        bytes32 key = keccak256(abi.encodePacked(contextId, owner));
+        bytes32 userId = bytes32(uint(msg.sender));
+        bytes32 key = keccak256(abi.encodePacked(contextId, userId));
         modsByContextType[key].push(moduleIdx);
     }
 
-    function removeContextId(string memory mod_name, string memory contextId, bytes32 userId) public {
-        bytes32 owner = userId == 0 ? bytes32(uint(msg.sender)) : userId;
+    function removeContextId(string memory mod_name, string memory contextId) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == owner, 'You are not the owner of this module');
 
         // ContextId adding
-        bytes32 key = keccak256(abi.encodePacked(contextId, owner));
+        bytes32 userId = bytes32(uint(msg.sender));
+        bytes32 key = keccak256(abi.encodePacked(contextId, userId));
         uint32[] storage _modules = modsByContextType[key];
 
         for (uint i = 0; i < modules.length; ++i) {
