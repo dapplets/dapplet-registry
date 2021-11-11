@@ -11,6 +11,7 @@
     "migrate": "truffle migrate --skip-dry-run --reset",
     "migrate:localhost": "truffle migrate --network localhost --skip-dry-run --reset",
     "migrate:rinkeby": "truffle migrate --network rinkeby --skip-dry-run --reset",
+    "migrate:goerli": "truffle migrate --network goerli --skip-dry-run --reset",
     "migrate:aurora": "truffle migrate --network aurora --skip-dry-run --reset",
     "compile": "truffle compile"
   },
