@@ -60,11 +60,11 @@ contract DappletRegistry {
         uint8 patch;
     }
 
-    mapping(bytes32 => bytes) versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
-    mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
-    mapping(bytes32 => uint32[]) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
-    mapping(bytes32 => uint32) moduleIdxs;
-    ModuleInfo[] modules;
+    mapping(bytes32 => bytes) public versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
+    mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
+    mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
+    mapping(bytes32 => uint32) public moduleIdxs;
+    ModuleInfo[] public modules;
 
     constructor() public {
         modules.push(); // Zero index is reserved
