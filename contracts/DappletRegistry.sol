@@ -267,7 +267,7 @@ contract DappletRegistry {
     function transferOwnership(
         string memory mod_name,
         address newUserId,
-        uint256 oldOwnerMapIdx
+        uint256 oldOwnerArrIdx
     ) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
@@ -276,12 +276,12 @@ contract DappletRegistry {
         require(m.owner == msg.sender, "You are not the owner of this module");
         uint32[] storage oldOwnerModules = modsByOwner[m.owner];
         require(
-            oldOwnerModules[oldOwnerMapIdx] == moduleIdx,
-            "Invalid index of old owner map"
+            oldOwnerModules[oldOwnerArrIdx] == moduleIdx,
+            "Invalid index of array owner map"
         );
 
         // Remove module idx from old owner
-        oldOwnerModules[oldOwnerMapIdx] = oldOwnerModules[
+        oldOwnerModules[oldOwnerArrIdx] = oldOwnerModules[
             oldOwnerModules.length - 1
         ];
         oldOwnerModules.pop();
