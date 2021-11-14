@@ -62,7 +62,7 @@ contract DappletRegistry {
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
-    mapping(address => uint32[]) modsByOwner; // key - userId => module indexes
+    mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
     constructor() public {
