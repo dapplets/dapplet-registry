@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
+
 contract DappletRegistry {
 
     event ModuleInfoAdded (
         string[] contextIds,
-        bytes32 owner,
+        address owner,
         uint32 moduleIndex
     );
     
@@ -21,13 +22,13 @@ contract DappletRegistry {
         string title;
         string description;
         StorageRef icon;
-        bytes32 owner;
+        address owner;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
         uint flags;
     }
 
     struct VersionInfo {
-        uint  modIdx;
+        uint modIdx;
         string branch;
         uint8 major;
         uint8 minor;
@@ -61,14 +62,14 @@ contract DappletRegistry {
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
-    mapping(bytes32 => uint32[]) modsByOwner; // key - userId => module indexes
+    mapping(address => uint32[]) modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
     constructor() public {
         modules.push(); // Zero index is reserved
     }
 
-    function getModuleInfoBatch(string[] memory ctxIds, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[][] memory mod_info) {
+    function getModuleInfoBatch(string[] memory ctxIds, address[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[][] memory mod_info) {
         mod_info = new ModuleInfo[][](ctxIds.length);
         for (uint i = 0; i < ctxIds.length; ++i) {
             mod_info[i] = getModuleInfo(ctxIds[i], users, maxBufLen);
@@ -76,7 +77,7 @@ contract DappletRegistry {
     }
 
     // Very naive impl.
-    function getModuleInfo(string memory ctxId, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[] memory mod_info) {
+    function getModuleInfo(string memory ctxId, address[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[] memory mod_info) {
         uint[] memory outbuf = new uint[]( maxBufLen > 0 ? maxBufLen : 1000 );
         uint bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
         mod_info = new ModuleInfo[](bufLen);
@@ -93,7 +94,7 @@ contract DappletRegistry {
         return modules[moduleIdxs[mKey]];
     }
 
-    function getModuleInfoByOwner(bytes32 userId) public view returns (ModuleInfo[] memory mods) {
+    function getModuleInfoByOwner(address userId) public view returns (ModuleInfo[] memory mods) {
         uint32[] memory _moduleIdxs = modsByOwner[userId];
         mods = new ModuleInfo[](_moduleIdxs.length);
         for (uint i = 0; i < _moduleIdxs.length; ++i) {
@@ -105,7 +106,7 @@ contract DappletRegistry {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(moduleIdxs[mKey] == 0, 'The module already exists'); // module does not exist
         
-        bytes32 owner = bytes32(uint(msg.sender));
+        address owner = msg.sender;
         
         // ModuleInfo adding
         mInfo.owner = owner;
@@ -134,7 +135,7 @@ contract DappletRegistry {
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == bytes32(uint(msg.sender)), 'You are not the owner of this module');
+        require(m.owner == msg.sender, 'You are not the owner of this module');
         
         _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
     }
@@ -183,12 +184,12 @@ contract DappletRegistry {
     //     }
     // }
 
-    function transferOwnership(string memory mod_name, bytes32 newUserId, uint256 oldOwnerMapIdx) public {
+    function transferOwnership(string memory mod_name, address newUserId, uint256 oldOwnerMapIdx) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == bytes32(uint(msg.sender)), 'You are not the owner of this module');
+        require(m.owner == msg.sender, 'You are not the owner of this module');
         uint32[] storage oldOwnerModules = modsByOwner[m.owner];
         require(oldOwnerModules[oldOwnerMapIdx] == moduleIdx, 'Invalid index of old owner map');
         
@@ -209,7 +210,7 @@ contract DappletRegistry {
         require(moduleIdx != 0, 'The module does not exist');
 
         // ContextId adding
-        bytes32 userId = bytes32(uint(msg.sender));
+        address userId = msg.sender;
         bytes32 key = keccak256(abi.encodePacked(contextId, userId));
         modsByContextType[key].push(moduleIdx);
     }
@@ -220,7 +221,7 @@ contract DappletRegistry {
         require(moduleIdx != 0, 'The module does not exist');
 
         // ContextId adding
-        bytes32 userId = bytes32(uint(msg.sender));
+        address userId = msg.sender;
         bytes32 key = keccak256(abi.encodePacked(contextId, userId));
         uint32[] storage _modules = modsByContextType[key];
 
@@ -233,7 +234,7 @@ contract DappletRegistry {
         }
     }
 
-    function _fetchModulesByUsersTags(string[] memory interfaces, bytes32[] memory users, uint[] memory outbuf, uint _bufLen) internal view returns (uint) {
+    function _fetchModulesByUsersTags(string[] memory interfaces, address[] memory users, uint[] memory outbuf, uint _bufLen) internal view returns (uint) {
         uint bufLen = _bufLen;
         
         for (uint i = 0; i < interfaces.length; ++i) {
@@ -244,7 +245,7 @@ contract DappletRegistry {
     }
 
     // ctxId - URL or ContextType [IdentityAdapter]
-    function _fetchModulesByUsersTag(string memory ctxId, bytes32[] memory users, uint[] memory outbuf, uint _bufLen) internal view returns (uint) {
+    function _fetchModulesByUsersTag(string memory ctxId, address[] memory users, uint[] memory outbuf, uint _bufLen) internal view returns (uint) {
         uint bufLen = _bufLen;
         for (uint i = 0; i < users.length; ++i) {
             bytes32 key = keccak256(abi.encodePacked(ctxId, users[i]));
