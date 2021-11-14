@@ -61,6 +61,7 @@ contract DappletRegistry {
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
+    mapping(bytes32 => uint32[]) modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
     constructor() public {
@@ -74,7 +75,7 @@ contract DappletRegistry {
         }
     }
 
-    //Very naive impl.
+    // Very naive impl.
     function getModuleInfo(string memory ctxId, bytes32[] memory users, uint32 maxBufLen) public view returns (ModuleInfo[] memory mod_info) {
         uint[] memory outbuf = new uint[]( maxBufLen > 0 ? maxBufLen : 1000 );
         uint bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
@@ -91,6 +92,14 @@ contract DappletRegistry {
         require(moduleIdxs[mKey] != 0, 'The module does not exist');
         return modules[moduleIdxs[mKey]];
     }
+
+    function getModuleInfoByOwner(bytes32 userId) public view returns (ModuleInfo[] memory mods) {
+        uint32[] memory _moduleIdxs = modsByOwner[userId];
+        mods = new ModuleInfo[](_moduleIdxs.length);
+        for (uint i = 0; i < _moduleIdxs.length; ++i) {
+            mods[i] = modules[_moduleIdxs[i]];
+        }
+    }
         
     function addModuleInfo(string[] memory contextIds, ModuleInfo memory mInfo, VersionInfoDto[] memory vInfos) public {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
@@ -103,6 +112,7 @@ contract DappletRegistry {
         modules.push(mInfo);
         uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
         moduleIdxs[mKey] = mIdx;
+        modsByOwner[owner].push(mIdx);
         
         // ContextId adding
         for (uint i = 0; i < contextIds.length; ++i) {
@@ -141,7 +151,6 @@ contract DappletRegistry {
         return versionNumbers[key];
     } 
     
-    // instead of resolveToManifest
     function getVersionInfo(string memory name, string memory branch, uint8 major, uint8 minor, uint8 patch) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
         bytes32 key = keccak256(abi.encodePacked(name, branch, major, minor, patch));
         VersionInfo memory v = versions[key];
@@ -174,14 +183,24 @@ contract DappletRegistry {
     //     }
     // }
 
-    function transferOwnership(string memory mod_name, bytes32 newUserId) public {
+    function transferOwnership(string memory mod_name, bytes32 newUserId, uint256 oldOwnerMapIdx) public {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, 'The module does not exist');
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == bytes32(uint(msg.sender)), 'You are not the owner of this module');
+        uint32[] storage oldOwnerModules = modsByOwner[m.owner];
+        require(oldOwnerModules[oldOwnerMapIdx] == moduleIdx, 'Invalid index of old owner map');
         
+        // Remove module idx from old owner
+        oldOwnerModules[oldOwnerMapIdx] = oldOwnerModules[oldOwnerModules.length - 1];
+        oldOwnerModules.pop();
+
+        // Change owner
         m.owner = newUserId;
+
+        // Add module idx to new owner
+        modsByOwner[newUserId].push(moduleIdx);
     }
 
     function addContextId(string memory mod_name, string memory contextId) public {
