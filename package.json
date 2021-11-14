@@ -13,7 +13,7 @@
     "migrate:rinkeby": "truffle migrate --network rinkeby --skip-dry-run --reset",
     "migrate:goerli": "truffle migrate --network goerli --skip-dry-run --reset",
     "migrate:aurora": "truffle migrate --network aurora --skip-dry-run --reset",
-    "compile": "truffle compile"
+    "build": "truffle compile"
   },
   "author": "Dapplets Team",
   "license": "MIT",

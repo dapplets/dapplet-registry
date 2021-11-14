@@ -18,6 +18,9 @@ contract DappletRegistry {
     struct ModuleInfo {
         uint8 moduleType;
         string name;
+        string title;
+        string description;
+        StorageRef icon;
         bytes32 owner;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
         uint flags;
@@ -29,9 +32,6 @@ contract DappletRegistry {
         uint8 major;
         uint8 minor;
         uint8 patch;
-        string title;
-        string description;
-        StorageRef icon;
         StorageRef binary;
         bytes32[] dependencies; // key of module 
         bytes32[] interfaces; //Exported interfaces. no duplicates.
@@ -43,9 +43,6 @@ contract DappletRegistry {
         uint8 major;
         uint8 minor;
         uint8 patch;
-        string title;
-        string description;
-        StorageRef icon;
         StorageRef binary;
         DependencyDto[] dependencies; // key of module 
         DependencyDto[] interfaces; //Exported interfaces. no duplicates.
@@ -164,7 +161,7 @@ contract DappletRegistry {
             interfaces[i] = DependencyDto(intMod.name, intVi.branch, intVi.major, intVi.minor, intVi.patch);
         }
         
-        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.title, v.description, v.icon, v.binary, deps, interfaces, v.flags);
+        dto = VersionInfoDto(v.branch, v.major, v.minor, v.patch, v.binary, deps, interfaces, v.flags);
         moduleType = modules[v.modIdx].moduleType;
     }
     
@@ -283,7 +280,7 @@ contract DappletRegistry {
             }
         }
         
-        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.title, v.description, v.icon, v.binary, deps, interfaces, v.flags);
+        VersionInfo memory vInfo = VersionInfo(moduleIdx, v.branch, v.major, v.minor, v.patch, v.binary, deps, interfaces, v.flags);
         bytes32 vKey = keccak256(abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch));
         versions[vKey] = vInfo;
         
