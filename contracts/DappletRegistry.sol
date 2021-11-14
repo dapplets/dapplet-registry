@@ -223,6 +223,20 @@ contract DappletRegistry {
         }
     }
 
+    function editModuleInfo(
+        uint32 moduleIdx,
+        string memory title,
+        string memory description,
+        StorageRef memory icon
+    ) public {
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == msg.sender, "You are not the owner of this module");
+        
+        m.title = title;
+        m.description = description;
+        m.icon = icon;
+    }
+
     function addModuleVersion(
         string memory mod_name,
         VersionInfoDto memory vInfo
