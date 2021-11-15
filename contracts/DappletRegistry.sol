@@ -23,7 +23,7 @@ contract DappletRegistry {
         StorageRef icon;
         address owner;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
-        uint256 flags;
+        uint256 flags; // 255 bit - IsUnderConstruction
     }
 
     struct VersionInfo {
@@ -204,6 +204,9 @@ contract DappletRegistry {
 
         // ModuleInfo adding
         mInfo.owner = owner;
+        mInfo.flags = (vInfos.length == 0) // is under construction (no any version)
+            ? (mInfo.flags | uint256(1) << 0) // flags[255] == 1
+            : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
         modules.push(mInfo);
         uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
         moduleIdxs[mKey] = mIdx;
@@ -462,5 +465,10 @@ contract DappletRegistry {
         versionNumbers[nbKey].push(bytes1(vInfo.minor));
         versionNumbers[nbKey].push(bytes1(vInfo.patch));
         versionNumbers[nbKey].push(bytes1(0x0));
+
+        // reset IsUnderConstruction flag
+        if (((modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {
+            modules[moduleIdx].flags = modules[moduleIdx].flags & ~(uint256(1) << 0);
+        }
     }
 }
