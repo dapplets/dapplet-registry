@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.4;
+pragma solidity ^0.8.13;
 pragma experimental ABIEncoderV2;
 
 contract DappletRegistry {
@@ -64,7 +64,7 @@ contract DappletRegistry {
     mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
-    constructor() public {
+    constructor() {
         modules.push(); // Zero index is reserved
     }
 
@@ -205,7 +205,7 @@ contract DappletRegistry {
         // ModuleInfo adding
         mInfo.owner = owner;
         mInfo.flags = (vInfos.length == 0) // is under construction (no any version)
-            ? (mInfo.flags | uint256(1) << 0) // flags[255] == 1
+            ? (mInfo.flags | (uint256(1) << 0)) // flags[255] == 1
             : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
         modules.push(mInfo);
         uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
@@ -234,7 +234,7 @@ contract DappletRegistry {
     ) public {
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == msg.sender, "You are not the owner of this module");
-        
+
         m.title = title;
         m.description = description;
         m.icon = icon;
@@ -316,14 +316,16 @@ contract DappletRegistry {
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, "The module does not exist");
 
-        // ContextId adding
+        // // ContextId adding
         address userId = msg.sender;
         bytes32 key = keccak256(abi.encodePacked(contextId, userId));
+
         uint32[] storage _modules = modsByContextType[key];
 
-        for (uint256 i = 0; i < modules.length; ++i) {
+        // modules.length => _modules.length
+        for (uint256 i = 0; i < _modules.length; ++i) {
             if (_modules[i] == moduleIdx) {
-                _modules[i] = _modules[modules.length - 1];
+                _modules[i] = _modules[_modules.length - 1];
                 _modules.pop();
                 break;
             }
@@ -468,7 +470,9 @@ contract DappletRegistry {
 
         // reset IsUnderConstruction flag
         if (((modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {
-            modules[moduleIdx].flags = modules[moduleIdx].flags & ~(uint256(1) << 0);
+            modules[moduleIdx].flags =
+                modules[moduleIdx].flags &
+                ~(uint256(1) << 0);
         }
     }
 }
