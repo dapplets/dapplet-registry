@@ -16,6 +16,11 @@ library LinkedList {
         bool initialized;
     }
 
+    struct Link {
+        uint32 prev;
+        uint32 next;
+    }
+
     function items(LinkedListUint32 storage self) internal view returns(uint32[] memory result) {
         result = new uint32[](self.size);
         uint32 current = _HEAD;
@@ -32,20 +37,44 @@ library LinkedList {
         }
     }
 
-    function linkify(LinkedListUint32 storage self, uint32 a, uint32 b) internal {
-        if (a != _HEAD && b != _NULL && self.map[a] == _NULL) {
-            self.size += 1;
-        } else if (a != _HEAD && b == _NULL && self.map[a] != _NULL) {
-            self.size -= 1;
+    function linkify(LinkedListUint32 storage self, Link[] memory links) internal returns (bool isNewList) {
+
+        // Save listers existence in the listings map to reduce gas consumption
+        if (self.initialized == false) {
+            isNewList = self.initialized = true;
+            isNewList = true;
         }
 
-        self.map[a] = b;
-    }
-}
+        // Count inconsistent changes
+        int64 scores = 0;
 
-struct ListLink {
-    uint32 currentModuleIdx;
-    uint32 nextModuleIdx;
+        for (uint32 i = 0; i < links.length; i++) {
+            Link memory link = links[i];
+
+            uint32 prev = link.prev;
+            uint32 next = link.next;
+            uint32 oldNext = self.map[prev];
+
+            // Skip an existing link
+            if (oldNext == next) continue;
+            
+            // The sum of the values of the elements whose predecessor has changed
+            scores += int64(uint64((next == 0) ? prev : next));
+
+            // The diff of the values of the elements whose that have lost their predecessors
+            scores -= int64(uint64((oldNext == 0) ? (prev == 0) ? _TAIL : prev : oldNext));
+
+            if (prev != _HEAD && next != _NULL && self.map[prev] == _NULL) {
+                self.size += 1;
+            } else if (prev != _HEAD && next == _NULL && self.map[prev] != _NULL) {
+                self.size -= 1;
+            }
+
+            self.map[prev] = next;
+        }
+
+        require(scores == 0, "Inconsistent changes");
+    }
 }
 
 contract Listings {
@@ -69,19 +98,12 @@ contract Listings {
         return listingByLister[lister].contains(moduleIdx);
     }
 
-    function changeMyList(ListLink[] memory links) public {
+    function changeMyList(LinkedList.Link[] memory links) public {
         LinkedList.LinkedListUint32 storage listing = listingByLister[msg.sender];
+        bool isNewListing = listing.linkify(links);
 
-        // Save listers existence in the listings map to reduce gas consumption
-        if (listing.initialized == false) {
-            listing.initialized = true;
+        if (isNewListing) {
             listers.push(msg.sender);
-        }
-
-        for (uint32 i = 0; i < links.length; i++) {
-            ListLink memory link = links[i];
-            listing.linkify(link.currentModuleIdx, link.nextModuleIdx);
-            // ToDo: check consistency of the linked list
         }
     }
 }

@@ -39,6 +39,7 @@ async function checkExistence(contract, lister, existsValues, nonExistsValues) {
 }
 
 describe("Listings", (accounts) => {
+   
     let contract;
     let accountAddress;
 
@@ -338,5 +339,70 @@ describe("Listings", (accounts) => {
             expected,
             ALL_TESTING_VALUES.filter((x) => !expected.includes(x))
         );
+    });
+
+    it("shouldn't change the list", async () => {
+        const receipt = await contract.changeMyList(
+            prepareArguments([
+                [H, 5],
+                [5, 4],
+                [4, 2],
+                [2, 3],
+                [3, 1],
+                [1, T],
+            ])
+        );
+        console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
+
+        const items = await contract.getLinkedList(accountAddress);
+        const actual = items.map((x) => x.toString());
+        const expected = ["5", "4", "2", "3", "1"];
+        expect(actual).to.deep.equal(expected);
+
+        const size = await contract.getLinkedListSize(accountAddress);
+        expect(size.toString()).to.equal(expected.length.toString());
+
+        await checkExistence(
+            contract,
+            accountAddress,
+            expected,
+            ALL_TESTING_VALUES.filter((x) => !expected.includes(x))
+        );
+    });
+
+    it("should fail on inconsistent changes", async () => {
+        try {
+            await contract.changeMyList(prepareArguments([[4, 3]]));
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("Inconsistent changes");
+        }
+    });
+
+    it("should fail on inconsistent changes", async () => {
+        try {
+            await contract.changeMyList(prepareArguments([[H, T]]));
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("Inconsistent changes");
+        }
+    });
+
+    it("should fail on inconsistent changes", async () => {
+        try {
+            await contract.changeMyList(prepareArguments([[H, 1]]));
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("Inconsistent changes");
+        }
+    });
+
+    it("should fail on inconsistent changes", async () => {
+        try {
+            await contract.changeMyList(prepareArguments([[5, T]]));
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("Inconsistent changes");
+        }
     });
 });
