@@ -194,6 +194,15 @@ contract DappletRegistry {
         moduleType = modules[v.modIdx].moduleType;
     }
 
+    function getAllAdmins(string memory mod_name)
+        public
+        view
+        returns (address[] memory)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].values();
+    }
+
     // -------------------------------------------------------------------------
     // State modifying functions
     // -------------------------------------------------------------------------
@@ -258,7 +267,11 @@ contract DappletRegistry {
         uint32 moduleIdx = moduleIdxs[mKey];
         require(moduleIdx != 0, "The module does not exist");
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == msg.sender, "You are not the owner of this module");
+        require(
+            m.owner == msg.sender ||
+                adminsOfModules[mKey].contains(msg.sender) == true,
+            "You are not the owner of this module"
+        );
 
         _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
     }
@@ -355,15 +368,6 @@ contract DappletRegistry {
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         return adminsOfModules[mKey].remove(admin);
-    }
-
-    function getAllAdmins(string memory mod_name)
-        public
-        view
-        returns (address[] memory)
-    {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        return adminsOfModules[mKey].values();
     }
 
     // -------------------------------------------------------------------------
