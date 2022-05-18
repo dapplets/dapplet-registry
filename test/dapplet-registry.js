@@ -41,15 +41,7 @@ describe("DappletRegistry", function () {
       name: "instagram-adapter-test",
       title: "instagram-adapter-test",
     });
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["twitter.com"],
-      accountAddress,
-      interfaces: ["identity-adapter-test"],
-      description: "twitter-adapter-test",
-      name: "twitter-adapter-test",
-      title: "twitter-adapter-test",
-    });
+    await addModuleInfo(contract, { accountAddress });
     await addModuleInfo(contract, {
       moduleType: 1,
       context: ["identity-adapter-test"],
@@ -102,17 +94,9 @@ describe("DappletRegistry", function () {
   });
 
   it("should added and removed Context Id", async () => {
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["instagram.com"],
-      accountAddress,
-      interfaces: ["identity-adapter-test"],
-      description: "instagram-adapter-test",
-      name: "instagram-adapter-test",
-      title: "instagram-adapter-test",
-    });
+    await addModuleInfo(contract, { accountAddress });
 
-    await contract.addContextId("instagram-adapter-test", "yandex.ru");
+    await contract.addContextId("twitter-adapter-test", "yandex.ru");
 
     const moduleByContext = await contract.getModuleInfo(
       "yandex.ru",
@@ -123,13 +107,13 @@ describe("DappletRegistry", function () {
     const resultModuleById = moduleByContext.map(getValues);
     expect(resultModuleById).to.have.deep.members([
       {
-        name: "instagram-adapter-test",
-        title: "instagram-adapter-test",
-        description: "instagram-adapter-test",
+        name: "twitter-adapter-test",
+        title: "twitter-adapter-test",
+        description: "twitter-adapter-test",
       },
     ]);
 
-    await contract.removeContextId("instagram-adapter-test", "yandex.ru");
+    await contract.removeContextId("twitter-adapter-test", "yandex.ru");
 
     const moduleInfo = await contract.getModuleInfo(
       "yandex.ru",
@@ -143,18 +127,10 @@ describe("DappletRegistry", function () {
   it("empty array of modules when received from another address", async () => {
     const [_, acc2] = await ethers.getSigners();
 
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["instagram.com"],
-      accountAddress,
-      interfaces: ["identity-adapter-test"],
-      description: "instagram-adapter-test",
-      name: "instagram-adapter-test",
-      title: "instagram-adapter-test",
-    });
+    await addModuleInfo(contract, { accountAddress });
 
     const moduleInfo = await contract.getModuleInfo(
-      "instagram.com",
+      "twitter.com",
       [acc2.address],
       0,
     );
@@ -163,18 +139,10 @@ describe("DappletRegistry", function () {
   });
 
   it("should return information on the added module ", async () => {
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["instagram.com"],
-      accountAddress,
-      interfaces: ["identity-adapter-test"],
-      description: "instagram-adapter-test-description",
-      name: "instagram-adapter-test-name",
-      title: "instagram-adapter-test-title",
-    });
+    await addModuleInfo(contract, { accountAddress });
 
     const moduleInfoByName = await contract.getModuleInfoByName(
-      "instagram-adapter-test-name",
+      "twitter-adapter-test",
     );
     const moduleInfoByOwner = await contract.getModuleInfoByOwner(
       accountAddress,
@@ -183,15 +151,15 @@ describe("DappletRegistry", function () {
     const resultByOwner = moduleInfoByOwner.map(getValues);
 
     expect(resultByName).to.eql({
-      name: "instagram-adapter-test-name",
-      title: "instagram-adapter-test-title",
-      description: "instagram-adapter-test-description",
+      name: "twitter-adapter-test",
+      title: "twitter-adapter-test",
+      description: "twitter-adapter-test",
     });
     expect(resultByOwner).to.have.deep.members([
       {
-        name: "instagram-adapter-test-name",
-        title: "instagram-adapter-test-title",
-        description: "instagram-adapter-test-description",
+        name: "twitter-adapter-test",
+        title: "twitter-adapter-test",
+        description: "twitter-adapter-test",
       },
     ]);
   });
