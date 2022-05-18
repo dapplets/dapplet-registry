@@ -7,6 +7,12 @@ async function main() {
   const contract = await Listings.deploy();
 
   console.log("Contract address:", contract.address);
+  console.log("Delay 15 seconds to wait contract propagation.");
+
+  await new Promise((r) => setTimeout(r, 15000));
+  await hre.run("verify:verify", { address: contract.address });
+
+  console.log("Verified on Etherscan");
 }
 
 main()

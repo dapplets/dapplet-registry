@@ -1,5 +1,6 @@
 require("dotenv").config({ path: __dirname + "/.env" });
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
 module.exports = {
     solidity: {
@@ -16,5 +17,8 @@ module.exports = {
             url: process.env.GOERLI_RPC_URL,
             accounts: [process.env.GOERLI_PRIVATE_KEY],
         },
+    },
+    etherscan: {
+        apiKey: process.env.ETHERSCAN_API_KEY,
     },
 };
