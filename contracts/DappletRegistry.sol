@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+// Import EnumerableSet from the OpenZeppelin Contracts library
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 contract DappletRegistry {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     event ModuleInfoAdded(
         string[] contextIds,
         address owner,
@@ -62,6 +67,8 @@ contract DappletRegistry {
     mapping(bytes32 => uint32) public moduleIdxs;
     mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
+
+    mapping(bytes32 => EnumerableSet.AddressSet) private adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
 
     constructor() {
         modules.push(); // Zero index is reserved
@@ -332,6 +339,31 @@ contract DappletRegistry {
                 break;
             }
         }
+    }
+
+    function addAdmin(string memory mod_name, address admin)
+        public
+        returns (bool)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].add(admin);
+    }
+
+    function removeAdmin(string memory mod_name, address admin)
+        public
+        returns (bool)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].remove(admin);
+    }
+
+    function getAllAdmins(string memory mod_name)
+        public
+        view
+        returns (address[] memory)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].values();
     }
 
     // -------------------------------------------------------------------------

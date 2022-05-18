@@ -10,7 +10,10 @@ describe("DappletRegistry", function () {
   beforeEach(async function () {
     const [acc1] = await ethers.getSigners();
 
-    const DappletRegistry = await ethers.getContractFactory("DappletRegistry");
+    const DappletRegistry = await ethers.getContractFactory(
+      "DappletRegistry",
+      acc1,
+    );
     const deploy = await DappletRegistry.deploy();
     await deploy.deployed();
 
@@ -294,6 +297,24 @@ describe("DappletRegistry", function () {
         description: "instagram-adapter-test",
       },
     ]);
+  });
+
+  it("should create and delete admins for the module", async () => {
+    const [_, acc2, acc3] = await ethers.getSigners();
+
+    await addModuleInfo(contract, { accountAddress });
+
+    // Сreate
+    await contract.addAdmin("twitter-adapter-test", acc2.address);
+    await contract.addAdmin("twitter-adapter-test", acc3.address);
+
+    const createAdmins = await contract.getAllAdmins("twitter-adapter-test");
+    expect(createAdmins).to.have.deep.members([acc2.address, acc3.address]);
+
+    // Remove acc2 address
+    await contract.removeAdmin("twitter-adapter-test", acc2.address);
+    const removeAdmins = await contract.getAllAdmins("twitter-adapter-test");
+    expect(removeAdmins).to.have.deep.members([acc3.address]);
   });
 });
 
