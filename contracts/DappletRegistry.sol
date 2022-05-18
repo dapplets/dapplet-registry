@@ -226,11 +226,14 @@ contract DappletRegistry {
     }
 
     function editModuleInfo(
-        uint32 moduleIdx,
+        string memory name,
         string memory title,
         string memory description,
         StorageRef memory icon
     ) public {
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        uint256 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, "The module does not exist");
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == msg.sender, "You are not the owner of this module");
 
