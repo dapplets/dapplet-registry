@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+// Import EnumerableSet from the OpenZeppelin Contracts library
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 contract DappletRegistry {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     event ModuleInfoAdded(
         string[] contextIds,
         address owner,
@@ -63,8 +68,21 @@ contract DappletRegistry {
     mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
+    mapping(bytes32 => EnumerableSet.AddressSet) private adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
+
     constructor() {
         modules.push(); // Zero index is reserved
+    }
+
+    // -------------------------------------------------------------------------
+    // Modificators
+    // -------------------------------------------------------------------------
+
+    modifier onlyOwnerModule(string memory name) {
+        uint256 moduleIdx = _getModuleIdx(name);
+        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
+        require(m.owner == msg.sender, "You are not the owner of this module");
+        _;
     }
 
     // -------------------------------------------------------------------------
@@ -187,6 +205,15 @@ contract DappletRegistry {
         moduleType = modules[v.modIdx].moduleType;
     }
 
+    function getAllAdmins(string memory mod_name)
+        public
+        view
+        returns (address[] memory)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].values();
+    }
+
     // -------------------------------------------------------------------------
     // State modifying functions
     // -------------------------------------------------------------------------
@@ -226,11 +253,12 @@ contract DappletRegistry {
     }
 
     function editModuleInfo(
-        uint32 moduleIdx,
+        string memory name,
         string memory title,
         string memory description,
         StorageRef memory icon
     ) public {
+        uint32 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == msg.sender, "You are not the owner of this module");
 
@@ -245,10 +273,13 @@ contract DappletRegistry {
     ) public {
         // ******** TODO: check existing versions and version sorting
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
+        uint32 moduleIdx = _getModuleIdx(mod_name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == msg.sender, "You are not the owner of this module");
+        require(
+            m.owner == msg.sender ||
+                adminsOfModules[mKey].contains(msg.sender) == true,
+            "You are not the owner of this module"
+        );
 
         _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
     }
@@ -271,9 +302,7 @@ contract DappletRegistry {
         address newUserId,
         uint256 oldOwnerArrIdx
     ) public {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
+        uint32 moduleIdx = _getModuleIdx(mod_name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(m.owner == msg.sender, "You are not the owner of this module");
         uint32[] storage oldOwnerModules = modsByOwner[m.owner];
@@ -298,9 +327,7 @@ contract DappletRegistry {
     function addContextId(string memory mod_name, string memory contextId)
         public
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
+        uint32 moduleIdx = _getModuleIdx(mod_name);
 
         // ContextId adding
         address userId = msg.sender;
@@ -311,9 +338,7 @@ contract DappletRegistry {
     function removeContextId(string memory mod_name, string memory contextId)
         public
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
+        uint32 moduleIdx = _getModuleIdx(mod_name);
 
         // // ContextId adding
         address userId = msg.sender;
@@ -329,6 +354,24 @@ contract DappletRegistry {
                 break;
             }
         }
+    }
+
+    function addAdmin(string memory mod_name, address admin)
+        public
+        onlyOwnerModule(mod_name)
+        returns (bool)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].add(admin);
+    }
+
+    function removeAdmin(string memory mod_name, address admin)
+        public
+        onlyOwnerModule(mod_name)
+        returns (bool)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return adminsOfModules[mKey].remove(admin);
     }
 
     // -------------------------------------------------------------------------
@@ -473,5 +516,16 @@ contract DappletRegistry {
                 modules[moduleIdx].flags &
                 ~(uint256(1) << 0);
         }
+    }
+
+    function _getModuleIdx(string memory mod_name)
+        internal
+        view
+        returns (uint32)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        uint32 moduleIdx = moduleIdxs[mKey];
+        require(moduleIdx != 0, "The module does not exist");
+        return moduleIdx;
     }
 }

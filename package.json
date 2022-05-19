@@ -5,17 +5,22 @@
     "help": "hardhat --help",
     "test": "hardhat test",
     "build": "hardhat compile",
-    "deploy:listings:goerli": "hardhat run scripts/deploy-listings.js --network goerli"
+    "deploy:listings:goerli": "hardhat run scripts/deploy-listings.js --network goerli",
+    "size": "hardhat size-contracts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts": "^4.6.0",
     "chai": "^4.3.6",
     "chai-arrays": "^2.2.0",
     "dotenv": "^16.0.1",
+    "chai-as-promised": "^7.1.1",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.5",
-    "hardhat": "^2.9.5"
+    "hardhat": "^2.9.5",
+    "hardhat-contract-sizer": "^2.5.1",
+    "hardhat-gas-reporter": "^1.0.8"
   }
 }
