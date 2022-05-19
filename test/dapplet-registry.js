@@ -1,7 +1,9 @@
 const { use, expect } = require("chai");
 const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
+const chaiAsPromised = require("chai-as-promised");
 use(assertArrays);
+use(chaiAsPromised);
 
 describe("DappletRegistry", function () {
   let contract;
@@ -315,6 +317,52 @@ describe("DappletRegistry", function () {
     await contract.removeAdmin("twitter-adapter-test", acc2.address);
     const removeAdmins = await contract.getAllAdmins("twitter-adapter-test");
     expect(removeAdmins).to.have.deep.members([acc3.address]);
+  });
+
+  it("adding a new version with administrator rights", async () => {
+    const [_, acc2] = await ethers.getSigners();
+
+    await addModuleInfo(contract, { accountAddress });
+    await contract.addAdmin("twitter-adapter-test", acc2.address);
+
+    const differentAccount = await contract.connect(acc2);
+    await differentAccount.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({}),
+    );
+
+    const getVersionInfo = await contract.getVersionInfo(
+      "twitter-adapter-test",
+      "default",
+      9,
+      8,
+      7,
+    );
+    const resultVersion = getVersionInfo.map(getVersion)[0];
+
+    expect(resultVersion).to.eql({
+      branch: "default",
+      major: 9,
+      minor: 8,
+      patch: 7,
+    });
+  });
+
+  it("person without administrator rights cannot add a new version of the module", async () => {
+    const [_, acc2] = await ethers.getSigners();
+    await addModuleInfo(contract, { accountAddress });
+
+    const differentAccount = await contract.connect(acc2);
+
+    const errorShouldReturn = differentAccount.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({}),
+    );
+
+    await expect(errorShouldReturn).eventually.to.rejectedWith(
+      Error,
+      "VM Exception while processing transaction: reverted with reason string 'You are not the owner of this module'",
+    );
   });
 });
 
