@@ -13,6 +13,7 @@
     "@openzeppelin/contracts": "^4.6.0",
     "chai": "^4.3.6",
     "chai-arrays": "^2.2.0",
+    "chai-as-promised": "^7.1.1",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.5",
     "hardhat": "^2.9.5",
