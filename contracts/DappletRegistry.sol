@@ -273,8 +273,7 @@ contract DappletRegistry {
     ) public {
         // ******** TODO: check existing versions and version sorting
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
+        uint32 moduleIdx = _getModuleIdx(mod_name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(
             m.owner == msg.sender ||
