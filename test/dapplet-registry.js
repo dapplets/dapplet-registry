@@ -319,6 +319,22 @@ describe("DappletRegistry", function () {
     expect(removeAdmins).to.have.deep.members([acc3.address]);
   });
 
+  it("only the owner can add a new administrator", async () => {
+    const [_, acc2] = await ethers.getSigners();
+
+    await addModuleInfo(contract, { accountAddress });
+    const differentAccount = await contract.connect(acc2);
+
+    const errorShouldReturn = differentAccount.addAdmin(
+      "twitter-adapter-test",
+      acc2.address,
+    );
+    await expect(errorShouldReturn).eventually.to.rejectedWith(
+      Error,
+      "VM Exception while processing transaction: reverted with reason string 'You are not the owner of this module'",
+    );
+  });
+
   it("adding a new version with administrator rights", async () => {
     const [_, acc2] = await ethers.getSigners();
 
