@@ -22,6 +22,10 @@ module.exports = {
     goerli: {
       url: process.env.GOERLI_RPC_URL,
       accounts: [process.env.GOERLI_PRIVATE_KEY],
+      allowUnlimitedContractSize: true,
+    },
+    hardhat: {
+      allowUnlimitedContractSize: true,
     },
   },
   etherscan: {
