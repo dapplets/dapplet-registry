@@ -158,28 +158,6 @@ describe("Merge", function () {
     expect(moduleInfo).to.be.equalTo([]);
   });
 
-  it("should return an error when trying to add the same context", async () => {
-    await addModuleInfo(contract, { accountAddress });
-
-    await contract.addContextId("twitter-adapter-test", "yahoo.com");
-    const error = contract.addContextId("twitter-adapter-test", "yahoo.com");
-
-    await expect(error).eventually.to.rejectedWith(
-      Error,
-      "VM Exception while processing transaction: reverted with reason string 'The context is already in the list'",
-    );
-  });
-
-  it("should return an error when trying to delete a non-existent context", async () => {
-    await addModuleInfo(contract, { accountAddress });
-
-    const error = contract.removeContextId("twitter-adapter-test", "yahoo.com");
-    await expect(error).eventually.to.rejectedWith(
-      Error,
-      "VM Exception while processing transaction: reverted with reason string 'There is no such context'",
-    );
-  });
-
   it("empty array of modules when received from another address", async () => {
     const [_, acc2] = await ethers.getSigners();
 

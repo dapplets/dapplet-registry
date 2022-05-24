@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-library EnumerableSetContextId {
+library SetContextId {
     struct Set {
         bytes[] _values;
         mapping(bytes => uint256) _indexes;

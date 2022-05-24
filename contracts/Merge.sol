@@ -4,13 +4,13 @@ pragma solidity ^0.8.13;
 // Import EnumerableSet from the OpenZeppelin Contracts library
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./Listings.sol";
-import "./EnumerableSetContextId.sol";
+import "./SetContextId.sol";
 import "hardhat/console.sol";
 
 contract Merge is Listings {
     using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
-    using EnumerableSetContextId for EnumerableSetContextId.StringSet;
+    using SetContextId for SetContextId.StringSet;
 
     event ModuleInfoAdded(
         string[] contextIds,
@@ -75,8 +75,7 @@ contract Merge is Listings {
 
     mapping(bytes32 => EnumerableSet.AddressSet) private adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
 
-    mapping(bytes32 => EnumerableSetContextId.StringSet)
-        private contextIdsOfModules; // key - mod_name => EnumerableSet
+    mapping(bytes32 => SetContextId.StringSet) private contextIdsOfModules; // key - mod_name => EnumerableSet
 
     constructor() {
         modules.push(); // Zero index is reserved
@@ -370,10 +369,6 @@ contract Merge is Listings {
         bytes32 key = keccak256(abi.encodePacked(contextId));
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
 
-        require(
-            contextIdsOfModules[mKey].contains(contextId) == false,
-            "The context is already in the list"
-        );
         // ContextId adding
         modsByContextType[key].push(moduleIdx);
         contextIdsOfModules[mKey].add(contextId);
@@ -382,16 +377,12 @@ contract Merge is Listings {
     function removeContextId(string memory mod_name, string memory contextId)
         public
     {
+        uint32 moduleIdx = _getModuleIdx(mod_name);
+
         // // ContextId adding
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-
-        require(
-            contextIdsOfModules[mKey].contains(contextId) == true,
-            "There is no such context"
-        );
-
         bytes32 key = keccak256(abi.encodePacked(contextId));
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+
         uint32[] storage _modules = modsByContextType[key];
 
         // modules.length => _modules.length
