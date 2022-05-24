@@ -130,10 +130,10 @@ describe("Merge", function () {
       ]),
     );
 
-    await contract.addContextId("twitter-adapter-test", "yandex.ru");
+    await contract.addContextId("twitter-adapter-test", "yahoo.com");
 
     const moduleByContext = await contract.getModuleInfo(
-      "yandex.ru",
+      "yahoo.com",
       [accountAddress],
       0,
     );
@@ -147,15 +147,37 @@ describe("Merge", function () {
       },
     ]);
 
-    await contract.removeContextId("twitter-adapter-test", "yandex.ru");
+    await contract.removeContextId("twitter-adapter-test", "yahoo.com");
 
     const moduleInfo = await contract.getModuleInfo(
-      "yandex.ru",
+      "yahoo.com",
       [accountAddress],
       0,
     );
 
     expect(moduleInfo).to.be.equalTo([]);
+  });
+
+  it("should return an error when trying to add the same context", async () => {
+    await addModuleInfo(contract, { accountAddress });
+
+    await contract.addContextId("twitter-adapter-test", "yahoo.com");
+    const error = contract.addContextId("twitter-adapter-test", "yahoo.com");
+
+    await expect(error).eventually.to.rejectedWith(
+      Error,
+      "VM Exception while processing transaction: reverted with reason string 'The context is already in the list'",
+    );
+  });
+
+  it("should return an error when trying to delete a non-existent context", async () => {
+    await addModuleInfo(contract, { accountAddress });
+
+    const error = contract.removeContextId("twitter-adapter-test", "yahoo.com");
+    await expect(error).eventually.to.rejectedWith(
+      Error,
+      "VM Exception while processing transaction: reverted with reason string 'There is no such context'",
+    );
   });
 
   it("empty array of modules when received from another address", async () => {
@@ -416,6 +438,25 @@ describe("Merge", function () {
       Error,
       "VM Exception while processing transaction: reverted with reason string 'You are not the owner of this module'",
     );
+  });
+
+  it("should return context ids module by module name", async () => {
+    await addModuleInfo(contract, {
+      accountAddress,
+      name: "emoji-adaplet-test",
+      context: ["twitter.com", "google.com"],
+    });
+
+    await contract.addContextId("emoji-adaplet-test", "yahoo.com");
+
+    const result = await contract.getContextIdsByModuleName(
+      "emoji-adaplet-test",
+    );
+    expect(result).to.have.deep.members([
+      "twitter.com",
+      "google.com",
+      "yahoo.com",
+    ]);
   });
 });
 
