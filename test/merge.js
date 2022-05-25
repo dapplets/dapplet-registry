@@ -89,6 +89,11 @@ describe("Merge", function () {
 
     expect(resultDataByTwitter).to.have.deep.members([
       {
+        name: "twitter-adapter-test",
+        title: "twitter-adapter-test",
+        description: "twitter-adapter-test",
+      },
+      {
         name: "identity-feature-test",
         title: "identity-feature-test",
         description: "identity-feature-test",
@@ -96,6 +101,11 @@ describe("Merge", function () {
     ]);
 
     expect(resultDataByInstagram).to.have.deep.members([
+      {
+        name: "instagram-adapter-test",
+        title: "instagram-adapter-test",
+        description: "instagram-adapter-test",
+      },
       {
         name: "identity-feature-test",
         title: "identity-feature-test",

@@ -152,31 +152,13 @@ contract Merge is Listings {
         uint256[] memory outbuf = new uint256[](
             maxBufLen > 0 ? maxBufLen : 1000
         );
-        uint256 bufLen = _fetchModulesByUsersTag(ctxId, outbuf, 0);
+        uint256 bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
 
-        uint256 listedModulesCount = 0;
+        mod_info = new ModuleInfo[](bufLen);
         for (uint256 i = 0; i < bufLen; ++i) {
             uint256 idx = outbuf[i];
             //ToDo: strip contentType indexes?
-
-            for (uint256 j = 0; j < users.length; ++j) {
-                if (listingByLister[users[j]].contains(uint32(idx)) == true) {
-                    listedModulesCount++;
-                }
-            }
-        }
-
-        uint256 mod_info_idx = 0;
-        mod_info = new ModuleInfo[](listedModulesCount);
-        for (uint256 i = 0; i < bufLen; ++i) {
-            uint256 idx = outbuf[i];
-            //ToDo: strip contentType indexes?
-
-            for (uint256 j = 0; j < users.length; ++j) {
-                if (listingByLister[users[j]].contains(uint32(idx)) == true) {
-                    mod_info[mod_info_idx++] = modules[idx]; // WARNING! indexes are started from 1.
-                }
-            }
+            mod_info[i] = modules[idx];
         }
     }
 
@@ -455,23 +437,10 @@ contract Merge is Listings {
     // Internal functions
     // -------------------------------------------------------------------------
 
-    function _fetchModulesByUsersTags(
-        string[] memory interfaces,
-        uint256[] memory outbuf,
-        uint256 _bufLen
-    ) internal view returns (uint256) {
-        uint256 bufLen = _bufLen;
-
-        for (uint256 i = 0; i < interfaces.length; ++i) {
-            bufLen = _fetchModulesByUsersTag(interfaces[i], outbuf, bufLen);
-        }
-
-        return bufLen;
-    }
-
     // ctxId - URL or ContextType [IdentityAdapter]
     function _fetchModulesByUsersTag(
         string memory ctxId,
+        address[] memory listers,
         uint256[] memory outbuf,
         uint256 _bufLen
     ) internal view returns (uint256) {
@@ -480,20 +449,55 @@ contract Merge is Listings {
         uint32[] memory modIdxs = modsByContextType[key];
 
         //add if no duplicates in buffer[0..nn-1]
-        uint256 lastBufLen = bufLen;
+        uint256 lastBufLen = bufLen; // 1) 0  2) 1
         for (uint256 j = 0; j < modIdxs.length; ++j) {
             uint32 modIdx = modIdxs[j];
 
+            // k - index of duplicated element
             uint256 k = 0;
             for (; k < lastBufLen; ++k) {
                 if (outbuf[k] == modIdx) break; //duplicate found
             }
+
+            // ToDo: check what happens when duplicated element is in the end of outbuf
+
+            //no duplicates found  -- add the module's index
             if (k == lastBufLen) {
-                //no duplicates found  -- add the module's index
-                outbuf[bufLen++] = modIdx;
+                // add module if it is in the listings
+                for (uint256 l = 0; l < listers.length; ++l) {
+                    if (
+                        listingByLister[listers[l]].contains(uint32(modIdx)) ==
+                        true
+                    ) {
+                        outbuf[bufLen++] = modIdx;
+                    }
+                }
+
+                uint256 prevBufLen = bufLen;
+
                 ModuleInfo memory m = modules[modIdx];
-                bufLen = _fetchModulesByUsersTag(m.name, outbuf, bufLen); // using index as a tag.
-                bufLen = _fetchModulesByUsersTags(m.interfaces, outbuf, bufLen);
+                bufLen = _fetchModulesByUsersTag(
+                    m.name,
+                    listers,
+                    outbuf,
+                    bufLen
+                ); // using index as a tag
+
+                // ToDo: add interface as separate module to outbuf?
+                for (uint256 l = 0; l < m.interfaces.length; ++l) {
+                    bufLen = _fetchModulesByUsersTag(
+                        m.interfaces[l],
+                        listers,
+                        outbuf,
+                        bufLen
+                    );
+                }
+
+                // something depends on the current module
+                if (bufLen != prevBufLen) {
+                    outbuf[bufLen++] = modIdx;
+                }
+
                 //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
             }
         }
