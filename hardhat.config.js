@@ -2,7 +2,7 @@ require("dotenv").config({ path: __dirname + "/.env" });
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-contract-sizer");
-// require("hardhat-gas-reporter");
+require("hardhat-gas-reporter");
 
 module.exports = {
   solidity: {

@@ -6,23 +6,7 @@ use(assertArrays);
 use(chaiAsPromised);
 
 const H = 0;
-const N = 0;
 const T = 4294967295;
-
-const ALL_TESTING_VALUES = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-];
 
 function prepareArguments(args) {
   return args;
@@ -435,6 +419,23 @@ describe("Merge", function () {
       "google.com",
       "yahoo.com",
     ]);
+  });
+
+  it("should return 20 elements with arguments (0, 10) and (11, 10)", async () => {
+    for (let i = 0; i < 20; i++) {
+      await addModuleInfo(contract, {
+        accountAddress,
+        title: `twitter-adapter-test-${i}`,
+        description: `twitter-adapter-test-${i}`,
+        name: `twitter-adapter-test-${i}`,
+        context: [],
+        interfaces: [],
+      });
+    }
+
+    const page_1 = await contract.getModules(0, 10);
+    const page_2 = await contract.getModules(11, 10);
+    expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
 });
 

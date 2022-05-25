@@ -107,6 +107,42 @@ contract Merge is Listings {
         }
     }
 
+    function getModules(
+        // offset when receiving data
+        uint256 offset,
+        // limit on receiving items
+        uint256 limit
+    )
+        public
+        view
+        returns (
+            ModuleInfo[] memory result,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
+    {
+        nextOffset = offset + limit;
+        totalModules = modules.length;
+
+        if (limit == 0) {
+            limit = 1;
+        }
+
+        if (offset == 0) {
+            offset = 1;
+        }
+
+        if (limit > totalModules - offset) {
+            limit = totalModules - offset;
+        }
+
+        result = new ModuleInfo[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            result[i] = modules[offset + i];
+        }
+    }
+
     // Very naive impl.
     function getModuleInfo(
         string memory ctxId,
