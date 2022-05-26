@@ -10,6 +10,7 @@ import "hardhat/console.sol";
 contract Merge is Listings {
     using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
+    using EnumerableSet for EnumerableSet.UintSet;
     using SetContextId for SetContextId.StringSet;
 
     event ModuleInfoAdded(
@@ -68,7 +69,7 @@ contract Merge is Listings {
 
     mapping(bytes32 => bytes) public versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
-    mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
+    mapping(bytes32 => EnumerableSet.UintSet) private modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
     mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
@@ -294,7 +295,7 @@ contract Merge is Listings {
         // ContextId adding
         for (uint256 i = 0; i < contextIds.length; ++i) {
             bytes32 key = keccak256(abi.encodePacked(contextIds[i]));
-            modsByContextType[key].push(mIdx);
+            modsByContextType[key].add(mIdx);
             // contextIdsOfModules[mKey].push(contextIds[i]);
             contextIdsOfModules[mKey].add(contextIds[i]);
         }
@@ -388,7 +389,7 @@ contract Merge is Listings {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
 
         // ContextId adding
-        modsByContextType[key].push(moduleIdx);
+        modsByContextType[key].add(moduleIdx);
         contextIdsOfModules[mKey].add(contextId);
     }
 
@@ -401,17 +402,7 @@ contract Merge is Listings {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         bytes32 key = keccak256(abi.encodePacked(contextId));
 
-        uint32[] storage _modules = modsByContextType[key];
-
-        // modules.length => _modules.length
-        for (uint256 i = 0; i < _modules.length; ++i) {
-            if (_modules[i] == moduleIdx) {
-                _modules[i] = _modules[_modules.length - 1];
-                _modules.pop();
-                break;
-            }
-        }
-
+        modsByContextType[key].remove(moduleIdx);
         contextIdsOfModules[mKey].remove(contextId);
     }
 
@@ -446,12 +437,12 @@ contract Merge is Listings {
     ) internal view returns (uint256) {
         uint256 bufLen = _bufLen;
         bytes32 key = keccak256(abi.encodePacked(ctxId));
-        uint32[] memory modIdxs = modsByContextType[key];
+        uint256[] memory modIdxs = modsByContextType[key].values();
 
         //add if no duplicates in buffer[0..nn-1]
         uint256 lastBufLen = bufLen; // 1) 0  2) 1
         for (uint256 j = 0; j < modIdxs.length; ++j) {
-            uint32 modIdx = modIdxs[j];
+            uint256 modIdx = modIdxs[j];
 
             // k - index of duplicated element
             uint256 k = 0;
