@@ -5,6 +5,9 @@ require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 
 module.exports = {
+  mocha: {
+    timeout: 1000000000,
+  },
   solidity: {
     version: "0.8.13",
     settings: {
