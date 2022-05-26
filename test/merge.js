@@ -447,30 +447,6 @@ describe("Merge", function () {
     const page_2 = await contract.getModules(11, 10);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
-
-  // Get Modules INFINITY
-  it("getModules pagination", async () => {
-    console.log("\x1b[41m%s\x1b[0m", "WARNING: This test infinity");
-
-    for (let j = 0; j < 100; j++) {
-      for (let i = 0; i < 100; i++) {
-        await addModuleInfo(contract, {
-          accountAddress,
-          name: `twitter-adapter-test-${j}-${i}`,
-        });
-        console.log(`Added ${j * 100 + i + 1} modules`);
-      }
-
-      const result = await contract.getModules(j * 100, 100);
-      console.log(
-        "result",
-        result["result"].length,
-        result["nextOffset"],
-        result["totalModules"],
-        result["result"][result["result"].length - 1].name,
-      );
-    }
-  });
 });
 
 const getValues = (data) => {
