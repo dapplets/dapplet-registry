@@ -32,4 +32,9 @@ module.exports = {
     runOnCompile: false,
     strict: true,
   },
+  networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    },
+  },
 };
