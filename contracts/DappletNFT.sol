@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
-    constructor() ERC721("DappletToken", "DNFT") {}
+    constructor() ERC721("Dapplets NFTs", "DNFTs") {}
 
     function safeMint(address to, uint256 tokenId) public onlyOwner {
         _safeMint(to, tokenId);
@@ -28,5 +28,36 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    function getModulesIndexes(
+        address owner,
+        // offset when receiving data
+        uint256 offset,
+        // limit on receiving items
+        uint256 limit
+    )
+        public
+        view
+        returns (
+            uint256[] memory dappIndxs,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
+    {
+        totalModules = balanceOf(owner);
+        nextOffset = offset + limit;
+
+        if (limit == 0) {
+            limit = 1;
+        }
+
+        if (limit > totalModules - offset) {
+            limit = totalModules - offset;
+        }
+        dappIndxs = new uint256[](limit);
+        for (uint256 i = 0; i < limit; ++i) {
+            dappIndxs[i] = tokenOfOwnerByIndex(owner, i + offset);
+        }
     }
 }

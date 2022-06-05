@@ -41,7 +41,7 @@ describe("DappletRegistry", function () {
       [accountAddress],
       0,
     );
-    expect(moduleInfo).to.have.deep.members([[], []]);
+    expect(moduleInfo).to.eql([[], []]);
   });
 
   it("should return virtual modules by contextId after addModuleInfo ", async () => {
@@ -77,7 +77,7 @@ describe("DappletRegistry", function () {
     const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
     const resultDataByInstagram = moduleByInstagram.modulesInfo.map(getValues);
 
-    expect(resultDataByTwitter).to.have.deep.members([
+    expect(resultDataByTwitter).to.eql([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
@@ -90,7 +90,7 @@ describe("DappletRegistry", function () {
       },
     ]);
 
-    expect(resultDataByInstagram).to.have.deep.members([
+    expect(resultDataByInstagram).to.eql([
       {
         name: "instagram-adapter-test",
         title: "instagram-adapter-test",
@@ -116,7 +116,7 @@ describe("DappletRegistry", function () {
     );
 
     const resultModuleById = moduleByContext.modulesInfo.map(getValues);
-    expect(resultModuleById).to.have.deep.members([
+    expect(resultModuleById).to.eql([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
@@ -132,7 +132,7 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    expect(moduleInfo.modulesInfo).to.be.equalTo([]);
+    expect(moduleInfo.modulesInfo).to.eql([]);
   });
 
   it("empty array of modules when received from another address", async () => {
@@ -157,6 +157,8 @@ describe("DappletRegistry", function () {
     );
     const moduleInfoByOwner = await contract.getModuleInfoByOwner(
       accountAddress,
+      0,
+      10
     );
     const resultByName = getValues(moduleInfoByName.modulesInfo);
     const resultByOwner = moduleInfoByOwner.modulesInfo.map(getValues);
@@ -166,7 +168,7 @@ describe("DappletRegistry", function () {
       title: "twitter-adapter-test",
       description: "twitter-adapter-test",
     });
-    expect(resultByOwner).to.have.deep.members([
+    expect(resultByOwner).to.eql([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
@@ -258,7 +260,7 @@ describe("DappletRegistry", function () {
     );
 
     const result = getModuleInfoBatch.modulesInfos.map((item) => getValues(item[0]));
-    expect(result).to.have.deep.members([
+    expect(result).to.eql([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
@@ -282,12 +284,12 @@ describe("DappletRegistry", function () {
     await contract.addAdmin("twitter-adapter-test", acc3.address);
 
     const createAdmins = await contract.getAllAdmins("twitter-adapter-test");
-    expect(createAdmins).to.have.deep.members([acc2.address, acc3.address]);
+    expect(createAdmins).to.eql([acc2.address, acc3.address]);
 
     // Remove acc2 address
     await contract.removeAdmin("twitter-adapter-test", acc2.address);
     const removeAdmins = await contract.getAllAdmins("twitter-adapter-test");
-    expect(removeAdmins).to.have.deep.members([acc3.address]);
+    expect(removeAdmins).to.eql([acc3.address]);
   });
 
   it("only the owner can add a new administrator", async () => {
@@ -550,7 +552,7 @@ describe("DappletRegistry + DappletToken", function () {
       0,
     );
 
-    expect(moduleByTwitter.owners).to.deep.equal([accountAddress]);
+    expect(moduleByTwitter.owners).to.eql([accountAddress]);
   });
 
   it("should transfer ownership of the module", async () => {
@@ -563,15 +565,20 @@ describe("DappletRegistry + DappletToken", function () {
     const dappletOwnerToDNFT = await dappletContract.connect(dappletOwner);
     await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](dappletOwnerAddress, dappletBuyer.address, moduleIndex);
 
-    const moduleInfoByOwner = await registryContract.getModuleInfoByOwner(dappletBuyer.address);
-    const resultByOwner = moduleInfoByOwner.modulesInfo.map(getValues);
+    const moduleInfoByOwner = await registryContract.getModuleInfoByOwner(dappletBuyer.address, 0, 10);
+    const resultByOwner = moduleInfoByOwner[0].map(getValues);
 
-    expect(resultByOwner).to.have.deep.members([
+    expect(resultByOwner).to.eql([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
         description: "twitter-adapter-test",
       },
     ]);
+  });
+
+  it("gives NFT contract address", async () => {
+      const address = await registryContract.getNFTContractAddress();
+      expect(dappletContract.address).to.equal(address);
   });
 });
