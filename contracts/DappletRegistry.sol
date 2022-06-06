@@ -3,9 +3,15 @@ pragma solidity ^0.8.13;
 
 // Import EnumerableSet from the OpenZeppelin Contracts library
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "./Listings.sol";
+import "./SetContextId.sol";
+import "hardhat/console.sol";
 
-contract DappletRegistry {
+contract DappletRegistry is Listings {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using LinkedList for LinkedList.LinkedListUint32;
+    using EnumerableSet for EnumerableSet.UintSet;
+    using SetContextId for SetContextId.StringSet;
 
     event ModuleInfoAdded(
         string[] contextIds,
@@ -63,12 +69,14 @@ contract DappletRegistry {
 
     mapping(bytes32 => bytes) public versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
-    mapping(bytes32 => uint32[]) public modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
+    mapping(bytes32 => EnumerableSet.UintSet) private modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
     mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
     mapping(bytes32 => EnumerableSet.AddressSet) private adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
+
+    mapping(bytes32 => SetContextId.StringSet) private contextIdsOfModules; // key - mod_name => EnumerableSet
 
     constructor() {
         modules.push(); // Zero index is reserved
@@ -100,6 +108,42 @@ contract DappletRegistry {
         }
     }
 
+    function getModules(
+        // offset when receiving data
+        uint256 offset,
+        // limit on receiving items
+        uint256 limit
+    )
+        public
+        view
+        returns (
+            ModuleInfo[] memory result,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
+    {
+        nextOffset = offset + limit;
+        totalModules = modules.length;
+
+        if (limit == 0) {
+            limit = 1;
+        }
+
+        if (offset == 0) {
+            offset = 1;
+        }
+
+        if (limit > totalModules - offset) {
+            limit = totalModules - offset;
+        }
+
+        result = new ModuleInfo[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            result[i] = modules[offset + i];
+        }
+    }
+
     // Very naive impl.
     function getModuleInfo(
         string memory ctxId,
@@ -110,11 +154,12 @@ contract DappletRegistry {
             maxBufLen > 0 ? maxBufLen : 1000
         );
         uint256 bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
+
         mod_info = new ModuleInfo[](bufLen);
         for (uint256 i = 0; i < bufLen; ++i) {
             uint256 idx = outbuf[i];
-            mod_info[i] = modules[idx]; // WARNING! indexes are started from 1.
             //ToDo: strip contentType indexes?
+            mod_info[i] = modules[idx];
         }
     }
 
@@ -214,6 +259,15 @@ contract DappletRegistry {
         return adminsOfModules[mKey].values();
     }
 
+    function getContextIdsByModuleName(string memory mod_name)
+        public
+        view
+        returns (string[] memory)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        return contextIdsOfModules[mKey].values();
+    }
+
     // -------------------------------------------------------------------------
     // State modifying functions
     // -------------------------------------------------------------------------
@@ -240,8 +294,10 @@ contract DappletRegistry {
 
         // ContextId adding
         for (uint256 i = 0; i < contextIds.length; ++i) {
-            bytes32 key = keccak256(abi.encodePacked(contextIds[i], owner));
-            modsByContextType[key].push(mIdx);
+            bytes32 key = keccak256(abi.encodePacked(contextIds[i]));
+            modsByContextType[key].add(mIdx);
+            // contextIdsOfModules[mKey].push(contextIds[i]);
+            contextIdsOfModules[mKey].add(contextIds[i]);
         }
 
         emit ModuleInfoAdded(contextIds, owner, mIdx);
@@ -329,10 +385,12 @@ contract DappletRegistry {
     {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 
+        bytes32 key = keccak256(abi.encodePacked(contextId));
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+
         // ContextId adding
-        address userId = msg.sender;
-        bytes32 key = keccak256(abi.encodePacked(contextId, userId));
-        modsByContextType[key].push(moduleIdx);
+        modsByContextType[key].add(moduleIdx);
+        contextIdsOfModules[mKey].add(contextId);
     }
 
     function removeContextId(string memory mod_name, string memory contextId)
@@ -341,19 +399,11 @@ contract DappletRegistry {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 
         // // ContextId adding
-        address userId = msg.sender;
-        bytes32 key = keccak256(abi.encodePacked(contextId, userId));
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 key = keccak256(abi.encodePacked(contextId));
 
-        uint32[] storage _modules = modsByContextType[key];
-
-        // modules.length => _modules.length
-        for (uint256 i = 0; i < _modules.length; ++i) {
-            if (_modules[i] == moduleIdx) {
-                _modules[i] = _modules[_modules.length - 1];
-                _modules.pop();
-                break;
-            }
-        }
+        modsByContextType[key].remove(moduleIdx);
+        contextIdsOfModules[mKey].remove(contextId);
     }
 
     function addAdmin(string memory mod_name, address admin)
@@ -378,65 +428,71 @@ contract DappletRegistry {
     // Internal functions
     // -------------------------------------------------------------------------
 
-    function _fetchModulesByUsersTags(
-        string[] memory interfaces,
-        address[] memory users,
-        uint256[] memory outbuf,
-        uint256 _bufLen
-    ) internal view returns (uint256) {
-        uint256 bufLen = _bufLen;
-
-        for (uint256 i = 0; i < interfaces.length; ++i) {
-            bufLen = _fetchModulesByUsersTag(
-                interfaces[i],
-                users,
-                outbuf,
-                bufLen
-            );
-        }
-
-        return bufLen;
-    }
-
     // ctxId - URL or ContextType [IdentityAdapter]
     function _fetchModulesByUsersTag(
         string memory ctxId,
-        address[] memory users,
+        address[] memory listers,
         uint256[] memory outbuf,
         uint256 _bufLen
     ) internal view returns (uint256) {
         uint256 bufLen = _bufLen;
-        for (uint256 i = 0; i < users.length; ++i) {
-            bytes32 key = keccak256(abi.encodePacked(ctxId, users[i]));
-            uint32[] memory modIdxs = modsByContextType[key];
-            //add if no duplicates in buffer[0..nn-1]
-            uint256 lastBufLen = bufLen;
-            for (uint256 j = 0; j < modIdxs.length; ++j) {
-                uint256 modIdx = modIdxs[j];
-                uint256 k = 0;
-                for (; k < lastBufLen; ++k) {
-                    if (outbuf[k] == modIdx) break; //duplicate found
+        bytes32 key = keccak256(abi.encodePacked(ctxId));
+        uint256[] memory modIdxs = modsByContextType[key].values();
+
+        //add if no duplicates in buffer[0..nn-1]
+        uint256 lastBufLen = bufLen; // 1) 0  2) 1
+        for (uint256 j = 0; j < modIdxs.length; ++j) {
+            uint256 modIdx = modIdxs[j];
+
+            // k - index of duplicated element
+            uint256 k = 0;
+            for (; k < lastBufLen; ++k) {
+                if (outbuf[k] == modIdx) break; //duplicate found
+            }
+
+            // ToDo: check what happens when duplicated element is in the end of outbuf
+
+            //no duplicates found  -- add the module's index
+            if (k == lastBufLen) {
+                // add module if it is in the listings
+                for (uint256 l = 0; l < listers.length; ++l) {
+                    if (
+                        listingByLister[listers[l]].contains(uint32(modIdx)) ==
+                        true
+                    ) {
+                        outbuf[bufLen++] = modIdx;
+                    }
                 }
-                if (k == lastBufLen) {
-                    //no duplicates found  -- add the module's index
-                    outbuf[bufLen++] = modIdx;
-                    ModuleInfo memory m = modules[modIdx];
+
+                uint256 prevBufLen = bufLen;
+
+                ModuleInfo memory m = modules[modIdx];
+                bufLen = _fetchModulesByUsersTag(
+                    m.name,
+                    listers,
+                    outbuf,
+                    bufLen
+                ); // using index as a tag
+
+                // ToDo: add interface as separate module to outbuf?
+                for (uint256 l = 0; l < m.interfaces.length; ++l) {
                     bufLen = _fetchModulesByUsersTag(
-                        m.name,
-                        users,
-                        outbuf,
-                        bufLen
-                    ); // using index as a tag.
-                    bufLen = _fetchModulesByUsersTags(
-                        m.interfaces,
-                        users,
+                        m.interfaces[l],
+                        listers,
                         outbuf,
                         bufLen
                     );
-                    //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
                 }
+
+                // something depends on the current module
+                if (bufLen != prevBufLen) {
+                    outbuf[bufLen++] = modIdx;
+                }
+
+                //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
             }
         }
+
         return bufLen;
     }
 

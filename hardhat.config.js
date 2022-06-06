@@ -22,16 +22,16 @@ module.exports = {
     strict: true,
   },
   networks: {
-    goerli: {
-      url: process.env.GOERLI_RPC_URL,
-      accounts: [process.env.GOERLI_PRIVATE_KEY],
-      allowUnlimitedContractSize: true,
-    },
+    // goerli: {
+    //   url: process.env.GOERLI_RPC_URL,
+    //   accounts: [process.env.GOERLI_PRIVATE_KEY],
+    //   allowUnlimitedContractSize: true,
+    // },
     hardhat: {
       allowUnlimitedContractSize: true,
     },
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
-  },
+  // etherscan: {
+  //   apiKey: process.env.ETHERSCAN_API_KEY,
+  // },
 };

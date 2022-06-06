@@ -12,15 +12,15 @@ function prepareArguments(args) {
   return args;
 }
 
-describe("Merge", function () {
+describe("DappletRegistry", function () {
   let contract;
   let accountAddress;
 
   beforeEach(async function () {
     const [acc1] = await ethers.getSigners();
 
-    const Merge = await ethers.getContractFactory("Merge", acc1);
-    const deploy = await Merge.deploy();
+    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", acc1);
+    const deploy = await DappletRegistry.deploy();
     await deploy.deployed();
 
     accountAddress = acc1.address;
