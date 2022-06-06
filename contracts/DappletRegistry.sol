@@ -7,6 +7,8 @@ import "./Listings.sol";
 import "./SetContextId.sol";
 import "hardhat/console.sol";
 
+import "./DappletNFT.sol";
+
 contract DappletRegistry is Listings {
     using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
@@ -31,7 +33,6 @@ contract DappletRegistry is Listings {
         string title;
         string description;
         StorageRef icon;
-        address owner;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
         uint256 flags; // 255 bit - IsUnderConstruction
     }
@@ -71,15 +72,17 @@ contract DappletRegistry is Listings {
     mapping(bytes32 => VersionInfo) public versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => EnumerableSet.UintSet) private modsByContextType; // key - keccak256(contextId, owner), value - index of element in "modules" array
     mapping(bytes32 => uint32) public moduleIdxs;
-    mapping(address => uint32[]) public modsByOwner; // key - userId => module indexes
     ModuleInfo[] public modules;
 
     mapping(bytes32 => EnumerableSet.AddressSet) private adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
 
     mapping(bytes32 => SetContextId.StringSet) private contextIdsOfModules; // key - mod_name => EnumerableSet
 
-    constructor() {
+    DappletNFT _dappletNFTContract;
+
+    constructor(address _dappletNFTContractAddress) {
         modules.push(); // Zero index is reserved
+        _dappletNFTContract = DappletNFT(_dappletNFTContractAddress);
     }
 
     // -------------------------------------------------------------------------
@@ -88,8 +91,7 @@ contract DappletRegistry is Listings {
 
     modifier onlyOwnerModule(string memory name) {
         uint256 moduleIdx = _getModuleIdx(name);
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == msg.sender, "You are not the owner of this module");
+        require(_dappletNFTContract.ownerOf(moduleIdx) == msg.sender, "You are not the owner of this module");
         _;
     }
 
@@ -97,14 +99,26 @@ contract DappletRegistry is Listings {
     // View functions
     // -------------------------------------------------------------------------
 
+    function getNFTContractAddress() public view returns (address) {
+        return address(_dappletNFTContract);
+    }
+
+    function getModuleIndx(string memory mod_name) public view returns (uint32 moduleIdx) {
+        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        moduleIdx = moduleIdxs[mKey];
+    }
+
     function getModuleInfoBatch(
         string[] memory ctxIds,
         address[] memory users,
         uint32 maxBufLen
-    ) public view returns (ModuleInfo[][] memory mod_info) {
-        mod_info = new ModuleInfo[][](ctxIds.length);
+    ) public view returns (ModuleInfo[][] memory modulesInfos, address[][] memory ctxIdsOwners) {
+        modulesInfos = new ModuleInfo[][](ctxIds.length);
+        ctxIdsOwners = new address[][](ctxIds.length);
         for (uint256 i = 0; i < ctxIds.length; ++i) {
-            mod_info[i] = getModuleInfo(ctxIds[i], users, maxBufLen);
+            (ModuleInfo[] memory mods_info, address[] memory owners) = getModuleInfo(ctxIds[i], users, maxBufLen);
+            modulesInfos[i] = mods_info;
+            ctxIdsOwners[i] = owners;
         }
     }
 
@@ -149,15 +163,18 @@ contract DappletRegistry is Listings {
         string memory ctxId,
         address[] memory users,
         uint32 maxBufLen
-    ) public view returns (ModuleInfo[] memory mod_info) {
+    ) public view returns (ModuleInfo[] memory modulesInfo, address[] memory owners) {
         uint256[] memory outbuf = new uint256[](
             maxBufLen > 0 ? maxBufLen : 1000
         );
         uint256 bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
-
-        mod_info = new ModuleInfo[](bufLen);
+        modulesInfo = new ModuleInfo[](bufLen);
+        owners = new address[](bufLen);
         for (uint256 i = 0; i < bufLen; ++i) {
             uint256 idx = outbuf[i];
+            address owner = _dappletNFTContract.ownerOf(idx);
+            modulesInfo[i] = modules[idx]; // WARNING! indexes are started from 1.
+            owners[i] = owner;
             //ToDo: strip contentType indexes?
             mod_info[i] = modules[idx];
         }
@@ -166,22 +183,40 @@ contract DappletRegistry is Listings {
     function getModuleInfoByName(string memory mod_name)
         public
         view
-        returns (ModuleInfo memory)
+        returns (ModuleInfo memory modulesInfo, address owner)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         require(moduleIdxs[mKey] != 0, "The module does not exist");
-        return modules[moduleIdxs[mKey]];
+        modulesInfo = modules[moduleIdxs[mKey]];
+        owner = _dappletNFTContract.ownerOf(moduleIdxs[mKey]);
     }
 
-    function getModuleInfoByOwner(address userId)
+    function getModuleInfoByOwner(
+        address userId,
+        // offset when receiving data
+        uint256 offset,
+        // limit on receiving items
+        uint256 limit
+    )
         public
         view
-        returns (ModuleInfo[] memory mods)
+        returns (
+            ModuleInfo[] memory modulesInfo,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
     {
-        uint32[] memory _moduleIdxs = modsByOwner[userId];
-        mods = new ModuleInfo[](_moduleIdxs.length);
-        for (uint256 i = 0; i < _moduleIdxs.length; ++i) {
-            mods[i] = modules[_moduleIdxs[i]];
+        (
+            uint256[] memory dappIndxs,
+            uint256 nextOffsetFromNFT,
+            uint256 totalModulesFromNFT
+        ) = _dappletNFTContract.getModulesIndexes(userId, offset, limit);
+
+        nextOffset = nextOffsetFromNFT;
+        totalModules = totalModulesFromNFT;
+        modulesInfo = new ModuleInfo[](dappIndxs.length);
+        for (uint256 i = 0; i < dappIndxs.length; ++i) {
+            modulesInfo[i] = modules[dappIndxs[i]];
         }
     }
 
@@ -283,14 +318,12 @@ contract DappletRegistry is Listings {
         address owner = msg.sender;
 
         // ModuleInfo adding
-        mInfo.owner = owner;
         mInfo.flags = (vInfos.length == 0) // is under construction (no any version)
             ? (mInfo.flags | (uint256(1) << 0)) // flags[255] == 1
             : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
         modules.push(mInfo);
         uint32 mIdx = uint32(modules.length - 1); // WARNING! indexes are started from 1.
         moduleIdxs[mKey] = mIdx;
-        modsByOwner[owner].push(mIdx);
 
         // ContextId adding
         for (uint256 i = 0; i < contextIds.length; ++i) {
@@ -306,6 +339,9 @@ contract DappletRegistry is Listings {
         for (uint256 i = 0; i < vInfos.length; ++i) {
             _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
         }
+
+        // Creating Dapplet NFT
+        _dappletNFTContract.safeMint(owner, mIdx);
     }
 
     function editModuleInfo(
@@ -316,7 +352,7 @@ contract DappletRegistry is Listings {
     ) public {
         uint32 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == msg.sender, "You are not the owner of this module");
+        require(_dappletNFTContract.ownerOf(moduleIdx) == msg.sender, "You are not the owner of this module");
 
         m.title = title;
         m.description = description;
@@ -330,9 +366,8 @@ contract DappletRegistry is Listings {
         // ******** TODO: check existing versions and version sorting
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         uint32 moduleIdx = _getModuleIdx(mod_name);
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(
-            m.owner == msg.sender ||
+            _dappletNFTContract.ownerOf(moduleIdx) == msg.sender ||
                 adminsOfModules[mKey].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
@@ -351,33 +386,6 @@ contract DappletRegistry is Listings {
         for (uint256 i = 0; i < mod_name.length; ++i) {
             addModuleVersion(mod_name[i], vInfo[i]);
         }
-    }
-
-    function transferOwnership(
-        string memory mod_name,
-        address newUserId,
-        uint256 oldOwnerArrIdx
-    ) public {
-        uint32 moduleIdx = _getModuleIdx(mod_name);
-        ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(m.owner == msg.sender, "You are not the owner of this module");
-        uint32[] storage oldOwnerModules = modsByOwner[m.owner];
-        require(
-            oldOwnerModules[oldOwnerArrIdx] == moduleIdx,
-            "Invalid index of array owner map"
-        );
-
-        // Remove module idx from old owner
-        oldOwnerModules[oldOwnerArrIdx] = oldOwnerModules[
-            oldOwnerModules.length - 1
-        ];
-        oldOwnerModules.pop();
-
-        // Change owner
-        m.owner = newUserId;
-
-        // Add module idx to new owner
-        modsByOwner[newUserId].push(moduleIdx);
     }
 
     function addContextId(string memory mod_name, string memory contextId)
