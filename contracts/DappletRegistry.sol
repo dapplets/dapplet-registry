@@ -108,15 +108,15 @@ contract DappletRegistry is Listings {
         moduleIdx = moduleIdxs[mKey];
     }
 
-    function getModuleInfoBatch(
+    function getModulesInfoByListersBatch(
         string[] memory ctxIds,
-        address[] memory users,
+        address[] memory listers,
         uint32 maxBufLen
     ) public view returns (ModuleInfo[][] memory modulesInfos, address[][] memory ctxIdsOwners) {
         modulesInfos = new ModuleInfo[][](ctxIds.length);
         ctxIdsOwners = new address[][](ctxIds.length);
         for (uint256 i = 0; i < ctxIds.length; ++i) {
-            (ModuleInfo[] memory mods_info, address[] memory owners) = getModuleInfo(ctxIds[i], users, maxBufLen);
+            (ModuleInfo[] memory mods_info, address[] memory owners) = getModulesInfoByListers(ctxIds[i], listers, maxBufLen);
             modulesInfos[i] = mods_info;
             ctxIdsOwners[i] = owners;
         }
@@ -159,15 +159,15 @@ contract DappletRegistry is Listings {
     }
 
     // Very naive impl.
-    function getModuleInfo(
+    function getModulesInfoByListers(
         string memory ctxId,
-        address[] memory users,
+        address[] memory listers,
         uint32 maxBufLen
     ) public view returns (ModuleInfo[] memory modulesInfo, address[] memory owners) {
         uint256[] memory outbuf = new uint256[](
             maxBufLen > 0 ? maxBufLen : 1000
         );
-        uint256 bufLen = _fetchModulesByUsersTag(ctxId, users, outbuf, 0);
+        uint256 bufLen = _fetchModulesByUsersTag(ctxId, listers, outbuf, 0);
         modulesInfo = new ModuleInfo[](bufLen);
         owners = new address[](bufLen);
         for (uint256 i = 0; i < bufLen; ++i) {
@@ -190,7 +190,7 @@ contract DappletRegistry is Listings {
         owner = _dappletNFTContract.ownerOf(moduleIdxs[mKey]);
     }
 
-    function getModuleInfoByOwner(
+    function getModulesInfoByOwner(
         address userId,
         // offset when receiving data
         uint256 offset,

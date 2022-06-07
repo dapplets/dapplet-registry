@@ -43,7 +43,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should return zero modules by contextId", async () => {
-    const moduleInfo = await contract.getModuleInfo(
+    const moduleInfo = await contract.getModulesInfoByListers(
       "twitter.com",
       [accountAddress],
       0,
@@ -82,12 +82,12 @@ describe("DappletRegistry", function () {
       ]),
     );
 
-    const moduleByTwitter = await contract.getModuleInfo(
+    const moduleByTwitter = await contract.getModulesInfoByListers(
       "twitter.com",
       [accountAddress],
       0,
     );
-    const moduleByInstagram = await contract.getModuleInfo(
+    const moduleByInstagram = await contract.getModulesInfoByListers(
       "instagram.com",
       [accountAddress],
       0,
@@ -135,7 +135,7 @@ describe("DappletRegistry", function () {
 
     await contract.addContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleByContext = await contract.getModuleInfo(
+    const moduleByContext = await contract.getModulesInfoByListers(
       "yahoo.com",
       [accountAddress],
       0,
@@ -152,7 +152,7 @@ describe("DappletRegistry", function () {
 
     await contract.removeContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleInfo = await contract.getModuleInfo(
+    const moduleInfo = await contract.getModulesInfoByListers(
       "yahoo.com",
       [accountAddress],
       0,
@@ -166,7 +166,7 @@ describe("DappletRegistry", function () {
 
     await addModuleInfo(contract, { });
 
-    const moduleInfo = await contract.getModuleInfo(
+    const moduleInfo = await contract.getModulesInfoByListers(
       "twitter.com",
       [acc2.address],
       0,
@@ -181,13 +181,13 @@ describe("DappletRegistry", function () {
     const moduleInfoByName = await contract.getModuleInfoByName(
       "twitter-adapter-test",
     );
-    const moduleInfoByOwner = await contract.getModuleInfoByOwner(
+    const modulesInfoByOwner = await contract.getModulesInfoByOwner(
       accountAddress,
       0,
       10
     );
     const resultByName = getValues(moduleInfoByName.modulesInfo);
-    const resultByOwner = moduleInfoByOwner.modulesInfo.map(getValues);
+    const resultByOwner = modulesInfoByOwner.modulesInfo.map(getValues);
 
     expect(resultByName).to.eql({
       name: "twitter-adapter-test",
@@ -287,13 +287,13 @@ describe("DappletRegistry", function () {
       ]),
     );
 
-    const getModuleInfoBatch = await contract.getModuleInfoBatch(
+    const modulesInfoByListersBatch = await contract.getModulesInfoByListersBatch(
       ["twitter.com", "instagram.com"],
       [accountAddress],
       1000,
     );
 
-    const result = getModuleInfoBatch.modulesInfos.map((item) => getValues(item[0]));
+    const result = modulesInfoByListersBatch.modulesInfos.map((item) => getValues(item[0]));
     expect(result).to.eql([
       {
         name: "twitter-adapter-test",
@@ -620,7 +620,7 @@ describe("DappletRegistry + DappletNFT", function () {
       [1, T],
     ]);
 
-    const moduleByTwitter = await registryContract.getModuleInfo(
+    const moduleByTwitter = await registryContract.getModulesInfoByListers(
       "twitter.com",
       [accountAddress],
       0,
@@ -646,8 +646,8 @@ describe("DappletRegistry + DappletNFT", function () {
     const dappletOwnerToDNFT = await dappletContract.connect(dappletOwner);
     await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](dappletOwnerAddress, dappletBuyer.address, moduleIndex);
 
-    const moduleInfoByOwner = await registryContract.getModuleInfoByOwner(dappletBuyer.address, 0, 10);
-    const resultByOwner = moduleInfoByOwner[0].map(getValues);
+    const modulesInfoByOwner = await registryContract.getModulesInfoByOwner(dappletBuyer.address, 0, 10);
+    const resultByOwner = modulesInfoByOwner[0].map(getValues);
 
     expect(resultByOwner).to.eql([
       {
