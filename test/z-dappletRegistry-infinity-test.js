@@ -18,13 +18,25 @@ describe("DappletRegistry", function () {
 
   beforeEach(async function () {
     const [acc1] = await ethers.getSigners();
-
-    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", acc1);
-    const deploy = await DappletRegistry.deploy();
-    await deploy.deployed();
-
     accountAddress = acc1.address;
-    contract = deploy;
+
+    const DappletNFT = await ethers.getContractFactory(
+      "DappletNFT",
+      acc1,
+    );
+    const deployDappletNFT = await DappletNFT.deploy();
+    await deployDappletNFT.deployed();
+
+    const DappletRegistry = await ethers.getContractFactory(
+      "DappletRegistry",
+      acc1,
+    );
+    const deployDappletRegistry = await DappletRegistry.deploy(deployDappletNFT.address);
+    
+    await deployDappletRegistry.deployed();
+    contract = deployDappletRegistry;
+
+    await deployDappletNFT.transferOwnership(contract.address);
   });
 
   // Get Modules INFINITY

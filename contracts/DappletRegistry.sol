@@ -173,10 +173,9 @@ contract DappletRegistry is Listings {
         for (uint256 i = 0; i < bufLen; ++i) {
             uint256 idx = outbuf[i];
             address owner = _dappletNFTContract.ownerOf(idx);
+            //ToDo: strip contentType indexes?
             modulesInfo[i] = modules[idx]; // WARNING! indexes are started from 1.
             owners[i] = owner;
-            //ToDo: strip contentType indexes?
-            mod_info[i] = modules[idx];
         }
     }
 

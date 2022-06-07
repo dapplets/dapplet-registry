@@ -96,7 +96,7 @@ describe("DappletRegistry", function () {
     const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
     const resultDataByInstagram = moduleByInstagram.modulesInfo.map(getValues);
 
-    expect(resultDataByTwitter).to.eql([
+    expect(resultDataByTwitter).to.have.deep.members([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
@@ -109,7 +109,7 @@ describe("DappletRegistry", function () {
       },
     ]);
 
-    expect(resultDataByInstagram).to.eql([
+    expect(resultDataByInstagram).to.have.deep.members([
       {
         name: "instagram-adapter-test",
         title: "instagram-adapter-test",
@@ -558,7 +558,7 @@ describe("DappletNFT", function () {
   });
 });
 
-describe("DappletRegistry + DappletToken", function () {
+describe("DappletRegistry + DappletNFT", function () {
   let registryContract;
   let dappletContract;
   let accountAddress;
@@ -615,13 +615,24 @@ describe("DappletRegistry + DappletToken", function () {
 
   it("should return twitter adapter owner by contextId after addModuleInfo", async () => {
     await addModuleInfo(registryContract, { });
+    await registryContract.changeMyList([
+      [H, 1],
+      [1, T],
+    ]);
 
     const moduleByTwitter = await registryContract.getModuleInfo(
       "twitter.com",
       [accountAddress],
       0,
     );
-
+    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues); 
+    expect(resultDataByTwitter).to.have.deep.members([
+      {
+        name: "twitter-adapter-test",
+        title: "twitter-adapter-test",
+        description: "twitter-adapter-test",
+      }
+    ]);
     expect(moduleByTwitter.owners).to.eql([accountAddress]);
   });
 
