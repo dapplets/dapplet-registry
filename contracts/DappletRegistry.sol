@@ -32,7 +32,7 @@ contract DappletRegistry is Listings {
         string name;
         string title;
         string description;
-        string fullDescription;
+        StorageRef fullDescription;
         StorageRef icon;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
         uint256 flags; // 255 bit - IsUnderConstruction
@@ -369,7 +369,7 @@ contract DappletRegistry is Listings {
         string memory name,
         string memory title,
         string memory description,
-        string memory fullDescription,
+        StorageRef memory fullDescription,
         StorageRef memory icon
     ) public {
         uint32 moduleIdx = _getModuleIdx(name);
