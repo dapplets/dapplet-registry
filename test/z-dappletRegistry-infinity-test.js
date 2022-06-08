@@ -5,13 +5,6 @@ const chaiAsPromised = require("chai-as-promised");
 use(assertArrays);
 use(chaiAsPromised);
 
-const H = 0;
-const T = 4294967295;
-
-function prepareArguments(args) {
-  return args;
-}
-
 describe("DappletRegistry", function () {
   let contract;
   let accountAddress;
@@ -20,10 +13,7 @@ describe("DappletRegistry", function () {
     const [acc1] = await ethers.getSigners();
     accountAddress = acc1.address;
 
-    const DappletNFT = await ethers.getContractFactory(
-      "DappletNFT",
-      acc1,
-    );
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
     const deployDappletNFT = await DappletNFT.deploy();
     await deployDappletNFT.deployed();
 
@@ -31,8 +21,10 @@ describe("DappletRegistry", function () {
       "DappletRegistry",
       acc1,
     );
-    const deployDappletRegistry = await DappletRegistry.deploy(deployDappletNFT.address);
-    
+    const deployDappletRegistry = await DappletRegistry.deploy(
+      deployDappletNFT.address,
+    );
+
     await deployDappletRegistry.deployed();
     contract = deployDappletRegistry;
 
@@ -63,23 +55,6 @@ describe("DappletRegistry", function () {
     }
   });
 });
-
-const getValues = (data) => {
-  return {
-    name: data.name,
-    title: data.title,
-    description: data.description,
-  };
-};
-
-const getVersion = (data) => {
-  return {
-    branch: data.branch,
-    major: data.major,
-    minor: data.minor,
-    patch: data.patch,
-  };
-};
 
 /**
  *
@@ -144,27 +119,4 @@ const addModuleInfo = async (
       },
     ],
   );
-};
-
-const addVersion = ({
-  branch = "default",
-  major = 9,
-  minor = 8,
-  patch = 7,
-}) => {
-  return {
-    branch,
-    major,
-    minor,
-    patch,
-    flags: 0,
-    binary: {
-      hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      uris: [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
-    },
-    dependencies: [],
-    interfaces: [],
-  };
 };
