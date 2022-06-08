@@ -78,7 +78,6 @@ const addModuleInfo = async (
     title = "twitter-adapter-test",
     description = "twitter-adapter-test",
     name = "twitter-adapter-test",
-    fullDescription = "twitter-adapter-test",
     accountAddress,
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
@@ -92,7 +91,12 @@ const addModuleInfo = async (
       name,
       title,
       description,
-      fullDescription,
+      fullDescription: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      },
       owner: accountAddress,
       interfaces,
       icon: {
