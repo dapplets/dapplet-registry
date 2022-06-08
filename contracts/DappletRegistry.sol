@@ -92,7 +92,10 @@ contract DappletRegistry is Listings {
 
     modifier onlyOwnerModule(string memory name) {
         uint256 moduleIdx = _getModuleIdx(name);
-        require(_dappletNFTContract.ownerOf(moduleIdx) == msg.sender, "You are not the owner of this module");
+        require(
+            _dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
+            "You are not the owner of this module"
+        );
         _;
     }
 
@@ -104,7 +107,11 @@ contract DappletRegistry is Listings {
         return address(_dappletNFTContract);
     }
 
-    function getModuleIndx(string memory mod_name) public view returns (uint32 moduleIdx) {
+    function getModuleIndx(string memory mod_name)
+        public
+        view
+        returns (uint32 moduleIdx)
+    {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
         moduleIdx = moduleIdxs[mKey];
     }
@@ -113,11 +120,21 @@ contract DappletRegistry is Listings {
         string[] memory ctxIds,
         address[] memory listers,
         uint32 maxBufLen
-    ) public view returns (ModuleInfo[][] memory modulesInfos, address[][] memory ctxIdsOwners) {
+    )
+        public
+        view
+        returns (
+            ModuleInfo[][] memory modulesInfos,
+            address[][] memory ctxIdsOwners
+        )
+    {
         modulesInfos = new ModuleInfo[][](ctxIds.length);
         ctxIdsOwners = new address[][](ctxIds.length);
         for (uint256 i = 0; i < ctxIds.length; ++i) {
-            (ModuleInfo[] memory mods_info, address[] memory owners) = getModulesInfoByListers(ctxIds[i], listers, maxBufLen);
+            (
+                ModuleInfo[] memory mods_info,
+                address[] memory owners
+            ) = getModulesInfoByListers(ctxIds[i], listers, maxBufLen);
             modulesInfos[i] = mods_info;
             ctxIdsOwners[i] = owners;
         }
@@ -164,7 +181,11 @@ contract DappletRegistry is Listings {
         string memory ctxId,
         address[] memory listers,
         uint32 maxBufLen
-    ) public view returns (ModuleInfo[] memory modulesInfo, address[] memory owners) {
+    )
+        public
+        view
+        returns (ModuleInfo[] memory modulesInfo, address[] memory owners)
+    {
         uint256[] memory outbuf = new uint256[](
             maxBufLen > 0 ? maxBufLen : 1000
         );
@@ -348,14 +369,19 @@ contract DappletRegistry is Listings {
         string memory name,
         string memory title,
         string memory description,
+        string memory fullDescription,
         StorageRef memory icon
     ) public {
         uint32 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = modules[moduleIdx]; // WARNING! indexes are started from 1.
-        require(_dappletNFTContract.ownerOf(moduleIdx) == msg.sender, "You are not the owner of this module");
+        require(
+            _dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
+            "You are not the owner of this module"
+        );
 
         m.title = title;
         m.description = description;
+        m.fullDescription = fullDescription;
         m.icon = icon;
     }
 

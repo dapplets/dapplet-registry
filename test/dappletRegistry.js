@@ -210,6 +210,7 @@ describe("DappletRegistry", function () {
       "twitter-adapter-test",
       "twitter-adapter-title",
       "twitter-adapter-description",
+      "twitter-adapter-full-description",
       {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
         uris: [
