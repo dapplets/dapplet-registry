@@ -57,7 +57,6 @@ describe("DappletRegistry", function () {
       context: ["instagram.com"],
       interfaces: ["identity-adapter-test"],
       description: "instagram-adapter-test",
-      fullDescription: "instagram-adapter-test",
       name: "instagram-adapter-test",
       title: "instagram-adapter-test",
     });
@@ -210,11 +209,16 @@ describe("DappletRegistry", function () {
       "twitter-adapter-test",
       "twitter-adapter-title",
       "twitter-adapter-description",
-      "twitter-adapter-full-description",
       {
-        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
         uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x0000000000000000000000000000000000000000000000000000000000000003",
+        ],
+      },
+      {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000004",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000005",
         ],
       },
     );
@@ -222,11 +226,36 @@ describe("DappletRegistry", function () {
     const moduleInfo = await contract.getModuleInfoByName(
       "twitter-adapter-test",
     );
-    const resultByName = getValues(moduleInfo.modulesInfo);
+    const resultByName = {
+      name: moduleInfo.modulesInfo.name,
+      title: moduleInfo.modulesInfo.title,
+      description: moduleInfo.modulesInfo.description,
+      fullDescription: {
+        hash: moduleInfo.modulesInfo.fullDescription.hash,
+        uris: moduleInfo.modulesInfo.fullDescription.uris,
+      },
+      icon: {
+        hash: moduleInfo.modulesInfo.icon.hash,
+        uris: moduleInfo.modulesInfo.icon.uris,
+      },
+    };
+
     expect(resultByName).to.eql({
       name: "twitter-adapter-test",
       title: "twitter-adapter-title",
       description: "twitter-adapter-description",
+      fullDescription: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000003",
+        ],
+      },
+      icon: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000004",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000005",
+        ],
+      },
     });
   });
 
@@ -425,17 +454,6 @@ describe("DappletRegistry", function () {
     const page_2 = await contract.getModules(11, 10);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
-
-  it("should return fullDescription field", async () => {
-    await addModuleInfo(contract, {
-      accountAddress,
-      name: "adapter-test",
-      fullDescription: "full-description-test",
-    });
-
-    const moduleInfo = await contract.getModuleInfoByName("adapter-test");
-    expect(moduleInfo[0].fullDescription).to.be.eq("full-description-test");
-  });
 });
 
 const getValues = (data) => {
@@ -477,7 +495,6 @@ const addModuleInfo = async (
     title = "twitter-adapter-test",
     description = "twitter-adapter-test",
     name = "twitter-adapter-test",
-    fullDescription = "instagram-adapter-test",
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
@@ -490,7 +507,12 @@ const addModuleInfo = async (
       name,
       title,
       description,
-      fullDescription,
+      fullDescription: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      },
       interfaces,
       icon: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
