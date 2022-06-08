@@ -32,6 +32,7 @@ contract DappletRegistry is Listings {
         string name;
         string title;
         string description;
+        string fullDescription;
         StorageRef icon;
         string[] interfaces; //Exported interfaces in all versions. no duplicates.
         uint256 flags; // 255 bit - IsUnderConstruction

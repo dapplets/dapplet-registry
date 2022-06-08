@@ -20,10 +20,7 @@ describe("DappletRegistry", function () {
     const [acc1] = await ethers.getSigners();
     accountAddress = acc1.address;
 
-    const DappletNFT = await ethers.getContractFactory(
-      "DappletNFT",
-      acc1,
-    );
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
     const deployDappletNFT = await DappletNFT.deploy();
     await deployDappletNFT.deployed();
 
@@ -31,9 +28,11 @@ describe("DappletRegistry", function () {
       "DappletRegistry",
       acc1,
     );
-    const deployDappletRegistry = await DappletRegistry.deploy(deployDappletNFT.address);
+    const deployDappletRegistry = await DappletRegistry.deploy(
+      deployDappletNFT.address,
+    );
     await deployDappletRegistry.deployed();
-    contract = deployDappletRegistry
+    contract = deployDappletRegistry;
 
     await deployDappletNFT.transferOwnership(contract.address);
   });
@@ -58,6 +57,7 @@ describe("DappletRegistry", function () {
       context: ["instagram.com"],
       interfaces: ["identity-adapter-test"],
       description: "instagram-adapter-test",
+      fullDescription: "instagram-adapter-test",
       name: "instagram-adapter-test",
       title: "instagram-adapter-test",
     });
@@ -164,7 +164,7 @@ describe("DappletRegistry", function () {
   it("empty array of modules when received from another address", async () => {
     const [_, acc2] = await ethers.getSigners();
 
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     const moduleInfo = await contract.getModulesInfoByListers(
       "twitter.com",
@@ -176,7 +176,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should return information on the added module", async () => {
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     const moduleInfoByName = await contract.getModuleInfoByName(
       "twitter-adapter-test",
@@ -184,7 +184,7 @@ describe("DappletRegistry", function () {
     const modulesInfoByOwner = await contract.getModulesInfoByOwner(
       accountAddress,
       0,
-      10
+      10,
     );
     const resultByName = getValues(moduleInfoByName.modulesInfo);
     const resultByOwner = modulesInfoByOwner.modulesInfo.map(getValues);
@@ -204,7 +204,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should edit title and description module", async () => {
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     await contract.editModuleInfo(
       "twitter-adapter-test",
@@ -230,7 +230,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should add a new version to the module", async () => {
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     await contract.addModuleVersion("twitter-adapter-test", addVersion({}));
 
@@ -251,7 +251,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should add a new batch version to the module", async () => {
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
     await addModuleInfo(contract, {
       moduleType: 2,
       context: ["instagram.com"],
@@ -287,13 +287,16 @@ describe("DappletRegistry", function () {
       ]),
     );
 
-    const modulesInfoByListersBatch = await contract.getModulesInfoByListersBatch(
-      ["twitter.com", "instagram.com"],
-      [accountAddress],
-      1000,
-    );
+    const modulesInfoByListersBatch =
+      await contract.getModulesInfoByListersBatch(
+        ["twitter.com", "instagram.com"],
+        [accountAddress],
+        1000,
+      );
 
-    const result = modulesInfoByListersBatch.modulesInfos.map((item) => getValues(item[0]));
+    const result = modulesInfoByListersBatch.modulesInfos.map((item) =>
+      getValues(item[0]),
+    );
     expect(result).to.eql([
       {
         name: "twitter-adapter-test",
@@ -311,7 +314,7 @@ describe("DappletRegistry", function () {
   it("should create and delete admins for the module", async () => {
     const [_, acc2, acc3] = await ethers.getSigners();
 
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     // Сreate
     await contract.addAdmin("twitter-adapter-test", acc2.address);
@@ -329,7 +332,7 @@ describe("DappletRegistry", function () {
   it("only the owner can add a new administrator", async () => {
     const [_, acc2] = await ethers.getSigners();
 
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
     const differentAccount = await contract.connect(acc2);
 
     const errorShouldReturn = differentAccount.addAdmin(
@@ -345,7 +348,7 @@ describe("DappletRegistry", function () {
   it("adding a new version with administrator rights", async () => {
     const [_, acc2] = await ethers.getSigners();
 
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
     await contract.addAdmin("twitter-adapter-test", acc2.address);
 
     const differentAccount = await contract.connect(acc2);
@@ -373,7 +376,7 @@ describe("DappletRegistry", function () {
 
   it("person without administrator rights cannot add a new version of the module", async () => {
     const [_, acc2] = await ethers.getSigners();
-    await addModuleInfo(contract, { });
+    await addModuleInfo(contract, {});
 
     const differentAccount = await contract.connect(acc2);
 
@@ -391,15 +394,13 @@ describe("DappletRegistry", function () {
   it("should return context ids module by module name", async () => {
     await addModuleInfo(contract, {
       accountAddress,
-      name: "emoji-adaplet-test",
+      name: "adaplet-test",
       context: ["twitter.com", "google.com"],
     });
 
-    await contract.addContextId("emoji-adaplet-test", "yahoo.com");
+    await contract.addContextId("adaplet-test", "yahoo.com");
 
-    const result = await contract.getContextIdsByModuleName(
-      "emoji-adaplet-test",
-    );
+    const result = await contract.getContextIdsByModuleName("adaplet-test");
     expect(result).to.have.deep.members([
       "twitter.com",
       "google.com",
@@ -422,6 +423,17 @@ describe("DappletRegistry", function () {
     const page_1 = await contract.getModules(0, 10);
     const page_2 = await contract.getModules(11, 10);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
+  });
+
+  it("should return fullDescription field", async () => {
+    await addModuleInfo(contract, {
+      accountAddress,
+      name: "adapter-test",
+      fullDescription: "full-description-test",
+    });
+
+    const moduleInfo = await contract.getModuleInfoByName("adapter-test");
+    expect(moduleInfo[0].fullDescription).to.be.eq("full-description-test");
   });
 });
 
@@ -464,6 +476,7 @@ const addModuleInfo = async (
     title = "twitter-adapter-test",
     description = "twitter-adapter-test",
     name = "twitter-adapter-test",
+    fullDescription = "instagram-adapter-test",
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
@@ -476,6 +489,7 @@ const addModuleInfo = async (
       name,
       title,
       description,
+      fullDescription,
       interfaces,
       icon: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -530,18 +544,13 @@ const addVersion = ({
 
 describe("DappletNFT", function () {
   let dappletContract;
-  let accountAddress;
   let buyerAddress;
 
   beforeEach(async function () {
     const [acc1, acc2] = await ethers.getSigners();
-    accountAddress = acc1.address;
     buyerAddress = acc2.address;
 
-    const DappletNFT = await ethers.getContractFactory(
-      "DappletNFT",
-      acc1,
-    );
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
     const deployDappletNFT = await DappletNFT.deploy();
     await deployDappletNFT.deployed();
     dappletContract = deployDappletNFT;
@@ -551,7 +560,7 @@ describe("DappletNFT", function () {
     expect(dappletContract.address).to.be.properAddress;
   });
 
-  it('The dapplet NFT has been mined', async () => {
+  it("The dapplet NFT has been mined", async () => {
     await dappletContract.safeMint(buyerAddress, 737);
     const tokenOwner = await dappletContract.ownerOf(737);
     expect(tokenOwner).to.equal(buyerAddress);
@@ -569,10 +578,7 @@ describe("DappletRegistry + DappletNFT", function () {
     accountAddress = acc1.address;
     dappletOwnerAddress = acc2.address;
 
-    const DappletNFT = await ethers.getContractFactory(
-      "DappletNFT",
-      acc1,
-    );
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
     const deployDappletNFT = await DappletNFT.deploy();
     await deployDappletNFT.deployed();
     dappletContract = deployDappletNFT;
@@ -581,7 +587,9 @@ describe("DappletRegistry + DappletNFT", function () {
       "DappletRegistry",
       acc1,
     );
-    const deployDappletRegistry = await DappletRegistry.deploy(dappletContract.address);
+    const deployDappletRegistry = await DappletRegistry.deploy(
+      dappletContract.address,
+    );
     await deployDappletRegistry.deployed();
     registryContract = deployDappletRegistry;
 
@@ -596,7 +604,7 @@ describe("DappletRegistry + DappletNFT", function () {
   it("should create NFT adding new module", async () => {
     const [_, dappletOwner] = await ethers.getSigners();
     const buyerAccount = await registryContract.connect(dappletOwner);
-    
+
     expect(await dappletContract.totalSupply()).to.equal(0);
     expect(await dappletContract.balanceOf(dappletOwnerAddress)).to.equal(0);
 
@@ -614,7 +622,7 @@ describe("DappletRegistry + DappletNFT", function () {
   });
 
   it("should return twitter adapter owner by contextId after addModuleInfo", async () => {
-    await addModuleInfo(registryContract, { });
+    await addModuleInfo(registryContract, {});
     await registryContract.changeMyList([
       [H, 1],
       [1, T],
@@ -625,13 +633,13 @@ describe("DappletRegistry + DappletNFT", function () {
       [accountAddress],
       0,
     );
-    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues); 
+    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
     expect(resultDataByTwitter).to.have.deep.members([
       {
         name: "twitter-adapter-test",
         title: "twitter-adapter-test",
         description: "twitter-adapter-test",
-      }
+      },
     ]);
     expect(moduleByTwitter.owners).to.eql([accountAddress]);
   });
@@ -640,13 +648,23 @@ describe("DappletRegistry + DappletNFT", function () {
     const [_, dappletOwner, dappletBuyer] = await ethers.getSigners();
     const dappletOwnerToRegistry = await registryContract.connect(dappletOwner);
 
-    await addModuleInfo(dappletOwnerToRegistry, { });
-    const moduleIndex = await registryContract.getModuleIndx("twitter-adapter-test");
+    await addModuleInfo(dappletOwnerToRegistry, {});
+    const moduleIndex = await registryContract.getModuleIndx(
+      "twitter-adapter-test",
+    );
 
     const dappletOwnerToDNFT = await dappletContract.connect(dappletOwner);
-    await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](dappletOwnerAddress, dappletBuyer.address, moduleIndex);
+    await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](
+      dappletOwnerAddress,
+      dappletBuyer.address,
+      moduleIndex,
+    );
 
-    const modulesInfoByOwner = await registryContract.getModulesInfoByOwner(dappletBuyer.address, 0, 10);
+    const modulesInfoByOwner = await registryContract.getModulesInfoByOwner(
+      dappletBuyer.address,
+      0,
+      10,
+    );
     const resultByOwner = modulesInfoByOwner[0].map(getValues);
 
     expect(resultByOwner).to.eql([
@@ -659,7 +677,7 @@ describe("DappletRegistry + DappletNFT", function () {
   });
 
   it("gives NFT contract address", async () => {
-      const address = await registryContract.getNFTContractAddress();
-      expect(dappletContract.address).to.equal(address);
+    const address = await registryContract.getNFTContractAddress();
+    expect(dappletContract.address).to.equal(address);
   });
 });
