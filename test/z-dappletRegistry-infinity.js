@@ -1,12 +1,17 @@
 const { use, expect } = require("chai");
+require("dotenv").config({ path: __dirname + "/.env" });
 const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
 const chaiAsPromised = require("chai-as-promised");
-const addModuleInfo = require("./dappletRegistry");
+const addModuleInfo = require("../helpers/addModuleInfo");
 use(assertArrays);
 use(chaiAsPromised);
 
-describe("DappletRegistry", function () {
+const isOnlyInfiniteTest = process.argv.includes(
+  "test/z-dappletRegistry-infinity.js",
+);
+
+describe("DappletRegistry Infinity Test", function () {
   let contract;
   let accountAddress;
 
@@ -33,7 +38,9 @@ describe("DappletRegistry", function () {
   });
 
   // Get Modules INFINITY
-  it("getModules pagination", async () => {
+  it("getModules pagination", async function () {
+    if (!isOnlyInfiniteTest) this.skip();
+
     console.log("\x1b[41m%s\x1b[0m", "WARNING: This test infinity");
 
     for (let j = 0; j < 100; j++) {
