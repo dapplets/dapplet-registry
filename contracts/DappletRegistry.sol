@@ -416,6 +416,7 @@ contract DappletRegistry is Listings {
 
     function addContextId(string memory mod_name, string memory contextId)
         public
+        onlyOwnerModule(mod_name)
     {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 
@@ -429,6 +430,7 @@ contract DappletRegistry is Listings {
 
     function removeContextId(string memory mod_name, string memory contextId)
         public
+        onlyOwnerModule(mod_name)
     {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 

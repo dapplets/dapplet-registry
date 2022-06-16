@@ -160,6 +160,44 @@ describe("DappletRegistry", function () {
     expect(moduleInfo.modulesInfo).to.eql([]);
   });
 
+  it("only the Owner can add the ContextID", async () => {
+    const [_, acc2] = await ethers.getSigners();
+    await addModuleInfo(contract, { accountAddress });
+    await contract.changeMyList(
+      prepareArguments([
+        [H, 1],
+        [1, T],
+      ]),
+    );
+    const differentAccount = await contract.connect(acc2);
+    const error = differentAccount.addContextId(
+      "twitter-adapter-test",
+      "yahoo.com",
+    );
+
+    return expect(error).to.eventually.be.rejected.and.be.an.instanceOf(Error);
+  });
+
+  it("only the Owner can remove the ContextID", async () => {
+    const [_, acc2] = await ethers.getSigners();
+    await addModuleInfo(contract, { accountAddress });
+    await contract.changeMyList(
+      prepareArguments([
+        [H, 1],
+        [1, T],
+      ]),
+    );
+    await contract.addContextId("twitter-adapter-test", "yahoo.com");
+
+    const differentAccount = await contract.connect(acc2);
+    const error = differentAccount.removeContextId(
+      "twitter-adapter-test",
+      "yahoo.com",
+    );
+
+    return expect(error).to.eventually.be.rejected.and.be.an.instanceOf(Error);
+  });
+
   it("empty array of modules when received from another address", async () => {
     const [_, acc2] = await ethers.getSigners();
 
@@ -365,14 +403,11 @@ describe("DappletRegistry", function () {
     await addModuleInfo(contract, {});
     const differentAccount = await contract.connect(acc2);
 
-    const errorShouldReturn = differentAccount.addAdmin(
+    const error = differentAccount.addAdmin(
       "twitter-adapter-test",
       acc2.address,
     );
-    await expect(errorShouldReturn).eventually.to.rejectedWith(
-      Error,
-      "VM Exception while processing transaction: reverted with reason string 'You are not the owner of this module'",
-    );
+    return expect(error).to.eventually.be.rejected.and.be.an.instanceOf(Error);
   });
 
   it("adding a new version with administrator rights", async () => {
@@ -410,15 +445,12 @@ describe("DappletRegistry", function () {
 
     const differentAccount = await contract.connect(acc2);
 
-    const errorShouldReturn = differentAccount.addModuleVersion(
+    const error = differentAccount.addModuleVersion(
       "twitter-adapter-test",
       addVersion({}),
     );
 
-    await expect(errorShouldReturn).eventually.to.rejectedWith(
-      Error,
-      "VM Exception while processing transaction: reverted with reason string 'You are not the owner of this module'",
-    );
+    return expect(error).to.eventually.be.rejected.and.be.an.instanceOf(Error);
   });
 
   it("should return context ids module by module name", async () => {
