@@ -12,6 +12,119 @@ function prepareArguments(args) {
   return args;
 }
 
+const getValues = (data) => {
+  return {
+    name: data.name,
+    title: data.title,
+    description: data.description,
+  };
+};
+
+const getVersion = (data) => {
+  return {
+    branch: data.branch,
+    major: data.major,
+    minor: data.minor,
+    patch: data.patch,
+    extensionVersion: data.extensionVersion,
+  };
+};
+
+/**
+ *
+ * @param {*} contract
+ * @param {
+ *  Object
+ *  @param {title} title
+ *  @param {description} description
+ *  @param {name} name
+ *  @param {accountAddress}
+ *   accountAddress the address of the module creator. Only he can get all the models at
+ *  @param {context} context array of contexts where the module can work
+ *  @param {interfaces} interfaces ??
+ *  @param {moduleType} moduleType number
+ *
+ * }
+ */
+const addModuleInfo = async (
+  contract,
+  {
+    title = "twitter-adapter-test",
+    description = "twitter-adapter-test",
+    name = "twitter-adapter-test",
+    context = ["twitter.com"],
+    interfaces = ["identity-adapter-test"],
+    moduleType = 2,
+  },
+) => {
+  await contract.addModuleInfo(
+    context,
+    {
+      moduleType, // adapter
+      name,
+      title,
+      description,
+      fullDescription: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      },
+      interfaces,
+      icon: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ],
+      },
+      flags: 0,
+    },
+    [
+      {
+        branch: "default",
+        major: 0,
+        minor: 0,
+        patch: 1,
+        flags: 0,
+        binary: {
+          hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          uris: [
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+          ],
+        },
+        dependencies: [],
+        interfaces: [],
+        extensionVersion: "0x00ff01",
+      },
+    ],
+  );
+};
+
+const addVersion = ({
+  branch = "default",
+  major = 9,
+  minor = 8,
+  patch = 7,
+  extensionVersion = "0x00ff01",
+}) => {
+  return {
+    branch,
+    major,
+    minor,
+    patch,
+    flags: 0,
+    binary: {
+      hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      uris: [
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      ],
+    },
+    dependencies: [],
+    interfaces: [],
+    extensionVersion,
+  };
+};
+
 describe("DappletRegistry", function () {
   let contract;
   let accountAddress;
@@ -300,7 +413,12 @@ describe("DappletRegistry", function () {
   it("should add a new version to the module", async () => {
     await addModuleInfo(contract, {});
 
-    await contract.addModuleVersion("twitter-adapter-test", addVersion({}));
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({
+        extensionVersion: "0x00f119",
+      }),
+    );
 
     const getVersionInfo = await contract.getVersionInfo(
       "twitter-adapter-test",
@@ -309,12 +427,14 @@ describe("DappletRegistry", function () {
       8,
       7,
     );
+
     const resultVersion = getVersionInfo.map(getVersion)[0];
     expect(resultVersion).to.eql({
       branch: "default",
       major: 9,
       minor: 8,
       patch: 7,
+      extensionVersion: "0x00f119",
     });
   });
 
@@ -436,6 +556,7 @@ describe("DappletRegistry", function () {
       major: 9,
       minor: 8,
       patch: 7,
+      extensionVersion: "0x00ff01",
     });
   });
 
@@ -487,115 +608,6 @@ describe("DappletRegistry", function () {
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
 });
-
-const getValues = (data) => {
-  return {
-    name: data.name,
-    title: data.title,
-    description: data.description,
-  };
-};
-
-const getVersion = (data) => {
-  return {
-    branch: data.branch,
-    major: data.major,
-    minor: data.minor,
-    patch: data.patch,
-  };
-};
-
-/**
- *
- * @param {*} contract
- * @param {
- *  Object
- *  @param {title} title
- *  @param {description} description
- *  @param {name} name
- *  @param {accountAddress}
- *   accountAddress the address of the module creator. Only he can get all the models at
- *  @param {context} context array of contexts where the module can work
- *  @param {interfaces} interfaces ??
- *  @param {moduleType} moduleType number
- *
- * }
- */
-const addModuleInfo = async (
-  contract,
-  {
-    title = "twitter-adapter-test",
-    description = "twitter-adapter-test",
-    name = "twitter-adapter-test",
-    context = ["twitter.com"],
-    interfaces = ["identity-adapter-test"],
-    moduleType = 2,
-  },
-) => {
-  await contract.addModuleInfo(
-    context,
-    {
-      moduleType, // adapter
-      name,
-      title,
-      description,
-      fullDescription: {
-        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
-      },
-      interfaces,
-      icon: {
-        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
-      },
-      flags: 0,
-    },
-    [
-      {
-        branch: "default",
-        major: 0,
-        minor: 0,
-        patch: 1,
-        flags: 0,
-        binary: {
-          hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-          uris: [
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-          ],
-        },
-        dependencies: [],
-        interfaces: [],
-      },
-    ],
-  );
-};
-
-const addVersion = ({
-  branch = "default",
-  major = 9,
-  minor = 8,
-  patch = 7,
-}) => {
-  return {
-    branch,
-    major,
-    minor,
-    patch,
-    flags: 0,
-    binary: {
-      hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      uris: [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
-    },
-    dependencies: [],
-    interfaces: [],
-  };
-};
 
 describe("DappletNFT", function () {
   let dappletContract;
@@ -736,3 +748,5 @@ describe("DappletRegistry + DappletNFT", function () {
     expect(dappletContract.address).to.equal(address);
   });
 });
+
+module.exports = addModuleInfo;

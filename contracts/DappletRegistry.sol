@@ -48,6 +48,7 @@ contract DappletRegistry is Listings {
         bytes32[] dependencies; // key of module
         bytes32[] interfaces; //Exported interfaces. no duplicates.
         uint8 flags;
+        bytes3 extensionVersion;
     }
 
     struct VersionInfoDto {
@@ -59,6 +60,7 @@ contract DappletRegistry is Listings {
         DependencyDto[] dependencies; // key of module
         DependencyDto[] interfaces; //Exported interfaces. no duplicates.
         uint8 flags;
+        bytes3 extensionVersion;
     }
 
     struct DependencyDto {
@@ -301,7 +303,8 @@ contract DappletRegistry is Listings {
             v.binary,
             deps,
             interfaces,
-            v.flags
+            v.flags,
+            v.extensionVersion
         );
         moduleType = modules[v.modIdx].moduleType;
     }
@@ -589,7 +592,8 @@ contract DappletRegistry is Listings {
             v.binary,
             deps,
             interfaces,
-            v.flags
+            v.flags,
+            v.extensionVersion
         );
         bytes32 vKey = keccak256(
             abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch)
