@@ -105,18 +105,18 @@ contract DappletRegistry is Listings {
     // View functions
     // -------------------------------------------------------------------------
 
-    function getNFTContractAddress() public view returns (address) {
-        return address(_dappletNFTContract);
-    }
+    // function getNFTContractAddress() public view returns (address) {
+    //     return address(_dappletNFTContract);
+    // }
 
-    function getModuleIndx(string memory mod_name)
-        public
-        view
-        returns (uint32 moduleIdx)
-    {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        moduleIdx = moduleIdxs[mKey];
-    }
+    // function getModuleIndx(string memory mod_name)
+    //     public
+    //     view
+    //     returns (uint32 moduleIdx)
+    // {
+    //     bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+    //     moduleIdx = moduleIdxs[mKey];
+    // }
 
     function getModulesInfoByListersBatch(
         string[] memory ctxIds,
@@ -142,41 +142,41 @@ contract DappletRegistry is Listings {
         }
     }
 
-    function getModules(
-        // offset when receiving data
-        uint256 offset,
-        // limit on receiving items
-        uint256 limit
-    )
-        public
-        view
-        returns (
-            ModuleInfo[] memory result,
-            uint256 nextOffset,
-            uint256 totalModules
-        )
-    {
-        nextOffset = offset + limit;
-        totalModules = modules.length;
+    // function getModules(
+    //     // offset when receiving data
+    //     uint256 offset,
+    //     // limit on receiving items
+    //     uint256 limit
+    // )
+    //     public
+    //     view
+    //     returns (
+    //         ModuleInfo[] memory result,
+    //         uint256 nextOffset,
+    //         uint256 totalModules
+    //     )
+    // {
+    //     nextOffset = offset + limit;
+    //     totalModules = modules.length;
 
-        if (limit == 0) {
-            limit = 1;
-        }
+    //     if (limit == 0) {
+    //         limit = 1;
+    //     }
 
-        if (offset == 0) {
-            offset = 1;
-        }
+    //     if (offset == 0) {
+    //         offset = 1;
+    //     }
 
-        if (limit > totalModules - offset) {
-            limit = totalModules - offset;
-        }
+    //     if (limit > totalModules - offset) {
+    //         limit = totalModules - offset;
+    //     }
 
-        result = new ModuleInfo[](limit);
+    //     result = new ModuleInfo[](limit);
 
-        for (uint256 i = 0; i < limit; i++) {
-            result[i] = modules[offset + i];
-        }
-    }
+    //     for (uint256 i = 0; i < limit; i++) {
+    //         result[i] = modules[offset + i];
+    //     }
+    // }
 
     // Very naive impl.
     function getModulesInfoByListers(
@@ -203,129 +203,129 @@ contract DappletRegistry is Listings {
         }
     }
 
-    function getModuleInfoByName(string memory mod_name)
-        public
-        view
-        returns (ModuleInfo memory modulesInfo, address owner)
-    {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        require(moduleIdxs[mKey] != 0, "The module does not exist");
-        modulesInfo = modules[moduleIdxs[mKey]];
-        owner = _dappletNFTContract.ownerOf(moduleIdxs[mKey]);
-    }
+    // function getModuleInfoByName(string memory mod_name)
+    //     public
+    //     view
+    //     returns (ModuleInfo memory modulesInfo, address owner)
+    // {
+    //     bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+    //     require(moduleIdxs[mKey] != 0, "The module does not exist");
+    //     modulesInfo = modules[moduleIdxs[mKey]];
+    //     owner = _dappletNFTContract.ownerOf(moduleIdxs[mKey]);
+    // }
 
-    function getModulesInfoByOwner(
-        address userId,
-        // offset when receiving data
-        uint256 offset,
-        // limit on receiving items
-        uint256 limit
-    )
-        public
-        view
-        returns (
-            ModuleInfo[] memory modulesInfo,
-            uint256 nextOffset,
-            uint256 totalModules
-        )
-    {
-        (
-            uint256[] memory dappIndxs,
-            uint256 nextOffsetFromNFT,
-            uint256 totalModulesFromNFT
-        ) = _dappletNFTContract.getModulesIndexes(userId, offset, limit);
+    // function getModulesInfoByOwner(
+    //     address userId,
+    //     // offset when receiving data
+    //     uint256 offset,
+    //     // limit on receiving items
+    //     uint256 limit
+    // )
+    //     public
+    //     view
+    //     returns (
+    //         ModuleInfo[] memory modulesInfo,
+    //         uint256 nextOffset,
+    //         uint256 totalModules
+    //     )
+    // {
+    //     (
+    //         uint256[] memory dappIndxs,
+    //         uint256 nextOffsetFromNFT,
+    //         uint256 totalModulesFromNFT
+    //     ) = _dappletNFTContract.getModulesIndexes(userId, offset, limit);
 
-        nextOffset = nextOffsetFromNFT;
-        totalModules = totalModulesFromNFT;
-        modulesInfo = new ModuleInfo[](dappIndxs.length);
-        for (uint256 i = 0; i < dappIndxs.length; ++i) {
-            modulesInfo[i] = modules[dappIndxs[i]];
-        }
-    }
+    //     nextOffset = nextOffsetFromNFT;
+    //     totalModules = totalModulesFromNFT;
+    //     modulesInfo = new ModuleInfo[](dappIndxs.length);
+    //     for (uint256 i = 0; i < dappIndxs.length; ++i) {
+    //         modulesInfo[i] = modules[dappIndxs[i]];
+    //     }
+    // }
 
-    function getVersionNumbers(string memory name, string memory branch)
-        public
-        view
-        returns (bytes memory)
-    {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
-        return versionNumbers[key];
-    }
+    // function getVersionNumbers(string memory name, string memory branch)
+    //     public
+    //     view
+    //     returns (bytes memory)
+    // {
+    //     bytes32 key = keccak256(abi.encodePacked(name, branch));
+    //     return versionNumbers[key];
+    // }
 
-    function getVersionInfo(
-        string memory name,
-        string memory branch,
-        uint8 major,
-        uint8 minor,
-        uint8 patch
-    ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 key = keccak256(
-            abi.encodePacked(name, branch, major, minor, patch)
-        );
-        VersionInfo memory v = versions[key];
-        require(v.modIdx != 0, "Version doesn't exist");
+    // function getVersionInfo(
+    //     string memory name,
+    //     string memory branch,
+    //     uint8 major,
+    //     uint8 minor,
+    //     uint8 patch
+    // ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
+    //     bytes32 key = keccak256(
+    //         abi.encodePacked(name, branch, major, minor, patch)
+    //     );
+    //     VersionInfo memory v = versions[key];
+    //     require(v.modIdx != 0, "Version doesn't exist");
 
-        DependencyDto[] memory deps = new DependencyDto[](
-            v.dependencies.length
-        );
-        for (uint256 i = 0; i < v.dependencies.length; ++i) {
-            VersionInfo memory depVi = versions[v.dependencies[i]];
-            ModuleInfo memory depMod = modules[depVi.modIdx];
-            deps[i] = DependencyDto(
-                depMod.name,
-                depVi.branch,
-                depVi.major,
-                depVi.minor,
-                depVi.patch
-            );
-        }
+    //     DependencyDto[] memory deps = new DependencyDto[](
+    //         v.dependencies.length
+    //     );
+    //     for (uint256 i = 0; i < v.dependencies.length; ++i) {
+    //         VersionInfo memory depVi = versions[v.dependencies[i]];
+    //         ModuleInfo memory depMod = modules[depVi.modIdx];
+    //         deps[i] = DependencyDto(
+    //             depMod.name,
+    //             depVi.branch,
+    //             depVi.major,
+    //             depVi.minor,
+    //             depVi.patch
+    //         );
+    //     }
 
-        DependencyDto[] memory interfaces = new DependencyDto[](
-            v.interfaces.length
-        );
-        for (uint256 i = 0; i < v.interfaces.length; ++i) {
-            VersionInfo memory intVi = versions[v.interfaces[i]];
-            ModuleInfo memory intMod = modules[intVi.modIdx];
-            interfaces[i] = DependencyDto(
-                intMod.name,
-                intVi.branch,
-                intVi.major,
-                intVi.minor,
-                intVi.patch
-            );
-        }
+    //     DependencyDto[] memory interfaces = new DependencyDto[](
+    //         v.interfaces.length
+    //     );
+    //     for (uint256 i = 0; i < v.interfaces.length; ++i) {
+    //         VersionInfo memory intVi = versions[v.interfaces[i]];
+    //         ModuleInfo memory intMod = modules[intVi.modIdx];
+    //         interfaces[i] = DependencyDto(
+    //             intMod.name,
+    //             intVi.branch,
+    //             intVi.major,
+    //             intVi.minor,
+    //             intVi.patch
+    //         );
+    //     }
 
-        dto = VersionInfoDto(
-            v.branch,
-            v.major,
-            v.minor,
-            v.patch,
-            v.binary,
-            deps,
-            interfaces,
-            v.flags,
-            v.extensionVersion
-        );
-        moduleType = modules[v.modIdx].moduleType;
-    }
+    //     dto = VersionInfoDto(
+    //         v.branch,
+    //         v.major,
+    //         v.minor,
+    //         v.patch,
+    //         v.binary,
+    //         deps,
+    //         interfaces,
+    //         v.flags,
+    //         v.extensionVersion
+    //     );
+    //     moduleType = modules[v.modIdx].moduleType;
+    // }
 
-    function getAllAdmins(string memory mod_name)
-        public
-        view
-        returns (address[] memory)
-    {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        return adminsOfModules[mKey].values();
-    }
+    // function getAllAdmins(string memory mod_name)
+    //     public
+    //     view
+    //     returns (address[] memory)
+    // {
+    //     bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+    //     return adminsOfModules[mKey].values();
+    // }
 
-    function getContextIdsByModuleName(string memory mod_name)
-        public
-        view
-        returns (string[] memory)
-    {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        return contextIdsOfModules[mKey].values();
-    }
+    // function getContextIdsByModuleName(string memory mod_name)
+    //     public
+    //     view
+    //     returns (string[] memory)
+    // {
+    //     bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+    //     return contextIdsOfModules[mKey].values();
+    // }
 
     // -------------------------------------------------------------------------
     // State modifying functions
