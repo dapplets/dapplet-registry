@@ -62,6 +62,7 @@ describe("DappletRegistry Infinity Test", function () {
 
       const result = await contract.getModules(j * 100, 100);
       console.log(
+        { result },
         "result",
         result["result"].length,
         result["nextOffset"],
