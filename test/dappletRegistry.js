@@ -65,13 +65,22 @@ describe("DappletRegistry", function () {
     accountAddress = acc1.address;
 
     const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-    const deployDappletNFT = await DappletNFT.deploy();
-    await deployDappletNFT.deployed();
-
-    const DappletRegistry = await ethers.getContractFactory(
-      "DappletRegistry",
+    const LibRegistryRead = await ethers.getContractFactory(
+      "LibDappletRegistryRead",
       acc1,
     );
+    const deployDappletNFT = await DappletNFT.deploy();
+    const libRegistryRead = await LibRegistryRead.deploy();
+
+    await deployDappletNFT.deployed();
+    await libRegistryRead.deployed();
+
+    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", {
+      signer: acc1,
+      libraries: {
+        LibDappletRegistryRead: libRegistryRead.address,
+      },
+    });
     const deployDappletRegistry = await DappletRegistry.deploy(
       deployDappletNFT.address,
     );
@@ -576,15 +585,26 @@ describe("DappletRegistry + DappletNFT", function () {
     accountAddress = acc1.address;
     dappletOwnerAddress = acc2.address;
 
-    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-    const deployDappletNFT = await DappletNFT.deploy();
-    await deployDappletNFT.deployed();
-    dappletContract = deployDappletNFT;
-
-    const DappletRegistry = await ethers.getContractFactory(
-      "DappletRegistry",
+    const LibDappletRegistryRead = await ethers.getContractFactory(
+      "LibDappletRegistryRead",
       acc1,
     );
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+
+    const deployDappletNFT = await DappletNFT.deploy();
+    const libDappletRegistryRead = await LibDappletRegistryRead.deploy();
+
+    await deployDappletNFT.deployed();
+    await libDappletRegistryRead.deployed();
+
+    dappletContract = deployDappletNFT;
+
+    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", {
+      signer: acc1,
+      libraries: {
+        LibDappletRegistryRead: libDappletRegistryRead.address,
+      },
+    });
     const deployDappletRegistry = await DappletRegistry.deploy(
       dappletContract.address,
     );

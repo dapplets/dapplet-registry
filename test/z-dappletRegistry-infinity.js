@@ -20,17 +20,25 @@ describe("DappletRegistry Infinity Test", function () {
     accountAddress = acc1.address;
 
     const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-    const deployDappletNFT = await DappletNFT.deploy();
-    await deployDappletNFT.deployed();
-
-    const DappletRegistry = await ethers.getContractFactory(
-      "DappletRegistry",
+    const LibRegistryRead = await ethers.getContractFactory(
+      "LibDappletRegistryRead",
       acc1,
     );
+    const deployDappletNFT = await DappletNFT.deploy();
+    const libRegistryRead = await LibRegistryRead.deploy();
+
+    await deployDappletNFT.deployed();
+    await libRegistryRead.deployed();
+
+    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", {
+      signer: acc1,
+      libraries: {
+        LibDappletRegistryRead: libRegistryRead.address,
+      },
+    });
     const deployDappletRegistry = await DappletRegistry.deploy(
       deployDappletNFT.address,
     );
-
     await deployDappletRegistry.deployed();
     contract = deployDappletRegistry;
 
