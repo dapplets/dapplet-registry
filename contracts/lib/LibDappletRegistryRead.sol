@@ -21,7 +21,6 @@ library LibDappletRegistryRead {
             uint256 totalModules
         )
     {
-        console.log(s.modules.length);
         nextOffset = offset + limit;
         totalModules = s.modules.length;
 

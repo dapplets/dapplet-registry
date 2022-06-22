@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
 const chaiAsPromised = require("chai-as-promised");
 const addModuleInfo = require("../helpers/addModuleInfo");
+const md5 = require("md5");
 use(assertArrays);
 use(chaiAsPromised);
 
@@ -546,6 +547,39 @@ describe("DappletRegistry", function () {
     const page_1 = await contract.getModules(0, 10);
     const page_2 = await contract.getModules(11, 10);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
+  });
+
+  it("transmitting and verifying the addition of dynamically added data", async () => {
+    const title = md5("title");
+    const name = md5("name");
+    const description = md5("description");
+    const context = md5("context");
+
+    await addModuleInfo(contract, {
+      title,
+      name,
+      description,
+      context: [context],
+    });
+
+    await contract.changeMyList(
+      prepareArguments([
+        [H, 1],
+        [1, T],
+      ]),
+    );
+
+    const moduleByContext = await contract.getModules(0, 1);
+
+    const result = moduleByContext.result.map(getValues);
+
+    expect(result).to.eql([
+      {
+        name,
+        title,
+        description,
+      },
+    ]);
   });
 });
 

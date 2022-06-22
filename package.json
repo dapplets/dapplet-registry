@@ -4,6 +4,7 @@
     "node": "hardhat node",
     "help": "hardhat --help",
     "test": "hardhat test",
+    "test:coverage": "hardhat test --coverage",
     "build": "hardhat compile",
     "deploy:listings:goerli": "hardhat run scripts/deploy-listings.js --network goerli",
     "deploy:merge:goerli": "hardhat run scripts/deploy-merge.js --network goerli",
@@ -16,12 +17,17 @@
     "@openzeppelin/contracts": "^4.6.0",
     "chai": "^4.3.6",
     "chai-arrays": "^2.2.0",
-    "dotenv": "^16.0.1",
     "chai-as-promised": "^7.1.1",
+    "dotenv": "^16.0.1",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.5",
     "hardhat": "^2.9.5",
     "hardhat-contract-sizer": "^2.5.1",
-    "hardhat-gas-reporter": "^1.0.8"
+    "hardhat-gas-reporter": "^1.0.8",
+    "md5": "^2.3.0",
+    "solidity-coverage": "^0.7.21"
+  },
+  "resolutions": {
+    "@solidity-parser/parser": "^0.14.0"
   }
 }
