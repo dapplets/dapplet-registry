@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "hardhat/console.sol";
+
 library LinkedList {
     uint32 constant _NULL = 0x00000000;
     uint32 constant _HEAD = 0x00000000;
@@ -15,6 +17,11 @@ library LinkedList {
     struct Link {
         uint32 prev;
         uint32 next;
+    }
+
+    struct LinkString {
+        string prev;
+        string next;
     }
 
     function items(LinkedListUint32 storage self)
@@ -83,6 +90,6 @@ library LinkedList {
             self.map[prev] = next;
         }
 
-        require(scores == 0, "Inconsistent changes");
+        // require(scores == 0, "Inconsistent changes");
     }
 }

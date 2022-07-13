@@ -244,18 +244,23 @@ contract DappletRegistry {
     // State modifying functions
     // -------------------------------------------------------------------------
 
-    function changeMyList(
-        string[] memory dictionary,
-        LinkedList.Link[] memory links
-    ) public {
+    function changeMyList(LinkedList.LinkString[] memory links) public {
         LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
             links.length
         );
 
         for (uint256 i = 0; i < links.length; ++i) {
-            uint256 prev = getModuleIndx(dictionary[links[i].prev]); // 0 => 0
-            uint256 next = getModuleIndx(dictionary[links[i].next]); // 0 => 1
-            console.log(prev, next);
+            // console.log(links[i].prev, links[i].next);
+
+            uint256 prev = getModuleIndx(links[i].prev); // 0 => 0
+            uint256 next = getModuleIndx(links[i].next); // 0 => 1
+
+            if (next == 0) {
+                next = 4294967296 - links.length + 1;
+            }
+
+            // console.log(prev, next);
+            // console.log(prev, next);
             linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
         }
 
@@ -268,6 +273,35 @@ contract DappletRegistry {
             s.listers.push(msg.sender);
         }
     }
+
+    // function changeMyList(
+    //     string[] memory dictionary,
+    //     LinkedList.Link[] memory links
+    // ) public {
+    //     LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
+    //         links.length
+    //     );
+
+    //     for (uint256 i = 0; i < links.length; ++i) {
+    //         // console.log(dictionary[links[i].prev]);
+    //         // console.log(links[i].prev);
+    //         console.log(links[i].next);
+
+    //         uint256 prev = getModuleIndx(dictionary[links[i].prev]); // 0 => 0
+    //         uint256 next = getModuleIndx(dictionary[links[i].next]); // 0 => 1
+    //         console.log(prev, next);
+    //         linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
+    //     }
+
+    //     LinkedList.LinkedListUint32 storage listing = s.listingByLister[
+    //         msg.sender
+    //     ];
+
+    //     bool isNewListing = listing.linkify(linksOfModuleIdxs);
+    //     if (isNewListing) {
+    //         s.listers.push(msg.sender);
+    //     }
+    // }
 
     // function changeMyList(string[2][] memory links) public {
     //     LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](

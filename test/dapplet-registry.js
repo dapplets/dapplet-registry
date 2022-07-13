@@ -585,17 +585,37 @@ describe("DappletRegistry", function () {
   it("test", async () => {
     await addModuleInfo(contract, { name: "google-module-test" });
     await addModuleInfo(contract, { name: "twitter-module-test" });
+    await addModuleInfo(contract, { name: "yandex-module-test" });
+    await addModuleInfo(contract, { name: "yahoo-module-test" });
+    await addModuleInfo(contract, { name: "test-module-test" });
 
     // console.log(await contract.getModuleIndx("twitter-module-test")); // 1
     // console.log(await contract.getModuleIndx("google-module-test")); // 2
 
-    await contract.changeMyList(
+    // const receipt = await contract.changeMyList([
+    //   "google-module-test",
+    //   "twitter-module-test",
+    //   "yandex-module-test",
+    //   "yahoo-module-test",
+    // ]);
+    const receipt = await contract.changeMyList([
+      ["HEAD", "google-module-test"],
+      // ["google-module-test", "yahoo-module-test"],
       ["google-module-test", "twitter-module-test"],
-      [
-        [H, 1],
-        [1, H],
-      ],
-    );
+      ["twitter-module-test", "yandex-module-test"],
+      ["yandex-module-test", "yahoo-module-test"],
+      ["yahoo-module-test", "TAIL"],
+    ]);
+    // const receipt = await contract.changeMyList([
+    //   ["HEAD", "google-module-test"],
+    //   ["google-module-test", "yahoo-module-test"],
+    //   // ["google-module-test", "twitter-module-test"],
+    //   // ["twitter-module-test", "yandex-module-test"],
+    //   // ["yandex-module-test", "yahoo-module-test"],
+    //   ["yahoo-module-test", "TAIL"],
+    // ]);
+
+    // console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
     // await contract.changeMyList([
     //   ["google-module-test", "twitter-module-test"],
@@ -618,7 +638,7 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    console.log(moduleByTwitter);
+    console.log(moduleByTwitter.modulesInfo.map((item) => item.name));
   });
 });
 
