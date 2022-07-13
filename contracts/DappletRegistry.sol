@@ -13,11 +13,12 @@ import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from
 import {LibDappletRegistryRead} from "./lib/LibDappletRegistryRead.sol";
 import {AppStorage} from "./lib/AppStorage.sol";
 
-contract DappletRegistry is Listings {
+contract DappletRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
     using SetContextId for SetContextId.StringSet;
+    using LinkedList for LinkedList.LinkedListUint32;
 
     event ModuleInfoAdded(
         string[] contextIds,
@@ -48,6 +49,31 @@ contract DappletRegistry is Listings {
     // -------------------------------------------------------------------------
     // View functions
     // -------------------------------------------------------------------------
+
+    function getLinkedListSize(address lister) public view returns (uint32) {
+        return s.listingByLister[lister].size;
+    }
+
+    // uint32[] memory => string[] memory
+    function getLinkedList(address lister)
+        public
+        view
+        returns (uint32[] memory)
+    {
+        return s.listingByLister[lister].items();
+    }
+
+    function getListers() public view returns (address[] memory) {
+        return s.listers;
+    }
+
+    function containsModuleInListing(address lister, uint32 moduleIdx)
+        public
+        view
+        returns (bool)
+    {
+        return s.listingByLister[lister].contains(moduleIdx);
+    }
 
     // +0.038 => 19.738
     function getNFTContractAddress() public view returns (address) {
@@ -218,6 +244,53 @@ contract DappletRegistry is Listings {
     // State modifying functions
     // -------------------------------------------------------------------------
 
+    function changeMyList(
+        string[] memory dictionary,
+        LinkedList.Link[] memory links
+    ) public {
+        LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
+            links.length
+        );
+
+        for (uint256 i = 0; i < links.length; ++i) {
+            uint256 prev = getModuleIndx(dictionary[links[i].prev]); // 0 => 0
+            uint256 next = getModuleIndx(dictionary[links[i].next]); // 0 => 1
+            console.log(prev, next);
+            linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
+        }
+
+        LinkedList.LinkedListUint32 storage listing = s.listingByLister[
+            msg.sender
+        ];
+
+        bool isNewListing = listing.linkify(linksOfModuleIdxs);
+        if (isNewListing) {
+            s.listers.push(msg.sender);
+        }
+    }
+
+    // function changeMyList(string[2][] memory links) public {
+    //     LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
+    //         links.length
+    //     );
+
+    //     for (uint256 i = 0; i < links.length; ++i) {
+    //         uint256 prev = getModuleIndx(links[0][i]); // 0 => 0
+    //         uint256 next = getModuleIndx(links[1][i]); // 0 => 1
+    //         console.log(prev, next);
+    //         linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
+    //     }
+
+    //     LinkedList.LinkedListUint32 storage listing = s.listingByLister[
+    //         msg.sender
+    //     ];
+
+    //     bool isNewListing = listing.linkify(linksOfModuleIdxs);
+    //     if (isNewListing) {
+    //         s.listers.push(msg.sender);
+    //     }
+    // }
+
     function addModuleInfo(
         string[] memory contextIds,
         ModuleInfo memory mInfo,
@@ -383,8 +456,9 @@ contract DappletRegistry is Listings {
                 // add module if it is in the listings
                 for (uint256 l = 0; l < listers.length; ++l) {
                     if (
-                        listingByLister[listers[l]].contains(uint32(modIdx)) ==
-                        true
+                        s.listingByLister[listers[l]].contains(
+                            uint32(modIdx)
+                        ) == true
                     ) {
                         outbuf[bufLen++] = modIdx;
                     }
