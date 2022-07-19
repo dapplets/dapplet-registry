@@ -23,16 +23,16 @@ module.exports = {
     strict: true,
   },
   networks: {
-    // goerli: {
-    //   url: process.env.GOERLI_RPC_URL,
-    //   accounts: [process.env.GOERLI_PRIVATE_KEY],
-    //   allowUnlimitedContractSize: true,
-    // },
-    hardhat: {
-      allowUnlimitedContractSize: true,
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.DEPLOYER_PRIV_KEY],
+    },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
   },
-  // etherscan: {
-  //   apiKey: process.env.ETHERSCAN_API_KEY,
-  // },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY,
+  },
 };

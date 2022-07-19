@@ -8,7 +8,9 @@
     "build": "hardhat compile",
     "deploy:listings:goerli": "hardhat run scripts/deploy-listings.js --network goerli",
     "deploy:merge:goerli": "hardhat run scripts/deploy-merge.js --network goerli",
-    "size": "hardhat size-contracts"
+    "size": "hardhat size-contracts",
+    "deploy:goerli": "hardhat run --network goerli scripts/deploy.js",
+    "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.6",
