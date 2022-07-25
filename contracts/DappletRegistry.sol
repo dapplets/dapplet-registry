@@ -84,7 +84,7 @@ contract DappletRegistry {
         view
         returns (bool)
     {
-        uint32 moduleIdx = getModuleIndx(moduleName);
+        uint32 moduleIdx = _getModuleIdx(moduleName);
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
@@ -97,15 +97,7 @@ contract DappletRegistry {
         view
         returns (uint32 moduleIdx)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-
-        if (mKey == _HEAD) {
-            moduleIdx = 0x00000000;
-        } else if (mKey == _TAIL) {
-            moduleIdx = 0xFFFFFFFF;
-        } else {
-            moduleIdx = s.moduleIdxs[mKey];
-        }
+        moduleIdx = _getModuleIdx(mod_name);
     }
 
     function getModulesInfoByListersBatch(
@@ -261,8 +253,8 @@ contract DappletRegistry {
         );
 
         for (uint256 i = 0; i < links.length; ++i) {
-            uint256 prev = getModuleIndx(links[i].prev);
-            uint256 next = getModuleIndx(links[i].next);
+            uint256 prev = _getModuleIdx(links[i].prev);
+            uint256 next = _getModuleIdx(links[i].next);
 
             linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
         }
@@ -574,8 +566,15 @@ contract DappletRegistry {
         returns (uint32)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = s.moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
-        return moduleIdx;
+
+        if (mKey == _HEAD) {
+            return 0x00000000;
+        } else if (mKey == _TAIL) {
+            return 0xFFFFFFFF;
+        } else {
+            uint32 moduleIdx = s.moduleIdxs[mKey];
+            require(moduleIdx != 0, "The module does not exist");
+            return moduleIdx;
+        }        
     }
 }

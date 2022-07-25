@@ -565,10 +565,10 @@ describe("DappletRegistry", function () {
     });
 
     await contract.changeMyListing(
-      prepareArguments([
-        [H, 1],
-        [1, T],
-      ]),
+      [
+        ["H", name],
+        [name, "T"],
+      ],
     );
 
     const moduleByContext = await contract.getModules(0, 1);
