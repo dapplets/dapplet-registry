@@ -27,6 +27,7 @@ module.exports = addModuleInfo = async (
 ) => {
   await contract.addModuleInfo(
     context,
+    [], // links
     {
       moduleType, // adapter
       name,
