@@ -1,13 +1,15 @@
 const { use, expect } = require("chai");
 const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
+const addModuleInfo = require("../helpers/addModuleInfo");
+
 use(assertArrays);
 
 const H = 0;
 const N = 0;
 const T = 4294967295;
 
-const ALL_TESTING_VALUES = [
+const ALL_TESTING_VALUES = convertIndexesToNames([
   "1",
   "2",
   "3",
@@ -20,10 +22,26 @@ const ALL_TESTING_VALUES = [
   "10",
   "11",
   "12",
-];
+]);
 
 function prepareArguments(args) {
-  return args;
+  const convert = (index) => {
+    if (index === H) {
+      return "H"
+    } else if (index === N) {
+      return "H"
+    } else if (index === T) {
+      return "T"
+    } else {
+      return "module-" + index;
+    }
+  }
+
+  return args.map(([prev, next]) => ({ prev: convert(prev), next: convert(next) }));
+}
+
+function convertIndexesToNames(arr) {
+  return arr.map(x => 'module-' + x);
 }
 
 async function checkExistence(contract, lister, existsValues, nonExistsValues) {
@@ -70,6 +88,19 @@ describe("Listings", () => {
     contract = deployDappletRegistry;
 
     await deployDappletNFT.transferOwnership(contract.address);
+    
+    await addModuleInfo(contract, { name: "module-1" });
+    await addModuleInfo(contract, { name: "module-2" });
+    await addModuleInfo(contract, { name: "module-3" });
+    await addModuleInfo(contract, { name: "module-4" });
+    await addModuleInfo(contract, { name: "module-5" });
+    await addModuleInfo(contract, { name: "module-6" });
+    await addModuleInfo(contract, { name: "module-7" });
+    await addModuleInfo(contract, { name: "module-8" });
+    await addModuleInfo(contract, { name: "module-9" });
+    await addModuleInfo(contract, { name: "module-10" });
+    await addModuleInfo(contract, { name: "module-11" });
+    await addModuleInfo(contract, { name: "module-12" });
   });
 
   it("should create a listing with 5 items", async () => {
@@ -87,7 +118,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "2", "3", "4", "5"];
+    const expected = convertIndexesToNames(["1", "2", "3", "4", "5"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -116,7 +147,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "4", "2", "3", "5"];
+    const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -141,7 +172,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["10", "1", "4", "2", "3", "5"];
+    const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -166,7 +197,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["10", "1", "4", "2", "3", "5", "7"];
+    const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -191,7 +222,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["10", "1", "4", "2", "11", "3", "5", "7"];
+    const expected = convertIndexesToNames(["10", "1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -216,7 +247,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "4", "2", "11", "3", "5", "7"];
+    const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -241,7 +272,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "4", "2", "11", "3", "5"];
+    const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -266,7 +297,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "4", "2", "3", "5"];
+    const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -293,7 +324,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["5", "4", "2", "3", "1"];
+    const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -319,7 +350,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["1", "5", "4", "2", "3"];
+    const expected = convertIndexesToNames(["1", "5", "4", "2", "3"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -345,7 +376,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["5", "4", "2", "3", "1"];
+    const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
@@ -374,7 +405,7 @@ describe("Listings", () => {
 
     const items = await contract.getLinkedList(accountAddress);
     const actual = items.map((x) => x.toString());
-    const expected = ["5", "4", "2", "3", "1"];
+    const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
     const size = await contract.getLinkedListSize(accountAddress);
