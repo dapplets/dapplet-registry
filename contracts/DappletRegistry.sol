@@ -23,6 +23,9 @@ contract DappletRegistry {
     using EnumerableStringSet for EnumerableStringSet.StringSet;
     using LinkedList for LinkedList.LinkedListUint32;
 
+    bytes32 internal constant _HEAD = 0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
+    bytes32 internal constant _TAIL = 0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
+
     event ModuleInfoAdded(
         string[] contextIds,
         address owner,
@@ -61,20 +64,26 @@ contract DappletRegistry {
     function getLinkedList(address lister)
         public
         view
-        returns (uint32[] memory)
+        returns (string[] memory out)
     {
-        return s.listingByLister[lister].items();
+        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
+        out = new string[](moduleIndexes.length);
+
+        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
+            out[i] = s.modules[moduleIndexes[i]].name;
+        }
     }
 
     function getListers() public view returns (address[] memory) {
         return s.listers;
     }
 
-    function containsModuleInListing(address lister, uint32 moduleIdx)
+    function containsModuleInListing(address lister, string memory moduleName)
         public
         view
         returns (bool)
     {
+        uint32 moduleIdx = getModuleIndx(moduleName);
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
@@ -90,7 +99,14 @@ contract DappletRegistry {
         returns (uint32 moduleIdx)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        moduleIdx = s.moduleIdxs[mKey];
+        
+        if (mKey == _HEAD) {
+            moduleIdx = 0x00000000;
+        } else if (mKey == _TAIL) {
+            moduleIdx = 0xFFFFFFFF;
+        } else {
+            moduleIdx = s.moduleIdxs[mKey];
+        }
     }
 
     function getModulesInfoByListersBatch(
@@ -253,17 +269,9 @@ contract DappletRegistry {
         );
 
         for (uint256 i = 0; i < links.length; ++i) {
-            // console.log(links[i].prev, links[i].next);
+            uint256 prev = getModuleIndx(links[i].prev);
+            uint256 next = getModuleIndx(links[i].next);
 
-            uint256 prev = getModuleIndx(links[i].prev); // 0 => 0
-            uint256 next = getModuleIndx(links[i].next); // 0 => 1
-
-            if (next == 0) {
-                next = 4294967296 - links.length + 1;
-            }
-
-            // console.log(prev, next);
-            // console.log(prev, next);
             linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
         }
 
