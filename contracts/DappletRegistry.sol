@@ -23,8 +23,10 @@ contract DappletRegistry {
     using EnumerableStringSet for EnumerableStringSet.StringSet;
     using LinkedList for LinkedList.LinkedListUint32;
 
-    bytes32 internal constant _HEAD = 0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
-    bytes32 internal constant _TAIL = 0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
+    bytes32 internal constant _HEAD =
+        0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
+    bytes32 internal constant _TAIL =
+        0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
 
     event ModuleInfoAdded(
         string[] contextIds,
@@ -96,7 +98,7 @@ contract DappletRegistry {
         returns (uint32 moduleIdx)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        
+
         if (mKey == _HEAD) {
             moduleIdx = 0x00000000;
         } else if (mKey == _TAIL) {

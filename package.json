@@ -10,7 +10,8 @@
     "deploy:merge:goerli": "hardhat run scripts/deploy-merge.js --network goerli",
     "size": "hardhat size-contracts",
     "deploy:goerli": "hardhat run --network goerli scripts/deploy.js",
-    "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js"
+    "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js",
+    "prettier": "prettier --write contracts/**/*.sol"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.6",
@@ -27,6 +28,8 @@
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.8",
     "md5": "^2.3.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-dev.23",
     "solidity-coverage": "^0.7.21"
   },
   "resolutions": {

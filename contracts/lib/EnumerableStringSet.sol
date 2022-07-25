@@ -9,7 +9,10 @@ library EnumerableStringSet {
         mapping(string => uint256) _indexes;
     }
 
-    function add(StringSet storage set, string memory value) internal returns (bool) {
+    function add(StringSet storage set, string memory value)
+        internal
+        returns (bool)
+    {
         if (!contains(set, value)) {
             set._values.push(value);
 
@@ -59,7 +62,11 @@ library EnumerableStringSet {
         return set._values.length;
     }
 
-    function values(StringSet storage set) internal view returns (string[] memory) {
+    function values(StringSet storage set)
+        internal
+        view
+        returns (string[] memory)
+    {
         return set._values;
     }
 }

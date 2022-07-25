@@ -10,10 +10,8 @@ import {DappletNFT} from "./DappletNFT.sol";
 
 struct AppStorage {
     DappletNFT _dappletNFTContract;
-    
     ModuleInfo[] modules;
     address[] listers;
-
     mapping(bytes32 => bytes) versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
     mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32) moduleIdxs; // key - keccak256(name) => value - index of element in "s.modules" array
