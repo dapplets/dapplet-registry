@@ -114,6 +114,7 @@ contract DappletRegistry {
     {
         modulesInfos = new ModuleInfo[][](ctxIds.length);
         ctxIdsOwners = new address[][](ctxIds.length);
+        
         for (uint256 i = 0; i < ctxIds.length; ++i) {
             (
                 ModuleInfo[] memory mods_info,
@@ -133,7 +134,8 @@ contract DappletRegistry {
         public
         view
         returns (
-            ModuleInfo[] memory result,
+            ModuleInfo[] memory modules,
+            address[] memory owners,
             uint256 nextOffset,
             uint256 totalModules
         )

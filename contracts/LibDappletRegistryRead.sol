@@ -15,7 +15,8 @@ library LibDappletRegistryRead {
         external
         view
         returns (
-            ModuleInfo[] memory result,
+            ModuleInfo[] memory modules,
+            address[] memory owners,
             uint256 nextOffset,
             uint256 totalModules
         )
@@ -35,10 +36,13 @@ library LibDappletRegistryRead {
             limit = totalModules - offset;
         }
 
-        result = new ModuleInfo[](limit);
+        modules = new ModuleInfo[](limit);
+        owners = new address[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            result[i] = s.modules[offset + i];
+            uint256 idx = offset + i;
+            modules[i] = s.modules[idx];
+            owners[i] = s._dappletNFTContract.ownerOf(idx);
         }
     }
 

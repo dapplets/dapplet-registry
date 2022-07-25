@@ -573,7 +573,7 @@ describe("DappletRegistry", function () {
 
     const moduleByContext = await contract.getModules(0, 1);
 
-    const result = moduleByContext.result.map(getValues);
+    const result = moduleByContext.modules.map(getValues);
 
     expect(result).to.eql([
       {
