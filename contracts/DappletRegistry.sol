@@ -279,6 +279,7 @@ contract DappletRegistry {
 
     function addModuleInfo(
         string[] memory contextIds,
+        LinkString[] memory links,
         ModuleInfo memory mInfo,
         VersionInfoDto[] memory vInfos
     ) public {
@@ -311,6 +312,9 @@ contract DappletRegistry {
 
         // Creating Dapplet NFT
         s._dappletNFTContract.safeMint(owner, mIdx);
+
+        // Update listings
+        changeMyListing(links);
     }
 
     function editModuleInfo(
