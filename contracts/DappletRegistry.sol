@@ -60,7 +60,6 @@ contract DappletRegistry {
         return s.listingByLister[lister].size;
     }
 
-    // uint32[] memory => string[] memory
     function getLinkedList(address lister)
         public
         view
@@ -87,12 +86,10 @@ contract DappletRegistry {
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
-    // +0.038 => 19.738
     function getNFTContractAddress() public view returns (address) {
         return address(s._dappletNFTContract);
     }
 
-    // +0.160 => 19.898
     function getModuleIndx(string memory mod_name)
         public
         view
@@ -133,7 +130,6 @@ contract DappletRegistry {
         }
     }
 
-    // +1.601 => 21.499
     function getModules(
         // offset when receiving data
         uint256 offset,
@@ -176,7 +172,6 @@ contract DappletRegistry {
         }
     }
 
-    // +1.600 => 23.099
     function getModuleInfoByName(string memory mod_name)
         public
         view
@@ -185,7 +180,6 @@ contract DappletRegistry {
         return LibDappletRegistryRead.getModuleInfoByName(s, mod_name);
     }
 
-    // +1.818 => 24.917
     function getModulesInfoByOwner(
         address userId,
         // offset when receiving data
@@ -210,7 +204,6 @@ contract DappletRegistry {
             );
     }
 
-    // +0.242 => 25.159
     function getVersionNumbers(string memory name, string memory branch)
         public
         view
@@ -220,7 +213,6 @@ contract DappletRegistry {
         return s.versionNumbers[key];
     }
 
-    // +6.079 => 31.238
     function getVersionInfo(
         string memory name,
         string memory branch,
@@ -239,7 +231,6 @@ contract DappletRegistry {
             );
     }
 
-    // +0.102 => 31.340
     function getAllAdmins(string memory mod_name)
         public
         view
@@ -249,7 +240,6 @@ contract DappletRegistry {
         return s.adminsOfModules[mKey].values();
     }
 
-    // +0.371 => 31.711
     function getContextIdsByModuleName(string memory mod_name)
         public
         view
@@ -284,57 +274,6 @@ contract DappletRegistry {
             s.listers.push(msg.sender);
         }
     }
-
-    // function changeMyList(
-    //     string[] memory dictionary,
-    //     LinkedList.Link[] memory links
-    // ) public {
-    //     LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
-    //         links.length
-    //     );
-
-    //     for (uint256 i = 0; i < links.length; ++i) {
-    //         // console.log(dictionary[links[i].prev]);
-    //         // console.log(links[i].prev);
-    //         console.log(links[i].next);
-
-    //         uint256 prev = getModuleIndx(dictionary[links[i].prev]); // 0 => 0
-    //         uint256 next = getModuleIndx(dictionary[links[i].next]); // 0 => 1
-    //         console.log(prev, next);
-    //         linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
-    //     }
-
-    //     LinkedList.LinkedListUint32 storage listing = s.listingByLister[
-    //         msg.sender
-    //     ];
-
-    //     bool isNewListing = listing.linkify(linksOfModuleIdxs);
-    //     if (isNewListing) {
-    //         s.listers.push(msg.sender);
-    //     }
-    // }
-
-    // function changeMyList(string[2][] memory links) public {
-    //     LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
-    //         links.length
-    //     );
-
-    //     for (uint256 i = 0; i < links.length; ++i) {
-    //         uint256 prev = getModuleIndx(links[0][i]); // 0 => 0
-    //         uint256 next = getModuleIndx(links[1][i]); // 0 => 1
-    //         console.log(prev, next);
-    //         linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
-    //     }
-
-    //     LinkedList.LinkedListUint32 storage listing = s.listingByLister[
-    //         msg.sender
-    //     ];
-
-    //     bool isNewListing = listing.linkify(linksOfModuleIdxs);
-    //     if (isNewListing) {
-    //         s.listers.push(msg.sender);
-    //     }
-    // }
 
     function addModuleInfo(
         string[] memory contextIds,
