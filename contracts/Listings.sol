@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "hardhat/console.sol";
+
 library LinkedList {
     uint32 constant _NULL = 0x00000000;
     uint32 constant _HEAD = 0x00000000;
@@ -15,6 +17,11 @@ library LinkedList {
     struct Link {
         uint32 prev;
         uint32 next;
+    }
+
+    struct LinkString {
+        string prev;
+        string next;
     }
 
     function items(LinkedListUint32 storage self)
@@ -83,50 +90,6 @@ library LinkedList {
             self.map[prev] = next;
         }
 
-        require(scores == 0, "Inconsistent changes");
-    }
-}
-
-using LinkedList for LinkedList.LinkedListUint32;
-
-contract Listings {
-    using LinkedList for LinkedList.LinkedListUint32;
-
-    address[] listers;
-    mapping(address => LinkedList.LinkedListUint32) listingByLister;
-
-    function getLinkedListSize(address lister) public view returns (uint32) {
-        return listingByLister[lister].size;
-    }
-
-    function getLinkedList(address lister)
-        public
-        view
-        returns (uint32[] memory)
-    {
-        return listingByLister[lister].items();
-    }
-
-    function getListers() public view returns (address[] memory) {
-        return listers;
-    }
-
-    function containsModuleInListing(address lister, uint32 moduleIdx)
-        public
-        view
-        returns (bool)
-    {
-        return listingByLister[lister].contains(moduleIdx);
-    }
-
-    function changeMyList(LinkedList.Link[] memory links) public {
-        LinkedList.LinkedListUint32 storage listing = listingByLister[
-            msg.sender
-        ];
-        bool isNewListing = listing.linkify(links);
-
-        if (isNewListing) {
-            listers.push(msg.sender);
-        }
+        // require(scores == 0, "Inconsistent changes");
     }
 }

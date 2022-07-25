@@ -44,13 +44,32 @@ describe("Listings", () => {
 
   it("should deploy contract", async function () {
     const [acc1] = await ethers.getSigners();
-
-    const Listings = await ethers.getContractFactory("Listings");
-    const deploy = await Listings.deploy();
-    await deploy.deployed();
-
     accountAddress = acc1.address;
-    contract = deploy;
+
+    const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+    const LibRegistryRead = await ethers.getContractFactory(
+      "LibDappletRegistryRead",
+      acc1,
+    );
+    const deployDappletNFT = await DappletNFT.deploy();
+    const libRegistryRead = await LibRegistryRead.deploy();
+
+    await deployDappletNFT.deployed();
+    await libRegistryRead.deployed();
+
+    const DappletRegistry = await ethers.getContractFactory("DappletRegistry", {
+      signer: acc1,
+      libraries: {
+        LibDappletRegistryRead: libRegistryRead.address,
+      },
+    });
+    const deployDappletRegistry = await DappletRegistry.deploy(
+      deployDappletNFT.address,
+    );
+    await deployDappletRegistry.deployed();
+    contract = deployDappletRegistry;
+
+    await deployDappletNFT.transferOwnership(contract.address);
   });
 
   it("should create a listing with 5 items", async () => {

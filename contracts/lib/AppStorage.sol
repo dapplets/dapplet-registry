@@ -5,6 +5,7 @@ import {ModuleInfo, StorageRef, VersionInfo} from "./Struct.sol";
 import {DappletNFT} from "../DappletNFT.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./SetContextId.sol";
+import "../Listings.sol";
 
 struct AppStorage {
     ModuleInfo[] modules;
@@ -16,4 +17,6 @@ struct AppStorage {
     mapping(bytes32 => EnumerableSet.AddressSet) adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
     mapping(bytes32 => SetContextId.StringSet) contextIdsOfModules; // key - mod_name => EnumerableSet
     DappletNFT _dappletNFTContract;
+    address[] listers;
+    mapping(address => LinkedList.LinkedListUint32) listingByLister;
 }
