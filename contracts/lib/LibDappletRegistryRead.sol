@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
 import {AppStorage} from "./AppStorage.sol";
-import "hardhat/console.sol";
 
 library LibDappletRegistryRead {
     function getModules(

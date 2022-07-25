@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "hardhat/console.sol";
+
 
 library LinkedList {
     uint32 constant _NULL = 0x00000000;

@@ -3,10 +3,9 @@ pragma solidity ^0.8.13;
 
 // Import EnumerableSet from the OpenZeppelin Contracts library
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "./lib/SetContextId.sol";
+import "./lib/EnumerableStringSet.sol";
 
 import "./Listings.sol";
-import "hardhat/console.sol";
 
 import {DappletNFT} from "./DappletNFT.sol";
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./lib/Struct.sol";
@@ -17,7 +16,7 @@ contract DappletRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
-    using SetContextId for SetContextId.StringSet;
+    using EnumerableStringSet for EnumerableStringSet.StringSet;
     using LinkedList for LinkedList.LinkedListUint32;
 
     event ModuleInfoAdded(
