@@ -4,13 +4,17 @@ pragma solidity ^0.8.13;
 // Import EnumerableSet from the OpenZeppelin Contracts library
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./lib/EnumerableStringSet.sol";
-
-import "./Listings.sol";
+import "./lib/LinkedList.sol";
 
 import {DappletNFT} from "./DappletNFT.sol";
-import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./lib/Struct.sol";
-import {LibDappletRegistryRead} from "./lib/LibDappletRegistryRead.sol";
-import {AppStorage} from "./lib/AppStorage.sol";
+import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
+import {LibDappletRegistryRead} from "./LibDappletRegistryRead.sol";
+import {AppStorage} from "./AppStorage.sol";
+
+struct LinkString {
+    string prev;
+    string next;
+}
 
 contract DappletRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -243,7 +247,7 @@ contract DappletRegistry {
     // State modifying functions
     // -------------------------------------------------------------------------
 
-    function changeMyList(LinkedList.LinkString[] memory links) public {
+    function changeMyList(LinkString[] memory links) public {
         LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
             links.length
         );
