@@ -45,7 +45,7 @@ contract DappletRegistry {
     // Modificators
     // -------------------------------------------------------------------------
 
-    modifier onlyOwnerModule(string memory name) {
+    modifier onlyModuleOwner(string memory name) {
         uint256 moduleIdx = _getModuleIdx(name);
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
@@ -58,11 +58,11 @@ contract DappletRegistry {
     // View functions
     // -------------------------------------------------------------------------
 
-    function getLinkedListSize(address lister) public view returns (uint32) {
+    function getListingSize(address lister) public view returns (uint32) {
         return s.listingByLister[lister].size;
     }
 
-    function getLinkedList(address lister)
+    function getModulesOfListing(address lister)
         public
         view
         returns (string[] memory out)
@@ -233,7 +233,7 @@ contract DappletRegistry {
             );
     }
 
-    function getAllAdmins(string memory mod_name)
+    function getAdminsByModule(string memory mod_name)
         public
         view
         returns (address[] memory)
@@ -242,7 +242,7 @@ contract DappletRegistry {
         return s.adminsOfModules[mKey].values();
     }
 
-    function getContextIdsByModuleName(string memory mod_name)
+    function getContextIdsByModule(string memory mod_name)
         public
         view
         returns (string[] memory)
@@ -255,7 +255,7 @@ contract DappletRegistry {
     // State modifying functions
     // -------------------------------------------------------------------------
 
-    function changeMyList(LinkString[] memory links) public {
+    function changeMyListing(LinkString[] memory links) public {
         LinkedList.Link[] memory linksOfModuleIdxs = new LinkedList.Link[](
             links.length
         );
@@ -299,7 +299,6 @@ contract DappletRegistry {
         for (uint256 i = 0; i < contextIds.length; ++i) {
             bytes32 key = keccak256(abi.encodePacked(contextIds[i]));
             s.modsByContextType[key].add(mIdx);
-            // s.contextIdsOfModules[mKey].push(contextIds[i]);
             s.contextIdsOfModules[mKey].add(contextIds[i]);
         }
 
@@ -365,7 +364,7 @@ contract DappletRegistry {
 
     function addContextId(string memory mod_name, string memory contextId)
         public
-        onlyOwnerModule(mod_name)
+        onlyModuleOwner(mod_name)
     {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 
@@ -379,7 +378,7 @@ contract DappletRegistry {
 
     function removeContextId(string memory mod_name, string memory contextId)
         public
-        onlyOwnerModule(mod_name)
+        onlyModuleOwner(mod_name)
     {
         uint32 moduleIdx = _getModuleIdx(mod_name);
 
@@ -393,7 +392,7 @@ contract DappletRegistry {
 
     function addAdmin(string memory mod_name, address admin)
         public
-        onlyOwnerModule(mod_name)
+        onlyModuleOwner(mod_name)
         returns (bool)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
@@ -402,7 +401,7 @@ contract DappletRegistry {
 
     function removeAdmin(string memory mod_name, address admin)
         public
-        onlyOwnerModule(mod_name)
+        onlyModuleOwner(mod_name)
         returns (bool)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));

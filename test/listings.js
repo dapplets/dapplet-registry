@@ -104,7 +104,7 @@ describe("Listings", () => {
   });
 
   it("should create a listing with 5 items", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 1],
         [1, 2],
@@ -116,12 +116,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "2", "3", "4", "5"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     const listers = await contract.getListers();
@@ -136,7 +136,7 @@ describe("Listings", () => {
   });
 
   it("should rearrange the list", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [1, 4],
         [3, 5],
@@ -145,12 +145,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -162,7 +162,7 @@ describe("Listings", () => {
   });
 
   it("should insert at the begining", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 10],
         [10, 1],
@@ -170,12 +170,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -187,7 +187,7 @@ describe("Listings", () => {
   });
 
   it("should insert at the end", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [5, 7],
         [7, T],
@@ -195,12 +195,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -212,7 +212,7 @@ describe("Listings", () => {
   });
 
   it("should insert in the middle", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [2, 11],
         [11, 3],
@@ -220,12 +220,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -237,7 +237,7 @@ describe("Listings", () => {
   });
 
   it("should delete the first", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 1],
         [10, N],
@@ -245,12 +245,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -262,7 +262,7 @@ describe("Listings", () => {
   });
 
   it("should delete the lastest", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [5, T],
         [7, N],
@@ -270,12 +270,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -287,7 +287,7 @@ describe("Listings", () => {
   });
 
   it("should delete in the middle", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [2, 3],
         [11, N],
@@ -295,12 +295,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -312,7 +312,7 @@ describe("Listings", () => {
   });
 
   it("should swap the first and the lastest", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 5],
         [1, T],
@@ -322,12 +322,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -339,7 +339,7 @@ describe("Listings", () => {
   });
 
   it("should move the last to the first", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 1],
         [1, 5],
@@ -348,12 +348,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["1", "5", "4", "2", "3"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -365,7 +365,7 @@ describe("Listings", () => {
   });
 
   it("should move the last to the first", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 5],
         [1, T],
@@ -374,12 +374,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -391,7 +391,7 @@ describe("Listings", () => {
   });
 
   it("shouldn't change the list", async () => {
-    const receipt = await contract.changeMyList(
+    const receipt = await contract.changeMyListing(
       prepareArguments([
         [H, 5],
         [5, 4],
@@ -403,12 +403,12 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getLinkedList(accountAddress);
+    const items = await contract.getModulesOfListing(accountAddress);
     const actual = items.map((x) => x.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
-    const size = await contract.getLinkedListSize(accountAddress);
+    const size = await contract.getListingSize(accountAddress);
     expect(size.toString()).to.equal(expected.length.toString());
 
     await checkExistence(
@@ -421,7 +421,7 @@ describe("Listings", () => {
 
   it("should fail on inconsistent changes", async () => {
     try {
-      await contract.changeMyList(prepareArguments([[4, 3]]));
+      await contract.changeMyListing(prepareArguments([[4, 3]]));
       expect.fail("contract is not failed");
     } catch (e) {
       expect(e.message).to.have.string("Inconsistent changes");
@@ -430,7 +430,7 @@ describe("Listings", () => {
 
   it("should fail on inconsistent changes", async () => {
     try {
-      await contract.changeMyList(prepareArguments([[H, T]]));
+      await contract.changeMyListing(prepareArguments([[H, T]]));
       expect.fail("contract is not failed");
     } catch (e) {
       expect(e.message).to.have.string("Inconsistent changes");
@@ -439,7 +439,7 @@ describe("Listings", () => {
 
   it("should fail on inconsistent changes", async () => {
     try {
-      await contract.changeMyList(prepareArguments([[H, 1]]));
+      await contract.changeMyListing(prepareArguments([[H, 1]]));
       expect.fail("contract is not failed");
     } catch (e) {
       expect(e.message).to.have.string("Inconsistent changes");
@@ -448,7 +448,7 @@ describe("Listings", () => {
 
   it("should fail on inconsistent changes", async () => {
     try {
-      await contract.changeMyList(prepareArguments([[5, T]]));
+      await contract.changeMyListing(prepareArguments([[5, T]]));
       expect.fail("contract is not failed");
     } catch (e) {
       expect(e.message).to.have.string("Inconsistent changes");

@@ -128,7 +128,7 @@ describe("DappletRegistry", function () {
       title: "identity-feature-test",
     });
 
-    await contract.changeMyList(
+    await contract.changeMyListing(
       [
         ["H", "identity-feature-test"],
         ["identity-feature-test", "T"],
@@ -179,7 +179,7 @@ describe("DappletRegistry", function () {
   it("should add and remove Context Id", async () => {
     await addModuleInfo(contract, { accountAddress });
 
-    await contract.changeMyList(
+    await contract.changeMyListing(
       [
         ["H", "twitter-adapter-test"],
         ["twitter-adapter-test", "T"],
@@ -217,7 +217,7 @@ describe("DappletRegistry", function () {
   it("only the Owner can add the ContextID", async () => {
     const [_, acc2] = await ethers.getSigners();
     await addModuleInfo(contract, { accountAddress });
-    await contract.changeMyList(
+    await contract.changeMyListing(
       [
         ["H", "twitter-adapter-test"],
         ["twitter-adapter-test", "T"],
@@ -235,7 +235,7 @@ describe("DappletRegistry", function () {
   it("only the Owner can remove the ContextID", async () => {
     const [_, acc2] = await ethers.getSigners();
     await addModuleInfo(contract, { accountAddress });
-    await contract.changeMyList(
+    await contract.changeMyListing(
       [
         ["H", "twitter-adapter-test"],
         ["twitter-adapter-test", "T"],
@@ -410,7 +410,7 @@ describe("DappletRegistry", function () {
       ],
     );
 
-    await contract.changeMyList(
+    await contract.changeMyListing(
       [
         ["H", "twitter-adapter-test"],
         ["twitter-adapter-test", "instagram-adapter-test"],
@@ -451,12 +451,12 @@ describe("DappletRegistry", function () {
     await contract.addAdmin("twitter-adapter-test", acc2.address);
     await contract.addAdmin("twitter-adapter-test", acc3.address);
 
-    const createAdmins = await contract.getAllAdmins("twitter-adapter-test");
+    const createAdmins = await contract.getAdminsByModule("twitter-adapter-test");
     expect(createAdmins).to.eql([acc2.address, acc3.address]);
 
     // Remove acc2 address
     await contract.removeAdmin("twitter-adapter-test", acc2.address);
-    const removeAdmins = await contract.getAllAdmins("twitter-adapter-test");
+    const removeAdmins = await contract.getAdminsByModule("twitter-adapter-test");
     expect(removeAdmins).to.eql([acc3.address]);
   });
 
@@ -526,7 +526,7 @@ describe("DappletRegistry", function () {
 
     await contract.addContextId("adaplet-test", "yahoo.com");
 
-    const result = await contract.getContextIdsByModuleName("adaplet-test");
+    const result = await contract.getContextIdsByModule("adaplet-test");
     expect(result).to.have.deep.members([
       "twitter.com",
       "google.com",
@@ -564,7 +564,7 @@ describe("DappletRegistry", function () {
       context: [context],
     });
 
-    await contract.changeMyList(
+    await contract.changeMyListing(
       prepareArguments([
         [H, 1],
         [1, T],
@@ -677,7 +677,7 @@ describe("DappletRegistry + DappletNFT", function () {
 
   it("should return twitter adapter owner by contextId after addModuleInfo", async () => {
     await addModuleInfo(registryContract, {});
-    await registryContract.changeMyList([
+    await registryContract.changeMyListing([
       ["H", "twitter-adapter-test"],
       ["twitter-adapter-test", "T"],
     ]);
