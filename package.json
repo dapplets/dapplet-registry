@@ -11,6 +11,7 @@
     "size": "hardhat size-contracts",
     "deploy:goerli": "hardhat run --network goerli scripts/deploy.js",
     "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js",
+    "export:goerli": "hardhat export --network goerli --address",
     "prettier": "prettier --write contracts/**/*.sol"
   },
   "devDependencies": {
