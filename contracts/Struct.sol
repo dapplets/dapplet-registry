@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 struct StorageRef {
     bytes32 hash;
-    bytes[] uris; //use 2 leading bytes as prefix
+    string[] uris; //use 2 leading bytes as prefix
 }
 
 // ToDo: introduce mapping for alternative sources,
