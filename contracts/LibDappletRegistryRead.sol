@@ -7,9 +7,7 @@ import {AppStorage} from "./AppStorage.sol";
 library LibDappletRegistryRead {
     function getModules(
         AppStorage storage s,
-        // offset when receiving data
         uint256 offset,
-        // limit on receiving items
         uint256 limit
     )
         external
@@ -21,16 +19,12 @@ library LibDappletRegistryRead {
             uint256 totalModules
         )
     {
+        if (limit == 0) {
+            limit = 20;
+        }
+
         nextOffset = offset + limit;
         totalModules = s.modules.length;
-
-        if (limit == 0) {
-            limit = 1;
-        }
-
-        if (offset == 0) {
-            offset = 1;
-        }
 
         if (limit > totalModules - offset) {
             limit = totalModules - offset;
@@ -40,7 +34,7 @@ library LibDappletRegistryRead {
         owners = new address[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            uint256 idx = offset + i;
+            uint256 idx = offset + i + 1; // zero index is reserved
             modules[i] = s.modules[idx];
             owners[i] = s._dappletNFTContract.ownerOf(idx);
         }
@@ -60,9 +54,7 @@ library LibDappletRegistryRead {
     function getModulesInfoByOwner(
         AppStorage storage s,
         address userId,
-        // offset when receiving data
         uint256 offset,
-        // limit on receiving items
         uint256 limit
     )
         external

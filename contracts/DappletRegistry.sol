@@ -126,9 +126,7 @@ contract DappletRegistry {
     }
 
     function getModules(
-        // offset when receiving data
         uint256 offset,
-        // limit on receiving items
         uint256 limit
     )
         public
@@ -178,9 +176,7 @@ contract DappletRegistry {
 
     function getModulesInfoByOwner(
         address userId,
-        // offset when receiving data
         uint256 offset,
-        // limit on receiving items
         uint256 limit
     )
         public

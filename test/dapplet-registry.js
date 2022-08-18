@@ -534,7 +534,7 @@ describe("DappletRegistry", function () {
     ]);
   });
 
-  it("should return 20 elements with arguments (0, 10) and (11, 10)", async () => {
+  it("should return 20 elements with arguments (0, 10) and (10, 10)", async () => {
     for (let i = 0; i < 20; i++) {
       await addModuleInfo(contract, {
         accountAddress,
@@ -547,7 +547,7 @@ describe("DappletRegistry", function () {
     }
 
     const page_1 = await contract.getModules(0, 10);
-    const page_2 = await contract.getModules(11, 10);
+    const page_2 = await contract.getModules(10, 10);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
 
