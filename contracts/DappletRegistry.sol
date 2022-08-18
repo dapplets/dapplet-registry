@@ -62,30 +62,12 @@ contract DappletRegistry {
         return s.listingByLister[lister].size;
     }
 
-    function getModuleNamesOfListing(address lister)
-        public
-        view
-        returns (string[] memory out)
-    {
-        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
-        out = new string[](moduleIndexes.length);
-
-        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
-            out[i] = s.modules[moduleIndexes[i]].name;
-        }
-    }
-    
     function getModulesOfListing(address lister)
         public
         view
         returns (ModuleInfo[] memory out)
     {
-        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
-        out = new ModuleInfo[](moduleIndexes.length);
-
-        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
-            out[i] = s.modules[moduleIndexes[i]];
-        }
+        return LibDappletRegistryRead.getModulesOfListing(s, lister);
     }
 
     function getListers() public view returns (address[] memory) {
@@ -129,16 +111,34 @@ contract DappletRegistry {
         ctxIdsOwners = new address[][](ctxIds.length);
 
         for (uint256 i = 0; i < ctxIds.length; ++i) {
-            (
-                ModuleInfo[] memory mods_info,
-                address[] memory owners
-            ) = getModulesInfoByListers(ctxIds[i], listers, maxBufLen);
-            modulesInfos[i] = mods_info;
-            ctxIdsOwners[i] = owners;
+            uint256[] memory outbuf = new uint256[](
+                maxBufLen > 0 ? maxBufLen : 1000
+            );
+            uint256 bufLen = _fetchModulesByUsersTag(
+                ctxIds[i],
+                listers,
+                outbuf,
+                0
+            );
+
+            modulesInfos[i] = new ModuleInfo[](bufLen);
+            ctxIdsOwners[i] = new address[](bufLen);
+
+            for (uint256 j = 0; j < bufLen; ++j) {
+                uint256 idx = outbuf[j];
+                address owner = s._dappletNFTContract.ownerOf(idx);
+                //ToDo: strip contentType indexes?
+                modulesInfos[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
+                ctxIdsOwners[i][j] = owner;
+            }
         }
     }
 
-    function getModuleByIndex(uint32 index) public view returns (ModuleInfo memory) {
+    function getModuleByIndex(uint32 index)
+        public
+        view
+        returns (ModuleInfo memory)
+    {
         return s.modules[index];
     }
 
@@ -153,31 +153,6 @@ contract DappletRegistry {
         )
     {
         return LibDappletRegistryRead.getModules(s, offset, limit);
-    }
-
-    // Very naive impl.
-    function getModulesInfoByListers(
-        string memory ctxId,
-        address[] memory listers,
-        uint32 maxBufLen
-    )
-        public
-        view
-        returns (ModuleInfo[] memory modulesInfo, address[] memory owners)
-    {
-        uint256[] memory outbuf = new uint256[](
-            maxBufLen > 0 ? maxBufLen : 1000
-        );
-        uint256 bufLen = _fetchModulesByUsersTag(ctxId, listers, outbuf, 0);
-        modulesInfo = new ModuleInfo[](bufLen);
-        owners = new address[](bufLen);
-        for (uint256 i = 0; i < bufLen; ++i) {
-            uint256 idx = outbuf[i];
-            address owner = s._dappletNFTContract.ownerOf(idx);
-            //ToDo: strip contentType indexes?
-            modulesInfo[i] = s.modules[idx]; // WARNING! indexes are started from 1.
-            owners[i] = owner;
-        }
     }
 
     function getModuleInfoByName(string memory mod_name)

@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "./lib/LinkedList.sol";
+
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto, SemVer} from "./Struct.sol";
 import {AppStorage} from "./AppStorage.sol";
 
 library LibDappletRegistryRead {
+    using LinkedList for LinkedList.LinkedListUint32;
+
     function getVersionNumbers(
         AppStorage storage s,
         string memory name,
@@ -152,5 +156,18 @@ library LibDappletRegistryRead {
             v.extensionVersion
         );
         moduleType = s.modules[v.modIdx].moduleType;
+    }
+
+    function getModulesOfListing(AppStorage storage s, address lister)
+        external
+        view
+        returns (ModuleInfo[] memory out)
+    {
+        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
+        out = new ModuleInfo[](moduleIndexes.length);
+
+        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
+            out[i] = s.modules[moduleIndexes[i]];
+        }
     }
 }
