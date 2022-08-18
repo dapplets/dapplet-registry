@@ -102,12 +102,12 @@ describe("DappletRegistry", function () {
   });
 
   it("should return zero modules by contextId", async () => {
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    expect(moduleInfo).to.eql([[], []]);
+    expect(moduleInfo).to.eql([[[]], [[]]]);
   });
 
   it("should return modules by contextId after addModuleInfo and added it to listing ", async () => {
@@ -141,19 +141,19 @@ describe("DappletRegistry", function () {
       ],
     );
 
-    const moduleByTwitter = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleByTwitter = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    const moduleByInstagram = await contract.getModulesInfoByListers(
-      "instagram.com",
+    const moduleByInstagram = await contract.getModulesInfoByListersBatch(
+      ["instagram.com"],
       [accountAddress],
       0,
     );
 
-    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
-    const resultDataByInstagram = moduleByInstagram.modulesInfo.map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modulesInfos[0].map(getValues);
+    const resultDataByInstagram = moduleByInstagram.modulesInfos[0].map(getValues);
 
     expect(resultDataByTwitter).to.have.deep.members([
       {
@@ -194,13 +194,13 @@ describe("DappletRegistry", function () {
 
     await contract.addContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleByContext = await contract.getModulesInfoByListers(
-      "yahoo.com",
+    const moduleByContext = await contract.getModulesInfoByListersBatch(
+      ["yahoo.com"],
       [accountAddress],
       0,
     );
 
-    const resultModuleById = moduleByContext.modulesInfo.map(getValues);
+    const resultModuleById = moduleByContext.modulesInfos[0].map(getValues);
     expect(resultModuleById).to.eql([
       {
         name: "twitter-adapter-test",
@@ -211,13 +211,13 @@ describe("DappletRegistry", function () {
 
     await contract.removeContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "yahoo.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["yahoo.com"],
       [accountAddress],
       0,
     );
 
-    expect(moduleInfo.modulesInfo).to.eql([]);
+    expect(moduleInfo.modulesInfos[0]).to.eql([]);
   });
 
   it("only the Owner can add the ContextID", async () => {
@@ -263,13 +263,13 @@ describe("DappletRegistry", function () {
 
     await addModuleInfo(contract, {});
 
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [acc2.address],
       0,
     );
 
-    expect(moduleInfo.modulesInfo).to.be.equalTo([]);
+    expect(moduleInfo.modulesInfos[0]).to.be.equalTo([]);
   });
 
   it("should return information on the added module", async () => {
@@ -745,12 +745,12 @@ describe("DappletRegistry + DappletNFT", function () {
       ["twitter-adapter-test", "T"],
     ]);
 
-    const moduleByTwitter = await registryContract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleByTwitter = await registryContract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modulesInfos[0].map(getValues);
     expect(resultDataByTwitter).to.have.deep.members([
       {
         name: "twitter-adapter-test",
@@ -758,7 +758,7 @@ describe("DappletRegistry + DappletNFT", function () {
         description: "twitter-adapter-test",
       },
     ]);
-    expect(moduleByTwitter.owners).to.eql([accountAddress]);
+    expect(moduleByTwitter.ctxIdsOwners[0]).to.eql([accountAddress]);
   });
 
   it("should transfer ownership of the module", async () => {

@@ -116,8 +116,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "2", "3", "4", "5"]);
     expect(actual).to.deep.equal(expected);
 
@@ -145,8 +145,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
@@ -170,8 +170,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
@@ -195,8 +195,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
@@ -220,8 +220,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
@@ -245,8 +245,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);
 
@@ -270,8 +270,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
@@ -295,8 +295,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);
 
@@ -322,8 +322,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
@@ -348,8 +348,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "5", "4", "2", "3"]);
     expect(actual).to.deep.equal(expected);
 
@@ -374,8 +374,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
@@ -403,8 +403,8 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const items = await contract.getModuleNamesOfListing(accountAddress);
-    const actual = items.map((x) => x.toString());
+    const items = await contract.getModulesOfListing(accountAddress);
+    const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);
 
