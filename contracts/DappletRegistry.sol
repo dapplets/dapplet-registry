@@ -62,7 +62,7 @@ contract DappletRegistry {
         return s.listingByLister[lister].size;
     }
 
-    function getModulesOfListing(address lister)
+    function getModuleNamesOfListing(address lister)
         public
         view
         returns (string[] memory out)
