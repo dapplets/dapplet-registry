@@ -138,6 +138,10 @@ contract DappletRegistry {
         }
     }
 
+    function getModuleByIndex(uint32 index) public view returns (ModuleInfo memory) {
+        return s.modules[index];
+    }
+
     function getModules(uint256 offset, uint256 limit)
         public
         view
