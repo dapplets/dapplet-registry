@@ -74,6 +74,19 @@ contract DappletRegistry {
             out[i] = s.modules[moduleIndexes[i]].name;
         }
     }
+    
+    function getModulesOfListing(address lister)
+        public
+        view
+        returns (ModuleInfo[] memory out)
+    {
+        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
+        out = new ModuleInfo[](moduleIndexes.length);
+
+        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
+            out[i] = s.modules[moduleIndexes[i]];
+        }
+    }
 
     function getListers() public view returns (address[] memory) {
         return s.listers;
