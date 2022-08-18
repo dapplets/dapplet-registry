@@ -12,6 +12,7 @@
     "deploy:goerli": "hardhat run --network goerli scripts/deploy.js",
     "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js",
     "export:goerli": "hardhat export --network goerli --address",
+    "import:goerli": "hardhat import --network goerli --address",
     "prettier": "prettier --write contracts/**/*.sol"
   },
   "devDependencies": {
@@ -35,5 +36,8 @@
   },
   "resolutions": {
     "@solidity-parser/parser": "^0.14.0"
+  },
+  "dependencies": {
+    "semver": "^7.3.7"
   }
 }

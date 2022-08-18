@@ -5,6 +5,7 @@ require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 require("./scripts/export");
+require("./scripts/import");
 
 module.exports = {
   mocha: {
@@ -25,11 +26,11 @@ module.exports = {
   },
   networks: {
     goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: process.env.GOERLI_RPC,
       accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
     rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: process.env.RINKEBY_RPC,
       accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
   },

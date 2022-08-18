@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const PAGE_SIZE = 1;
 
 function hex_to_ascii(str1) {
@@ -29,6 +32,84 @@ function convertBytes3Version(v) {
     );
 }
 
+async function fetchModulesByBranch(contract, module, owner, branches) {
+    const modules = [];
+
+    const versions = [];
+
+    for (const branch of branches) {
+        const versionNumbersHex = await contract.getVersionNumbers(
+            module.name,
+            branch
+        ); // ToDo: branch default is hardcoded
+        const versionNumbers = (
+            versionNumbersHex.replace("0x", "").match(/.{1,8}/g) ?? []
+        ).map((x) => {
+            const major = parseInt("0x" + x[0] + x[1]);
+            const minor = parseInt("0x" + x[2] + x[3]);
+            const patch = parseInt("0x" + x[4] + x[5]);
+            return { major, minor, patch };
+        });
+    
+        const _versions = await Promise.all(
+            versionNumbers.map((x) =>
+                contract.getVersionInfo(
+                    module.name,
+                    branch,
+                    x.major,
+                    x.minor,
+                    x.patch
+                )
+            )
+        );
+
+        versions.push(..._versions);
+    }
+
+    const contextIds = await contract.getContextIdsByModule(module.name);
+
+    const admins = await contract.getAdminsByModule(module.name);
+
+    modules.push({
+        moduleType: module.moduleType,
+        name: module.name,
+        title: module.title,
+        description: module.description,
+        fullDescription: convertHashUri(module.fullDescription),
+        icon: convertHashUri(module.icon),
+        interfaces: module.interfaces,
+        flags: module.flags.toHexString(),
+        owner: owner,
+        versions: versions.map(({ dto, moduleType }) => ({
+            branch: dto.branch,
+            major: dto.major,
+            minor: dto.minor,
+            patch: dto.patch,
+            binary: convertHashUri(dto.binary),
+            dependencies: dto.dependencies.map((x) => ({
+                name: x.name,
+                branch: x.branch,
+                major: x.major,
+                minor: x.minor,
+                patch: x.patch,
+            })), // key of module
+            interfaces: dto.interfaces.map((x) => ({
+                name: x.name,
+                branch: x.branch,
+                major: x.major,
+                minor: x.minor,
+                patch: x.patch,
+            })), //Exported interfaces. no duplicates.
+            flags: dto.flags,
+            extensionVersion: convertBytes3Version(dto.extensionVersion),
+        })),
+        contextIds: contextIds,
+        admins: admins,
+    });
+
+    return modules;
+}
+
 task("export", "Exports a state of the registry into JSON")
     .addParam("address", "The registry's address")
     .setAction(async (taskArgs) => {
@@ -45,73 +126,15 @@ task("export", "Exports a state of the registry into JSON")
 
             for (let i = 0; i < response.modules.length; i++) {
                 const m = response.modules[i];
-                const versionNumbersHex = await contract.getVersionNumbers(
-                    m.name,
-                    "default"
-                ); // ToDo: branch default is hardcoded
-                const versionNumbers = (
-                    versionNumbersHex.replace("0x", "").match(/.{1,8}/g) ?? []
-                ).map((x) => {
-                    const major = parseInt("0x" + x[0] + x[1]);
-                    const minor = parseInt("0x" + x[2] + x[3]);
-                    const patch = parseInt("0x" + x[4] + x[5]);
-                    return { major, minor, patch };
-                });
-
-                const versions = await Promise.all(
-                    versionNumbers.map((x) =>
-                        contract.getVersionInfo(
-                            m.name,
-                            "default",
-                            x.major,
-                            x.minor,
-                            x.patch
-                        )
-                    )
+                const branches = ["default", "new", "legacy"];
+                
+                const _modules = await fetchModulesByBranch(
+                    contract,
+                    m,
+                    response.owners[i],
+                    branches
                 );
-
-                const contextIds = await contract.getContextIdsByModule(m.name);
-
-                const admins = await contract.getAdminsByModule(m.name);
-
-                modules.push({
-                    moduleType: m.moduleType,
-                    name: m.name,
-                    title: m.title,
-                    description: m.description,
-                    fullDescription: convertHashUri(m.fullDescription),
-                    icon: convertHashUri(m.icon),
-                    interfaces: m.interfaces,
-                    flags: m.flags.toHexString(),
-                    owner: response.owners[i],
-                    versions: versions.map(({ dto, moduleType }) => ({
-                        branch: dto.branch,
-                        major: dto.major,
-                        minor: dto.minor,
-                        patch: dto.patch,
-                        binary: convertHashUri(dto.binary),
-                        dependencies: dto.dependencies.map((x) => ({
-                            name: x.name,
-                            branch: x.branch,
-                            major: x.major,
-                            minor: x.minor,
-                            patch: x.patch,
-                        })), // key of module
-                        interfaces: dto.interfaces.map((x) => ({
-                            name: x.name,
-                            branch: x.branch,
-                            major: x.major,
-                            minor: x.minor,
-                            patch: x.patch,
-                        })), //Exported interfaces. no duplicates.
-                        flags: dto.flags,
-                        extensionVersion: convertBytes3Version(
-                            dto.extensionVersion
-                        ),
-                    })),
-                    contextIds: contextIds,
-                    admins: admins,
-                });
+                modules.push(..._modules);
             }
 
             if (modules.length >= Number(response.totalModules.toString())) {
@@ -132,5 +155,13 @@ task("export", "Exports a state of the registry into JSON")
 
         const output = { modules, listers: modulesByListers };
 
-        console.log(JSON.stringify(output, null, 2));
+        const outputDirPath = path.join(__dirname, "../output");
+        const outputFilePath = path.join(outputDirPath, "export.json");
+        if (!fs.existsSync(outputDirPath)) {
+            fs.mkdirSync(outputDirPath, { recursive: true });
+        }
+
+        fs.writeFileSync(outputFilePath, JSON.stringify(output, null, 2), {
+            encoding: "utf-8",
+        });
     });
