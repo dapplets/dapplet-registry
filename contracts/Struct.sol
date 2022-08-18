@@ -50,3 +50,9 @@ struct DependencyDto {
     uint8 minor;
     uint8 patch;
 }
+
+struct SemVer {
+    uint8 major;
+    uint8 minor;
+    uint8 patch;
+}

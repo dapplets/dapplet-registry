@@ -24,6 +24,7 @@ module.exports = addModuleInfo = async (
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
   },
+  versions = undefined
 ) => {
   await contract.addModuleInfo(
     context,
@@ -48,7 +49,7 @@ module.exports = addModuleInfo = async (
       },
       flags: 0,
     },
-    [
+    versions === undefined ? [
       {
         branch: "default",
         major: 0,
@@ -65,6 +66,6 @@ module.exports = addModuleInfo = async (
         interfaces: [],
         extensionVersion: "0x00ff01",
       },
-    ],
+    ] : versions,
   );
 };

@@ -1,10 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
+import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto, SemVer} from "./Struct.sol";
 import {AppStorage} from "./AppStorage.sol";
 
 library LibDappletRegistryRead {
+    function getVersionNumbers(
+        AppStorage storage s,
+        string memory name,
+        string memory branch
+    ) public view returns (SemVer[] memory out) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        bytes storage versions = s.versionNumbers[key];
+        uint256 versionCount = versions.length / 3; // 1 version is 3 bytes
+
+        out = new SemVer[](versionCount);
+
+        for (uint256 i = 0; i < versionCount; ++i) {
+            out[i] = SemVer(
+                uint8(versions[3 * i]),
+                uint8(versions[3 * i + 1]),
+                uint8(versions[3 * i + 2])
+            );
+        }
+    }
+
     function getModules(
         AppStorage storage s,
         uint256 offset,

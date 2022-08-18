@@ -32,6 +32,14 @@ const getVersion = (data) => {
   };
 };
 
+const getSemVer = (data) => {
+  return {
+    major: data.major,
+    minor: data.minor,
+    patch: data.patch
+  };
+};
+
 const addVersion = ({
   branch = "default",
   major = 9,
@@ -618,7 +626,35 @@ describe("DappletRegistry", function () {
     );
 
     const branches = await contract.getBranchesByModule("twitter-adapter-test");
-    expect(branches).to.deep.eq(["default", "new", "legacy"]);    
+    expect(branches).to.deep.eq(["default", "new", "legacy"]);
+  });
+
+  it("returns an array of version numbers as structs", async () => {
+    await addModuleInfo(contract, {
+      name: "version-numbers-test"
+    }, []);
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", major: 0, minor: 1, patch: 0 }),
+    );
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", major: 0, minor: 1, patch: 1 }),
+    );
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", major: 0, minor: 1, patch: 2 }),
+    );   
+
+    const versions = await contract.getVersionNumbers("version-numbers-test", "default");
+    expect(versions.map(getSemVer)).to.have.deep.members([
+      { major: 0, minor: 1, patch: 0 },
+      { major: 0, minor: 1, patch: 1 },
+      { major: 0, minor: 1, patch: 2 }
+    ]);
   });
 });
 

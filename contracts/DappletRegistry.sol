@@ -7,7 +7,7 @@ import "./lib/EnumerableStringSet.sol";
 import "./lib/LinkedList.sol";
 
 import {DappletNFT} from "./DappletNFT.sol";
-import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
+import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto, SemVer} from "./Struct.sol";
 import {LibDappletRegistryRead} from "./LibDappletRegistryRead.sol";
 import {AppStorage} from "./AppStorage.sol";
 
@@ -114,7 +114,7 @@ contract DappletRegistry {
     {
         modulesInfos = new ModuleInfo[][](ctxIds.length);
         ctxIdsOwners = new address[][](ctxIds.length);
-        
+
         for (uint256 i = 0; i < ctxIds.length; ++i) {
             (
                 ModuleInfo[] memory mods_info,
@@ -125,10 +125,7 @@ contract DappletRegistry {
         }
     }
 
-    function getModules(
-        uint256 offset,
-        uint256 limit
-    )
+    function getModules(uint256 offset, uint256 limit)
         public
         view
         returns (
@@ -208,10 +205,9 @@ contract DappletRegistry {
     function getVersionNumbers(string memory name, string memory branch)
         public
         view
-        returns (bytes memory)
+        returns (SemVer[] memory)
     {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
-        return s.versionNumbers[key];
+        return LibDappletRegistryRead.getVersionNumbers(s, name, branch);
     }
 
     function getVersionInfo(
@@ -564,7 +560,6 @@ contract DappletRegistry {
         s.versionNumbers[nbKey].push(bytes1(vInfo.major));
         s.versionNumbers[nbKey].push(bytes1(vInfo.minor));
         s.versionNumbers[nbKey].push(bytes1(vInfo.patch));
-        s.versionNumbers[nbKey].push(bytes1(0x0));
 
         // reset IsUnderConstruction flag
         if (((s.modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {
@@ -589,6 +584,6 @@ contract DappletRegistry {
             uint32 moduleIdx = s.moduleIdxs[mKey];
             require(moduleIdx != 0, "The module does not exist");
             return moduleIdx;
-        }        
+        }
     }
 }
