@@ -2,34 +2,34 @@
 pragma solidity ^0.8.13;
 
 library LinkedList {
-    uint32 constant _NULL = 0x00000000;
-    uint32 constant _HEAD = 0x00000000;
-    uint32 constant _TAIL = 0xffffffff;
+    uint256 constant _NULL = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    uint256 constant _HEAD = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    uint256 constant _TAIL = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
     struct LinkedListUint32 {
-        mapping(uint32 => uint32) map;
-        uint32 size;
+        mapping(uint256 => uint256) map;
+        uint256 size;
         bool initialized;
     }
 
     struct Link {
-        uint32 prev;
-        uint32 next;
+        uint256 prev;
+        uint256 next;
     }
 
     function items(LinkedListUint32 storage self)
         internal
         view
-        returns (uint32[] memory result)
+        returns (uint256[] memory result)
     {
-        result = new uint32[](self.size);
-        uint32 current = _HEAD;
-        for (uint32 i = 0; i < self.size; ++i) {
+        result = new uint256[](self.size);
+        uint256 current = _HEAD;
+        for (uint256 i = 0; i < self.size; ++i) {
             current = result[i] = self.map[current];
         }
     }
 
-    function contains(LinkedListUint32 storage self, uint32 value)
+    function contains(LinkedListUint32 storage self, uint256 value)
         internal
         view
         returns (bool)
@@ -54,12 +54,12 @@ library LinkedList {
         // Count inconsistent changes
         int64 scores = 0;
 
-        for (uint32 i = 0; i < links.length; i++) {
+        for (uint256 i = 0; i < links.length; i++) {
             Link memory link = links[i];
 
-            uint32 prev = link.prev;
-            uint32 next = link.next;
-            uint32 oldNext = self.map[prev];
+            uint256 prev = link.prev;
+            uint256 next = link.next;
+            uint256 oldNext = self.map[prev];
 
             // Skip an existing link
             if (oldNext == next) continue;

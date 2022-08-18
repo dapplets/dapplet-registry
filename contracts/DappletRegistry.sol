@@ -31,7 +31,7 @@ contract DappletRegistry {
     event ModuleInfoAdded(
         string[] contextIds,
         address owner,
-        uint32 moduleIndex
+        uint256 moduleIndex
     );
 
     AppStorage internal s;
@@ -58,7 +58,7 @@ contract DappletRegistry {
     // View functions
     // -------------------------------------------------------------------------
 
-    function getListingSize(address lister) public view returns (uint32) {
+    function getListingSize(address lister) public view returns (uint256) {
         return s.listingByLister[lister].size;
     }
 
@@ -79,7 +79,7 @@ contract DappletRegistry {
         view
         returns (bool)
     {
-        uint32 moduleIdx = _getModuleIdx(moduleName);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
@@ -90,7 +90,7 @@ contract DappletRegistry {
     function getModuleIndx(string memory mod_name)
         public
         view
-        returns (uint32 moduleIdx)
+        returns (uint256 moduleIdx)
     {
         moduleIdx = _getModuleIdx(mod_name);
     }
@@ -98,7 +98,7 @@ contract DappletRegistry {
     function getModulesInfoByListersBatch(
         string[] memory ctxIds,
         address[] memory listers,
-        uint32 maxBufLen
+        uint256 maxBufLen
     )
         public
         view
@@ -134,7 +134,7 @@ contract DappletRegistry {
         }
     }
 
-    function getModuleByIndex(uint32 index)
+    function getModuleByIndex(uint256 index)
         public
         view
         returns (ModuleInfo memory)
@@ -251,7 +251,7 @@ contract DappletRegistry {
             uint256 prev = _getModuleIdx(links[i].prev);
             uint256 next = _getModuleIdx(links[i].next);
 
-            linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
+            linksOfModuleIdxs[i] = LinkedList.Link(prev, next);
         }
 
         LinkedList.LinkedListUint32 storage listing = s.listingByLister[
@@ -280,7 +280,7 @@ contract DappletRegistry {
             ? (mInfo.flags | (uint256(1) << 0)) // flags[255] == 1
             : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
         s.modules.push(mInfo);
-        uint32 mIdx = uint32(s.modules.length - 1); // WARNING! indexes are started from 1.
+        uint256 mIdx = s.modules.length - 1; // WARNING! indexes are started from 1.
         s.moduleIdxs[mKey] = mIdx;
 
         // ContextId adding
@@ -311,7 +311,7 @@ contract DappletRegistry {
         StorageRef memory fullDescription,
         StorageRef memory icon
     ) public {
-        uint32 moduleIdx = _getModuleIdx(name);
+        uint256 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = s.modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
@@ -330,7 +330,7 @@ contract DappletRegistry {
     ) public {
         // ******** TODO: check existing versions and version sorting
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(mod_name);
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender ||
                 s.adminsOfModules[mKey].contains(msg.sender) == true,
@@ -357,7 +357,7 @@ contract DappletRegistry {
         public
         onlyModuleOwner(mod_name)
     {
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(mod_name);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
@@ -371,7 +371,7 @@ contract DappletRegistry {
         public
         onlyModuleOwner(mod_name)
     {
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(mod_name);
 
         // // ContextId adding
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
@@ -432,9 +432,7 @@ contract DappletRegistry {
                 // add module if it is in the listings
                 for (uint256 l = 0; l < listers.length; ++l) {
                     if (
-                        s.listingByLister[listers[l]].contains(
-                            uint32(modIdx)
-                        ) == true
+                        s.listingByLister[listers[l]].contains(modIdx) == true
                     ) {
                         outbuf[bufLen++] = modIdx;
                     }
@@ -564,16 +562,16 @@ contract DappletRegistry {
     function _getModuleIdx(string memory mod_name)
         internal
         view
-        returns (uint32)
+        returns (uint256)
     {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
 
         if (mKey == _HEAD) {
-            return 0x00000000;
+            return 0x0000000000000000000000000000000000000000000000000000000000000000;
         } else if (mKey == _TAIL) {
-            return 0xFFFFFFFF;
+            return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
         } else {
-            uint32 moduleIdx = s.moduleIdxs[mKey];
+            uint256 moduleIdx = s.moduleIdxs[mKey];
             require(moduleIdx != 0, "The module does not exist");
             return moduleIdx;
         }

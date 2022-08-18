@@ -163,7 +163,7 @@ library LibDappletRegistryRead {
         view
         returns (ModuleInfo[] memory out)
     {
-        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
+        uint256[] memory moduleIndexes = s.listingByLister[lister].items();
         out = new ModuleInfo[](moduleIndexes.length);
 
         for (uint256 i = 0; i < moduleIndexes.length; ++i) {
