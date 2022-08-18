@@ -13,6 +13,7 @@ struct AppStorage {
     ModuleInfo[] modules;
     address[] listers;
     mapping(bytes32 => bytes) versionNumbers; // keccak(name,branch) => <bytes4[]> versionNumbers
+    mapping(bytes32 => string[]) branches; // keccak(name) => string[]
     mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,major,minor,patch) => VersionInfo>
     mapping(bytes32 => uint32) moduleIdxs; // key - keccak256(name) => value - index of element in "s.modules" array
     mapping(bytes32 => EnumerableSet.UintSet) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "s.modules" array

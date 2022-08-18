@@ -196,6 +196,15 @@ contract DappletRegistry {
             );
     }
 
+    function getBranchesByModule(string memory name)
+        public
+        view
+        returns (string[] memory)
+    {
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        return s.branches[mKey];
+    }
+
     function getVersionNumbers(string memory name, string memory branch)
         public
         view
@@ -297,7 +306,7 @@ contract DappletRegistry {
 
         // Versions Adding
         for (uint256 i = 0; i < vInfos.length; ++i) {
-            _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
+            _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfos[i]);
         }
 
         // Creating Dapplet NFT
@@ -340,7 +349,7 @@ contract DappletRegistry {
             "You are not the owner of this module"
         );
 
-        _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
+        _addModuleVersionNoChecking(mKey, moduleIdx, mod_name, vInfo);
     }
 
     function addModuleVersionBatch(
@@ -476,6 +485,7 @@ contract DappletRegistry {
     }
 
     function _addModuleVersionNoChecking(
+        bytes32 moduleKey,
         uint256 moduleIdx,
         string memory mod_name,
         VersionInfoDto memory v
@@ -544,7 +554,13 @@ contract DappletRegistry {
         );
         s.versions[vKey] = vInfo;
 
+        // add branch if not exists
         bytes32 nbKey = keccak256(abi.encodePacked(mod_name, vInfo.branch));
+        if (s.versionNumbers[nbKey].length == 0) {
+            s.branches[moduleKey].push(v.branch);
+        }
+
+        // add version number
         s.versionNumbers[nbKey].push(bytes1(vInfo.major));
         s.versionNumbers[nbKey].push(bytes1(vInfo.minor));
         s.versionNumbers[nbKey].push(bytes1(vInfo.patch));

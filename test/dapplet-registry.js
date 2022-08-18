@@ -583,6 +583,43 @@ describe("DappletRegistry", function () {
       },
     ]);
   });
+
+  it("returns an array of branches", async () => {
+    await addModuleInfo(contract, {});
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "default", major: 0, minor: 1, patch: 0 }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "default", major: 0, minor: 1, patch: 1 }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "new", major: 0, minor: 1, patch: 0 }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "new", major: 0, minor: 1, patch: 1 }),
+    );
+    
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "legacy", major: 0, minor: 1, patch: 0 }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "legacy", major: 0, minor: 1, patch: 1 }),
+    );
+
+    const branches = await contract.getBranchesByModule("twitter-adapter-test");
+    expect(branches).to.deep.eq(["default", "new", "legacy"]);    
+  });
 });
 
 describe("DappletNFT", function () {
