@@ -65,6 +65,7 @@ const addVersion = ({
 
 describe("DappletRegistry", function () {
   let contract;
+  let nftContract;
   let accountAddress;
 
   beforeEach(async function () {
@@ -95,6 +96,8 @@ describe("DappletRegistry", function () {
     contract = deployDappletRegistry;
 
     await deployDappletNFT.transferOwnership(contract.address);
+
+    nftContract = deployDappletNFT;
   });
 
   it("The contract is being deposited", async function () {
@@ -298,6 +301,25 @@ describe("DappletRegistry", function () {
         description: "twitter-adapter-test",
       },
     ]);
+  });
+
+  it("should return NFT metadata of the added module", async () => {
+    await addModuleInfo(contract, {});
+
+    const uri = await nftContract.tokenURI(1);
+    expect(uri).to.contain('data:application/json;base64,');
+
+    const base64 = uri.replace('data:application/json;base64,', '');
+    const metadata = JSON.parse(atob(base64));
+
+    expect(metadata).to.eql({
+      name: "Dapplet \"twitter-adapter-test\"",
+      description: "twitter-adapter-test",
+      attributes: [{
+        trait_type: "Name", 
+        value: "twitter-adapter-test"
+      }]
+    });
   });
 
   it("should edit title and description module", async () => {
