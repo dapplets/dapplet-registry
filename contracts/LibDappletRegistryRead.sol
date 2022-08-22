@@ -9,13 +9,44 @@ import {AppStorage} from "./AppStorage.sol";
 library LibDappletRegistryRead {
     using LinkedList for LinkedList.LinkedListUint32;
 
-    function getVersionNumbers(
+    function getVersionsByModule(
         AppStorage storage s,
         string memory name,
-        string memory branch
-    ) public view returns (bytes4[] memory out) {
+        string memory branch,
+        uint256 offset,
+        uint256 limit,
+        bool reverse
+    )
+        public
+        view
+        returns (
+            VersionInfoDto[] memory versions,
+            uint256 nextOffset,
+            uint256 totalVersions
+        )
+    {
         bytes32 key = keccak256(abi.encodePacked(name, branch));
-        return s.versionNumbers[key];
+        bytes4[] memory versionNumbers = s.versionNumbers[key];
+
+        if (limit == 0) {
+            limit = 20;
+        }
+
+        nextOffset = offset + limit; // ToDo: remove nextOffset?
+        totalVersions = versionNumbers.length;
+
+        if (limit > totalVersions - offset) {
+            limit = totalVersions - offset;
+        }
+
+        versions = new VersionInfoDto[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            uint256 idx = (reverse)
+                ? (totalVersions - offset - 1 - i)
+                : (offset + i);
+            (versions[i], ) = getVersionInfo(s, name, branch, versionNumbers[idx]);
+        }
     }
 
     function getModules(
@@ -52,7 +83,7 @@ library LibDappletRegistryRead {
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = offset + i + 1; // zero index is reserved
             modules[i] = s.modules[idx];
-            lastVersions[i] = getLastVersionInfo(s, modules[i].name, branch);
+            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
             owners[i] = s._dappletNFTContract.ownerOf(idx);
         }
     }
@@ -98,7 +129,7 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modulesInfo[i] = s.modules[dappIndxs[i]];
-            lastVersionsInfo[i] = getLastVersionInfo(
+            lastVersionsInfo[i] = _getLastVersionInfo(
                 s,
                 modulesInfo[i].name,
                 branch
@@ -112,9 +143,7 @@ library LibDappletRegistryRead {
         string memory branch,
         bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 key = keccak256(
-            abi.encodePacked(name, branch, version)
-        );
+        bytes32 key = keccak256(abi.encodePacked(name, branch, version));
         VersionInfo memory v = s.versions[key];
         require(v.modIdx != 0, "Version doesn't exist");
         DependencyDto[] memory deps = new DependencyDto[](
@@ -123,11 +152,7 @@ library LibDappletRegistryRead {
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             VersionInfo memory depVi = s.versions[v.dependencies[i]];
             ModuleInfo memory depMod = s.modules[depVi.modIdx];
-            deps[i] = DependencyDto(
-                depMod.name,
-                depVi.branch,
-                depVi.version
-            );
+            deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.version);
         }
         DependencyDto[] memory interfaces = new DependencyDto[](
             v.interfaces.length
@@ -152,23 +177,6 @@ library LibDappletRegistryRead {
             v.createdAt
         );
         moduleType = s.modules[v.modIdx].moduleType;
-    }
-
-    function getLastVersionInfo(
-        AppStorage storage s,
-        string memory name,
-        string memory branch
-    ) public view returns (VersionInfoDto memory dto) {
-        bytes4[] memory versions = getVersionNumbers(s, name, branch);
-        if (versions.length > 0) {
-            bytes4 lastVersion = versions[versions.length - 1];
-            (dto, ) = getVersionInfo(
-                s,
-                name,
-                branch,
-                lastVersion
-            );
-        }
     }
 
     function getModulesOfListing(
@@ -202,6 +210,20 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < limit; i++) {
             modules[i] = s.modules[moduleIndexes[i + offset]];
+        }
+    }
+
+    function _getLastVersionInfo(
+        AppStorage storage s,
+        string memory name,
+        string memory branch
+    ) internal view returns (VersionInfoDto memory dto) {
+        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        bytes4[] memory versionNumbers = s.versionNumbers[key];
+
+        if (versionNumbers.length > 0) {
+            bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
+            (dto, ) = getVersionInfo(s, name, branch, lastVersion);
         }
     }
 }

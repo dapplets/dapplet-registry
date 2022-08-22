@@ -596,7 +596,7 @@ describe("DappletRegistry", function () {
     expect(branches).to.deep.eq(["default", "new", "legacy"]);
   });
 
-  it("returns an array of version numbers", async () => {
+  it("returns an array of versions desc and asc", async () => {
     await addModuleInfo(contract, {
       name: "version-numbers-test"
     }, []);
@@ -614,13 +614,24 @@ describe("DappletRegistry", function () {
     await contract.addModuleVersion(
       "version-numbers-test",
       addVersion({ branch: "default", version: "0x00010200" }),
-    );   
+    );
 
-    const versions = await contract.getVersionNumbers("version-numbers-test", "default");
-    expect(versions).to.have.deep.members([
+    const { versions: forwardVersions, totalVersions: forwardTotalVersions } = 
+      await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
+    expect(forwardTotalVersions.toString()).to.eql("3");
+    expect(forwardVersions.map(x => x.version)).to.have.deep.members([
       "0x00010000",
       "0x00010100",
       "0x00010200",
+    ]);
+
+    const { versions: reversedVersions, totalVersions: reversedTotalVersions } = 
+      await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
+    expect(reversedTotalVersions.toString()).to.eql("3");
+    expect(reversedVersions.map(x => x.version)).to.have.deep.members([
+      "0x00010200",
+      "0x00010100",
+      "0x00010000",
     ]);
   });
 });

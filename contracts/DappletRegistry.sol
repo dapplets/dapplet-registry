@@ -206,12 +206,30 @@ contract DappletRegistry {
         return s.branches[mKey];
     }
 
-    function getVersionNumbers(string memory name, string memory branch)
+    function getVersionsByModule(
+        string memory name,
+        string memory branch,
+        uint256 offset,
+        uint256 limit,
+        bool reverse
+    )
         public
         view
-        returns (bytes4[] memory)
+        returns (
+            VersionInfoDto[] memory versions,
+            uint256 nextOffset,
+            uint256 totalVersions
+        )
     {
-        return LibDappletRegistryRead.getVersionNumbers(s, name, branch);
+        return
+            LibDappletRegistryRead.getVersionsByModule(
+                s,
+                name,
+                branch,
+                offset,
+                limit,
+                reverse
+            );
     }
 
     function getVersionInfo(
@@ -219,13 +237,7 @@ contract DappletRegistry {
         string memory branch,
         bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        return
-            LibDappletRegistryRead.getVersionInfo(
-                s,
-                name,
-                branch,
-                version
-            );
+        return LibDappletRegistryRead.getVersionInfo(s, name, branch, version);
     }
 
     function getAdminsByModule(string memory mod_name)
@@ -496,11 +508,7 @@ contract DappletRegistry {
         for (uint256 i = 0; i < v.interfaces.length; ++i) {
             DependencyDto memory interf = v.interfaces[i];
             bytes32 iKey = keccak256(
-                abi.encodePacked(
-                    interf.name,
-                    interf.branch,
-                    interf.version
-                )
+                abi.encodePacked(interf.name, interf.branch, interf.version)
             );
             require(s.versions[iKey].modIdx != 0, "Interface doesn't exist");
             interfaces[i] = iKey;
