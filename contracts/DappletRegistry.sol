@@ -28,12 +28,6 @@ contract DappletRegistry {
     bytes32 internal constant _TAIL =
         0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
 
-    event ModuleInfoAdded(
-        string[] contextIds,
-        address owner,
-        uint256 moduleIndex
-    );
-
     AppStorage internal s;
 
     constructor(address _dappletNFTContractAddress) {
@@ -297,8 +291,6 @@ contract DappletRegistry {
             s.modsByContextType[key].add(mIdx);
             s.contextIdsOfModules[mKey].add(contextIds[i]);
         }
-
-        emit ModuleInfoAdded(contextIds, owner, mIdx);
 
         // Versions Adding
         for (uint256 i = 0; i < vInfos.length; ++i) {
