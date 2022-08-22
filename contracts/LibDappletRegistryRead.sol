@@ -75,9 +75,10 @@ library LibDappletRegistryRead {
         owner = s._dappletNFTContract.ownerOf(s.moduleIdxs[mKey]);
     }
 
-    function getModulesInfoByOwner(
+    function getModulesByOwner(
         AppStorage storage s,
         address userId,
+        string memory branch,
         uint256 offset,
         uint256 limit
     )
@@ -85,6 +86,7 @@ library LibDappletRegistryRead {
         view
         returns (
             ModuleInfo[] memory modulesInfo,
+            VersionInfoDto[] memory lastVersionsInfo,
             uint256 nextOffset,
             uint256 totalModules
         )
@@ -97,9 +99,29 @@ library LibDappletRegistryRead {
 
         nextOffset = nextOffsetFromNFT;
         totalModules = totalModulesFromNFT;
+
         modulesInfo = new ModuleInfo[](dappIndxs.length);
+        lastVersionsInfo = new VersionInfoDto[](dappIndxs.length);
+
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modulesInfo[i] = s.modules[dappIndxs[i]];
+
+            SemVer[] memory versions = getVersionNumbers(
+                s,
+                modulesInfo[i].name,
+                branch
+            );
+            if (versions.length == 0) continue;
+
+            SemVer memory lastVersion = versions[versions.length - 1];
+            (lastVersionsInfo[i], ) = getVersionInfo(
+                s,
+                modulesInfo[i].name,
+                branch,
+                lastVersion.major,
+                lastVersion.minor,
+                lastVersion.patch
+            );
         }
     }
 
@@ -110,7 +132,7 @@ library LibDappletRegistryRead {
         uint8 major,
         uint8 minor,
         uint8 patch
-    ) external view returns (VersionInfoDto memory dto, uint8 moduleType) {
+    ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
         bytes32 key = keccak256(
             abi.encodePacked(name, branch, major, minor, patch)
         );

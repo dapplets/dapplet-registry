@@ -163,8 +163,9 @@ contract DappletRegistry {
         return LibDappletRegistryRead.getModuleInfoByName(s, mod_name);
     }
 
-    function getModulesInfoByOwner(
+    function getModulesByOwner(
         address userId,
+        string memory branch,
         uint256 offset,
         uint256 limit
     )
@@ -172,14 +173,16 @@ contract DappletRegistry {
         view
         returns (
             ModuleInfo[] memory modulesInfo,
+            VersionInfoDto[] memory lastVersionsInfo,
             uint256 nextOffset,
             uint256 totalModules
         )
     {
         return
-            LibDappletRegistryRead.getModulesInfoByOwner(
+            LibDappletRegistryRead.getModulesByOwner(
                 s,
                 userId,
+                branch,
                 offset,
                 limit
             );
