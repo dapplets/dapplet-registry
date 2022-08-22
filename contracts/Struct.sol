@@ -21,40 +21,28 @@ struct ModuleInfo {
 struct VersionInfo {
     uint256 modIdx;
     string branch;
-    uint8 major;
-    uint8 minor;
-    uint8 patch;
+    bytes4 version;
     StorageRef binary;
     bytes32[] dependencies; // key of module
     bytes32[] interfaces; //Exported interfaces. no duplicates.
     uint8 flags;
-    bytes3 extensionVersion;
+    bytes4 extensionVersion;
     uint createdAt;
 }
 
 struct VersionInfoDto {
     string branch;
-    uint8 major;
-    uint8 minor;
-    uint8 patch;
+    bytes4 version;
     StorageRef binary;
     DependencyDto[] dependencies; // key of module
     DependencyDto[] interfaces; //Exported interfaces. no duplicates.
     uint8 flags;
-    bytes3 extensionVersion;
+    bytes4 extensionVersion;
     uint createdAt;
 }
 
 struct DependencyDto {
     string name;
     string branch;
-    uint8 major;
-    uint8 minor;
-    uint8 patch;
-}
-
-struct SemVer {
-    uint8 major;
-    uint8 minor;
-    uint8 patch;
+    bytes4 version;
 }

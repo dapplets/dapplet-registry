@@ -52,9 +52,7 @@ module.exports = addModuleInfo = async (
     versions === undefined ? [
       {
         branch: "default",
-        major: 0,
-        minor: 0,
-        patch: 1,
+        version: "0x00010000",
         flags: 0,
         binary: {
           hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -64,7 +62,7 @@ module.exports = addModuleInfo = async (
         },
         dependencies: [],
         interfaces: [],
-        extensionVersion: "0x00ff01",
+        extensionVersion: "0x00ff0100",
         createdAt: 0
       },
     ] : versions,

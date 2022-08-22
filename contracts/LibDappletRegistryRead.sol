@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "./lib/LinkedList.sol";
 
-import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto, SemVer} from "./Struct.sol";
+import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
 import {AppStorage} from "./AppStorage.sol";
 
 library LibDappletRegistryRead {
@@ -13,20 +13,9 @@ library LibDappletRegistryRead {
         AppStorage storage s,
         string memory name,
         string memory branch
-    ) public view returns (SemVer[] memory out) {
+    ) public view returns (bytes4[] memory out) {
         bytes32 key = keccak256(abi.encodePacked(name, branch));
-        bytes storage versions = s.versionNumbers[key];
-        uint256 versionCount = versions.length / 3; // 1 version is 3 bytes
-
-        out = new SemVer[](versionCount);
-
-        for (uint256 i = 0; i < versionCount; ++i) {
-            out[i] = SemVer(
-                uint8(versions[3 * i]),
-                uint8(versions[3 * i + 1]),
-                uint8(versions[3 * i + 2])
-            );
-        }
+        return s.versionNumbers[key];
     }
 
     function getModules(
@@ -121,12 +110,10 @@ library LibDappletRegistryRead {
         AppStorage storage s,
         string memory name,
         string memory branch,
-        uint8 major,
-        uint8 minor,
-        uint8 patch
+        bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
         bytes32 key = keccak256(
-            abi.encodePacked(name, branch, major, minor, patch)
+            abi.encodePacked(name, branch, version)
         );
         VersionInfo memory v = s.versions[key];
         require(v.modIdx != 0, "Version doesn't exist");
@@ -139,9 +126,7 @@ library LibDappletRegistryRead {
             deps[i] = DependencyDto(
                 depMod.name,
                 depVi.branch,
-                depVi.major,
-                depVi.minor,
-                depVi.patch
+                depVi.version
             );
         }
         DependencyDto[] memory interfaces = new DependencyDto[](
@@ -153,16 +138,12 @@ library LibDappletRegistryRead {
             interfaces[i] = DependencyDto(
                 intMod.name,
                 intVi.branch,
-                intVi.major,
-                intVi.minor,
-                intVi.patch
+                intVi.version
             );
         }
         dto = VersionInfoDto(
             v.branch,
-            v.major,
-            v.minor,
-            v.patch,
+            v.version,
             v.binary,
             deps,
             interfaces,
@@ -178,16 +159,14 @@ library LibDappletRegistryRead {
         string memory name,
         string memory branch
     ) public view returns (VersionInfoDto memory dto) {
-        SemVer[] memory versions = getVersionNumbers(s, name, branch);
+        bytes4[] memory versions = getVersionNumbers(s, name, branch);
         if (versions.length > 0) {
-            SemVer memory lastVersion = versions[versions.length - 1];
+            bytes4 lastVersion = versions[versions.length - 1];
             (dto, ) = getVersionInfo(
                 s,
                 name,
                 branch,
-                lastVersion.major,
-                lastVersion.minor,
-                lastVersion.patch
+                lastVersion
             );
         }
     }

@@ -7,7 +7,7 @@ import "./lib/EnumerableStringSet.sol";
 import "./lib/LinkedList.sol";
 
 import {DappletNFT} from "./DappletNFT.sol";
-import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto, SemVer} from "./Struct.sol";
+import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
 import {LibDappletRegistryRead} from "./LibDappletRegistryRead.sol";
 import {AppStorage} from "./AppStorage.sol";
 
@@ -51,10 +51,6 @@ contract DappletRegistry {
     // -------------------------------------------------------------------------
     // View functions
     // -------------------------------------------------------------------------
-
-    function getListingSize(address lister) public view returns (uint256) {
-        return s.listingByLister[lister].size;
-    }
 
     function getModulesOfListing(
         address lister,
@@ -213,7 +209,7 @@ contract DappletRegistry {
     function getVersionNumbers(string memory name, string memory branch)
         public
         view
-        returns (SemVer[] memory)
+        returns (bytes4[] memory)
     {
         return LibDappletRegistryRead.getVersionNumbers(s, name, branch);
     }
@@ -221,18 +217,14 @@ contract DappletRegistry {
     function getVersionInfo(
         string memory name,
         string memory branch,
-        uint8 major,
-        uint8 minor,
-        uint8 patch
+        bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
         return
             LibDappletRegistryRead.getVersionInfo(
                 s,
                 name,
                 branch,
-                major,
-                minor,
-                patch
+                version
             );
     }
 
@@ -494,7 +486,7 @@ contract DappletRegistry {
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
             bytes32 dKey = keccak256(
-                abi.encodePacked(d.name, d.branch, d.major, d.minor, d.patch)
+                abi.encodePacked(d.name, d.branch, d.version)
             );
             require(s.versions[dKey].modIdx != 0, "Dependency doesn't exist");
             deps[i] = dKey;
@@ -507,9 +499,7 @@ contract DappletRegistry {
                 abi.encodePacked(
                     interf.name,
                     interf.branch,
-                    interf.major,
-                    interf.minor,
-                    interf.patch
+                    interf.version
                 )
             );
             require(s.versions[iKey].modIdx != 0, "Interface doesn't exist");
@@ -540,9 +530,7 @@ contract DappletRegistry {
         VersionInfo memory vInfo = VersionInfo(
             moduleIdx,
             v.branch,
-            v.major,
-            v.minor,
-            v.patch,
+            v.version,
             v.binary,
             deps,
             interfaces,
@@ -551,7 +539,7 @@ contract DappletRegistry {
             block.timestamp
         );
         bytes32 vKey = keccak256(
-            abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch)
+            abi.encodePacked(mod_name, v.branch, v.version)
         );
         s.versions[vKey] = vInfo;
 
@@ -562,9 +550,7 @@ contract DappletRegistry {
         }
 
         // add version number
-        s.versionNumbers[nbKey].push(bytes1(vInfo.major));
-        s.versionNumbers[nbKey].push(bytes1(vInfo.minor));
-        s.versionNumbers[nbKey].push(bytes1(vInfo.patch));
+        s.versionNumbers[nbKey].push(vInfo.version);
 
         // reset IsUnderConstruction flag
         if (((s.modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {

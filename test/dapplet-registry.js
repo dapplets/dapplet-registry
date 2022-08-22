@@ -25,34 +25,20 @@ const getValues = (data) => {
 const getVersion = (data) => {
   return {
     branch: data.branch,
-    major: data.major,
-    minor: data.minor,
-    patch: data.patch,
+    version: data.version,
     extensionVersion: data.extensionVersion,
-  };
-};
-
-const getSemVer = (data) => {
-  return {
-    major: data.major,
-    minor: data.minor,
-    patch: data.patch
   };
 };
 
 const addVersion = ({
   branch = "default",
-  major = 9,
-  minor = 8,
-  patch = 7,
-  extensionVersion = "0x00ff01",
+  version = "0x09080700",
+  extensionVersion = "0x00ff0100",
   createdAt = 0
 }) => {
   return {
     branch,
-    major,
-    minor,
-    patch,
+    version,
     flags: 0,
     binary: {
       hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -358,25 +344,21 @@ describe("DappletRegistry", function () {
     await contract.addModuleVersion(
       "twitter-adapter-test",
       addVersion({
-        extensionVersion: "0x00f119",
+        extensionVersion: "0x00f11900",
       }),
     );
 
     const getVersionInfo = await contract.getVersionInfo(
       "twitter-adapter-test",
       "default",
-      9,
-      8,
-      7,
+      "0x09080700"
     );
 
     const resultVersion = getVersionInfo.map(getVersion)[0];
     expect(resultVersion).to.eql({
       branch: "default",
-      major: 9,
-      minor: 8,
-      patch: 7,
-      extensionVersion: "0x00f119",
+      version: "0x09080700",
+      extensionVersion: "0x00f11900",
     });
   });
 
@@ -398,15 +380,11 @@ describe("DappletRegistry", function () {
       [
         addVersion({
           branch: "default",
-          major: 7,
-          minor: 6,
-          patch: 5,
+          version: "0x07060500"
         }),
         addVersion({
           branch: "master",
-          major: 1,
-          minor: 2,
-          patch: 3,
+          version: "0x01020300"
         }),
       ],
     );
@@ -489,18 +467,14 @@ describe("DappletRegistry", function () {
     const getVersionInfo = await contract.getVersionInfo(
       "twitter-adapter-test",
       "default",
-      9,
-      8,
-      7,
+      "0x09080700"
     );
     const resultVersion = getVersionInfo.map(getVersion)[0];
 
     expect(resultVersion).to.eql({
       branch: "default",
-      major: 9,
-      minor: 8,
-      patch: 7,
-      extensionVersion: "0x00ff01",
+      version: "0x09080700",
+      extensionVersion: "0x00ff0100",
     });
   });
 
@@ -590,63 +564,63 @@ describe("DappletRegistry", function () {
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "default", major: 0, minor: 1, patch: 0 }),
+      addVersion({ branch: "default", version: "0x00010000" }),
     );
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "default", major: 0, minor: 1, patch: 1 }),
+      addVersion({ branch: "default", version: "0x00010100" }),
     );
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "new", major: 0, minor: 1, patch: 0 }),
+      addVersion({ branch: "new", version: "0x00010000" }),
     );
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "new", major: 0, minor: 1, patch: 1 }),
+      addVersion({ branch: "new", version: "0x00010100" }),
     );
     
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "legacy", major: 0, minor: 1, patch: 0 }),
+      addVersion({ branch: "legacy", version: "0x00010000" }),
     );
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
-      addVersion({ branch: "legacy", major: 0, minor: 1, patch: 1 }),
+      addVersion({ branch: "legacy", version: "0x00010100" }),
     );
 
     const branches = await contract.getBranchesByModule("twitter-adapter-test");
     expect(branches).to.deep.eq(["default", "new", "legacy"]);
   });
 
-  it("returns an array of version numbers as structs", async () => {
+  it("returns an array of version numbers", async () => {
     await addModuleInfo(contract, {
       name: "version-numbers-test"
     }, []);
 
     await contract.addModuleVersion(
       "version-numbers-test",
-      addVersion({ branch: "default", major: 0, minor: 1, patch: 0 }),
+      addVersion({ branch: "default", version: "0x00010000" }),
     );
 
     await contract.addModuleVersion(
       "version-numbers-test",
-      addVersion({ branch: "default", major: 0, minor: 1, patch: 1 }),
+      addVersion({ branch: "default", version: "0x00010100" }),
     );
 
     await contract.addModuleVersion(
       "version-numbers-test",
-      addVersion({ branch: "default", major: 0, minor: 1, patch: 2 }),
+      addVersion({ branch: "default", version: "0x00010200" }),
     );   
 
     const versions = await contract.getVersionNumbers("version-numbers-test", "default");
-    expect(versions.map(getSemVer)).to.have.deep.members([
-      { major: 0, minor: 1, patch: 0 },
-      { major: 0, minor: 1, patch: 1 },
-      { major: 0, minor: 1, patch: 2 }
+    expect(versions).to.have.deep.members([
+      "0x00010000",
+      "0x00010100",
+      "0x00010200",
     ]);
   });
 });
