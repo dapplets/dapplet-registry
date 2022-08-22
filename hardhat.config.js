@@ -5,6 +5,7 @@ require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 require("./scripts/export");
+require("./scripts/import-module");
 
 module.exports = {
   mocha: {

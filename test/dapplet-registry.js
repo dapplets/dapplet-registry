@@ -304,20 +304,35 @@ describe("DappletRegistry", function () {
   });
 
   it("should return NFT metadata of the added module", async () => {
-    await addModuleInfo(contract, {});
+    await addModuleInfo(contract, {
+      icon: {
+        hash: '0xa4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
+        uris: []
+      }
+    });
 
     const uri = await nftContract.tokenURI(1);
     expect(uri).to.contain('data:application/json;base64,');
 
     const base64 = uri.replace('data:application/json;base64,', '');
-    const metadata = JSON.parse(atob(base64));
+    const json = atob(base64);
+    console.log('json', json)
+    const metadata = JSON.parse(json);
+
+    const description = `This NFT is a proof of ownership of the "twitter-adapter-test".\n` + 
+      `twitter-adapter-test\n` + 
+      `This dapplet is a part of the Dapplets Project ecosystem for augmented web. All dapplets are available in the Dapplets Store.`;
 
     expect(metadata).to.eql({
       name: "Dapplet \"twitter-adapter-test\"",
-      description: "twitter-adapter-test",
+      image: 'https://dapplet-api.s3.nl-ams.scw.cloud/a4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
+      description: description,
       attributes: [{
         trait_type: "Name", 
         value: "twitter-adapter-test"
+      },{
+        trait_type: "Module Type", 
+        value: "2"
       }]
     });
   });
