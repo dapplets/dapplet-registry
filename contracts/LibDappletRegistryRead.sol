@@ -105,23 +105,7 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modulesInfo[i] = s.modules[dappIndxs[i]];
-
-            SemVer[] memory versions = getVersionNumbers(
-                s,
-                modulesInfo[i].name,
-                branch
-            );
-            if (versions.length == 0) continue;
-
-            SemVer memory lastVersion = versions[versions.length - 1];
-            (lastVersionsInfo[i], ) = getVersionInfo(
-                s,
-                modulesInfo[i].name,
-                branch,
-                lastVersion.major,
-                lastVersion.minor,
-                lastVersion.patch
-            );
+            lastVersionsInfo[i] = getLastVersionInfo(s, modulesInfo[i].name, branch);
         }
     }
 
@@ -178,6 +162,25 @@ library LibDappletRegistryRead {
             v.extensionVersion
         );
         moduleType = s.modules[v.modIdx].moduleType;
+    }
+
+    function getLastVersionInfo(
+        AppStorage storage s,
+        string memory name,
+        string memory branch
+    ) public view returns (VersionInfoDto memory dto) {
+        SemVer[] memory versions = getVersionNumbers(s, name, branch);
+        if (versions.length > 0) {
+            SemVer memory lastVersion = versions[versions.length - 1];
+            (dto, ) = getVersionInfo(
+                s,
+                name,
+                branch,
+                lastVersion.major,
+                lastVersion.minor,
+                lastVersion.patch
+            );
+        }
     }
 
     function getModulesOfListing(AppStorage storage s, address lister)
