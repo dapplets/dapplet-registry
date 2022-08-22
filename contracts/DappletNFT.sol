@@ -34,19 +34,13 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
     function getModulesIndexes(
         address owner,
         uint256 offset,
-        uint256 limit
-    )
-        public
-        view
-        returns (
-            uint256[] memory dappIndxs,
-            uint256 total
-        )
-    {
+        uint256 limit,
+        bool reverse
+    ) public view returns (uint256[] memory dappIndxs, uint256 total) {
         if (limit == 0) {
             limit = 20;
         }
-        
+
         total = balanceOf(owner);
 
         if (limit > total - offset) {
@@ -55,7 +49,8 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
 
         dappIndxs = new uint256[](limit);
         for (uint256 i = 0; i < limit; ++i) {
-            dappIndxs[i] = tokenOfOwnerByIndex(owner, i + offset);
+            uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
+            dappIndxs[i] = tokenOfOwnerByIndex(owner, idx);
         }
     }
 }

@@ -271,6 +271,7 @@ describe("DappletRegistry", function () {
       "default",
       0,
       10,
+      false
     );
     const resultByName = getValues(moduleInfoByName.modulesInfo);
     const resultByOwner = modulesInfoByOwner.modulesInfo.map(getValues);
@@ -521,8 +522,8 @@ describe("DappletRegistry", function () {
       });
     }
 
-    const page_1 = await contract.getModules("default", 0, 10);
-    const page_2 = await contract.getModules("default", 10, 10);
+    const page_1 = await contract.getModules("default", 0, 10, false);
+    const page_2 = await contract.getModules("default", 10, 10, false);
     expect([...page_1[0], ...page_2[0]]).to.be.length(20);
   });
 
@@ -546,7 +547,7 @@ describe("DappletRegistry", function () {
       ],
     );
 
-    const moduleByContext = await contract.getModules("default", 0, 1);
+    const moduleByContext = await contract.getModules("default", 0, 1, false);
 
     const result = moduleByContext.modules.map(getValues);
 
@@ -770,6 +771,7 @@ describe("DappletRegistry + DappletNFT", function () {
       "default",
       0,
       10,
+      false
     );
     const resultByOwner = modulesInfoByOwner[0].map(getValues);
 

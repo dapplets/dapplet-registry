@@ -55,7 +55,8 @@ contract DappletRegistry {
     function getModulesOfListing(
         address lister,
         uint256 offset,
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         public
         view
@@ -69,7 +70,8 @@ contract DappletRegistry {
                 s,
                 lister,
                 offset,
-                limit
+                limit,
+                reverse
             );
     }
 
@@ -148,7 +150,8 @@ contract DappletRegistry {
     function getModules(
         string memory branch,
         uint256 offset,
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         public
         view
@@ -159,7 +162,7 @@ contract DappletRegistry {
             uint256 total
         )
     {
-        return LibDappletRegistryRead.getModules(s, branch, offset, limit);
+        return LibDappletRegistryRead.getModules(s, branch, offset, limit, reverse);
     }
 
     function getModuleInfoByName(string memory mod_name)
@@ -174,7 +177,8 @@ contract DappletRegistry {
         address userId,
         string memory branch,
         uint256 offset,
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         public
         view
@@ -190,7 +194,8 @@ contract DappletRegistry {
                 userId,
                 branch,
                 offset,
-                limit
+                limit,
+                reverse
             );
     }
 

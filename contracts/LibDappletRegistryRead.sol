@@ -16,14 +16,7 @@ library LibDappletRegistryRead {
         uint256 offset,
         uint256 limit,
         bool reverse
-    )
-        public
-        view
-        returns (
-            VersionInfoDto[] memory versions,
-            uint256 total
-        )
-    {
+    ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
         bytes32 key = keccak256(abi.encodePacked(name, branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
@@ -40,10 +33,13 @@ library LibDappletRegistryRead {
         versions = new VersionInfoDto[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            uint256 idx = (reverse)
-                ? (total - offset - 1 - i)
-                : (offset + i);
-            (versions[i], ) = getVersionInfo(s, name, branch, versionNumbers[idx]);
+            uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
+            (versions[i], ) = getVersionInfo(
+                s,
+                name,
+                branch,
+                versionNumbers[idx]
+            );
         }
     }
 
@@ -51,7 +47,8 @@ library LibDappletRegistryRead {
         AppStorage storage s,
         string memory branch,
         uint256 offset,
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         external
         view
@@ -77,7 +74,7 @@ library LibDappletRegistryRead {
         owners = new address[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            uint256 idx = offset + i + 1; // zero index is reserved
+            uint256 idx = (reverse) ? (total - offset - i) : (offset + i + 1); // zero index is reserved
             modules[i] = s.modules[idx];
             lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
             owners[i] = s._dappletNFTContract.ownerOf(idx);
@@ -100,7 +97,8 @@ library LibDappletRegistryRead {
         address userId,
         string memory branch,
         uint256 offset,
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         external
         view
@@ -110,12 +108,11 @@ library LibDappletRegistryRead {
             uint256 total
         )
     {
-        (
-            uint256[] memory dappIndxs,
-            uint256 totalModulesFromNFT
-        ) = s._dappletNFTContract.getModulesIndexes(userId, offset, limit);
+        (uint256[] memory dappIndxs, uint256 totalNfts) = s
+            ._dappletNFTContract
+            .getModulesIndexes(userId, offset, limit, reverse);
 
-        total = totalModulesFromNFT;
+        total = totalNfts;
 
         modulesInfo = new ModuleInfo[](dappIndxs.length);
         lastVersionsInfo = new VersionInfoDto[](dappIndxs.length);
@@ -176,15 +173,9 @@ library LibDappletRegistryRead {
         AppStorage storage s,
         address lister,
         uint256 offset,
-        uint256 limit
-    )
-        external
-        view
-        returns (
-            ModuleInfo[] memory modules,
-            uint256 total
-        )
-    {
+        uint256 limit,
+        bool reverse
+    ) external view returns (ModuleInfo[] memory modules, uint256 total) {
         if (limit == 0) {
             limit = 20;
         }
@@ -200,7 +191,8 @@ library LibDappletRegistryRead {
         modules = new ModuleInfo[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            modules[i] = s.modules[moduleIndexes[i + offset]];
+            uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
+            modules[i] = s.modules[moduleIndexes[idx]];
         }
     }
 
