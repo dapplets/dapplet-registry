@@ -40,7 +40,6 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         view
         returns (
             uint256[] memory dappIndxs,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -49,7 +48,6 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         }
         
         total = balanceOf(owner);
-        nextOffset = offset + limit;
 
         if (limit > total - offset) {
             limit = total - offset;

@@ -61,7 +61,6 @@ contract DappletRegistry {
         view
         returns (
             ModuleInfo[] memory modules,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -157,7 +156,6 @@ contract DappletRegistry {
             ModuleInfo[] memory modules,
             VersionInfoDto[] memory lastVersions,
             address[] memory owners,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -183,7 +181,6 @@ contract DappletRegistry {
         returns (
             ModuleInfo[] memory modulesInfo,
             VersionInfoDto[] memory lastVersionsInfo,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -217,7 +214,6 @@ contract DappletRegistry {
         view
         returns (
             VersionInfoDto[] memory versions,
-            uint256 nextOffset,
             uint256 total
         )
     {

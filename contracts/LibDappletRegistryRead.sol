@@ -21,7 +21,6 @@ library LibDappletRegistryRead {
         view
         returns (
             VersionInfoDto[] memory versions,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -32,7 +31,6 @@ library LibDappletRegistryRead {
             limit = 20;
         }
 
-        nextOffset = offset + limit; // ToDo: remove nextOffset?
         total = versionNumbers.length;
 
         if (limit > total - offset) {
@@ -61,7 +59,6 @@ library LibDappletRegistryRead {
             ModuleInfo[] memory modules,
             VersionInfoDto[] memory lastVersions,
             address[] memory owners,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -69,7 +66,6 @@ library LibDappletRegistryRead {
             limit = 20;
         }
 
-        nextOffset = offset + limit;
         total = s.modules.length;
 
         if (limit > total - offset) {
@@ -111,17 +107,14 @@ library LibDappletRegistryRead {
         returns (
             ModuleInfo[] memory modulesInfo,
             VersionInfoDto[] memory lastVersionsInfo,
-            uint256 nextOffset,
             uint256 total
         )
     {
         (
             uint256[] memory dappIndxs,
-            uint256 nextOffsetFromNFT,
             uint256 totalModulesFromNFT
         ) = s._dappletNFTContract.getModulesIndexes(userId, offset, limit);
 
-        nextOffset = nextOffsetFromNFT;
         total = totalModulesFromNFT;
 
         modulesInfo = new ModuleInfo[](dappIndxs.length);
@@ -189,7 +182,6 @@ library LibDappletRegistryRead {
         view
         returns (
             ModuleInfo[] memory modules,
-            uint256 nextOffset,
             uint256 total
         )
     {
@@ -199,7 +191,6 @@ library LibDappletRegistryRead {
 
         uint256[] memory moduleIndexes = s.listingByLister[lister].items();
 
-        nextOffset = offset + limit;
         total = moduleIndexes.length;
 
         if (limit > total - offset) {
