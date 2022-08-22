@@ -109,7 +109,11 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modulesInfo[i] = s.modules[dappIndxs[i]];
-            lastVersionsInfo[i] = getLastVersionInfo(s, modulesInfo[i].name, branch);
+            lastVersionsInfo[i] = getLastVersionInfo(
+                s,
+                modulesInfo[i].name,
+                branch
+            );
         }
     }
 
@@ -188,16 +192,37 @@ library LibDappletRegistryRead {
         }
     }
 
-    function getModulesOfListing(AppStorage storage s, address lister)
+    function getModulesOfListing(
+        AppStorage storage s,
+        address lister,
+        uint256 offset,
+        uint256 limit
+    )
         external
         view
-        returns (ModuleInfo[] memory out)
+        returns (
+            ModuleInfo[] memory modules,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
     {
-        uint256[] memory moduleIndexes = s.listingByLister[lister].items();
-        out = new ModuleInfo[](moduleIndexes.length);
+        if (limit == 0) {
+            limit = 20;
+        }
 
-        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
-            out[i] = s.modules[moduleIndexes[i]];
+        uint256[] memory moduleIndexes = s.listingByLister[lister].items();
+
+        nextOffset = offset + limit;
+        totalModules = moduleIndexes.length;
+
+        if (limit > totalModules - offset) {
+            limit = totalModules - offset;
+        }
+
+        modules = new ModuleInfo[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            modules[i] = s.modules[moduleIndexes[i + offset]];
         }
     }
 }

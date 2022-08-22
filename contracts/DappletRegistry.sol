@@ -56,12 +56,26 @@ contract DappletRegistry {
         return s.listingByLister[lister].size;
     }
 
-    function getModulesOfListing(address lister)
+    function getModulesOfListing(
+        address lister,
+        uint256 offset,
+        uint256 limit
+    )
         public
         view
-        returns (ModuleInfo[] memory out)
+        returns (
+            ModuleInfo[] memory modules,
+            uint256 nextOffset,
+            uint256 totalModules
+        )
     {
-        return LibDappletRegistryRead.getModulesOfListing(s, lister);
+        return
+            LibDappletRegistryRead.getModulesOfListing(
+                s,
+                lister,
+                offset,
+                limit
+            );
     }
 
     function getListers() public view returns (address[] memory) {
