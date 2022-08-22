@@ -278,8 +278,9 @@ describe("DappletRegistry", function () {
     const moduleInfoByName = await contract.getModuleInfoByName(
       "twitter-adapter-test",
     );
-    const modulesInfoByOwner = await contract.getModulesInfoByOwner(
+    const modulesInfoByOwner = await contract.getModulesByOwner(
       accountAddress,
+      "default",
       0,
       10,
     );
@@ -777,8 +778,9 @@ describe("DappletRegistry + DappletNFT", function () {
       moduleIndex,
     );
 
-    const modulesInfoByOwner = await registryContract.getModulesInfoByOwner(
+    const modulesInfoByOwner = await registryContract.getModulesByOwner(
       dappletBuyer.address,
+      "default",
       0,
       10,
     );
