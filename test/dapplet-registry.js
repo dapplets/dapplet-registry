@@ -46,6 +46,7 @@ const addVersion = ({
   minor = 8,
   patch = 7,
   extensionVersion = "0x00ff01",
+  createdAt = 0
 }) => {
   return {
     branch,
@@ -60,6 +61,7 @@ const addVersion = ({
     dependencies: [],
     interfaces: [],
     extensionVersion,
+    createdAt
   };
 };
 

@@ -65,6 +65,7 @@ module.exports = addModuleInfo = async (
         dependencies: [],
         interfaces: [],
         extensionVersion: "0x00ff01",
+        createdAt: 0
       },
     ] : versions,
   );

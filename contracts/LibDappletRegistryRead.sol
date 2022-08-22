@@ -163,7 +163,8 @@ library LibDappletRegistryRead {
             deps,
             interfaces,
             v.flags,
-            v.extensionVersion
+            v.extensionVersion,
+            v.createdAt
         );
         moduleType = s.modules[v.modIdx].moduleType;
     }

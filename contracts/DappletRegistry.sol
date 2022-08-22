@@ -541,7 +541,8 @@ contract DappletRegistry {
             deps,
             interfaces,
             v.flags,
-            v.extensionVersion
+            v.extensionVersion,
+            block.timestamp
         );
         bytes32 vKey = keccak256(
             abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch)
