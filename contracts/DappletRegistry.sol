@@ -62,7 +62,7 @@ contract DappletRegistry {
         returns (
             ModuleInfo[] memory modules,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         return
@@ -158,7 +158,7 @@ contract DappletRegistry {
             VersionInfoDto[] memory lastVersions,
             address[] memory owners,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         return LibDappletRegistryRead.getModules(s, branch, offset, limit);
@@ -184,7 +184,7 @@ contract DappletRegistry {
             ModuleInfo[] memory modulesInfo,
             VersionInfoDto[] memory lastVersionsInfo,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         return
@@ -218,7 +218,7 @@ contract DappletRegistry {
         returns (
             VersionInfoDto[] memory versions,
             uint256 nextOffset,
-            uint256 totalVersions
+            uint256 total
         )
     {
         return

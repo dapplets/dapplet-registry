@@ -22,7 +22,7 @@ library LibDappletRegistryRead {
         returns (
             VersionInfoDto[] memory versions,
             uint256 nextOffset,
-            uint256 totalVersions
+            uint256 total
         )
     {
         bytes32 key = keccak256(abi.encodePacked(name, branch));
@@ -33,17 +33,17 @@ library LibDappletRegistryRead {
         }
 
         nextOffset = offset + limit; // ToDo: remove nextOffset?
-        totalVersions = versionNumbers.length;
+        total = versionNumbers.length;
 
-        if (limit > totalVersions - offset) {
-            limit = totalVersions - offset;
+        if (limit > total - offset) {
+            limit = total - offset;
         }
 
         versions = new VersionInfoDto[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse)
-                ? (totalVersions - offset - 1 - i)
+                ? (total - offset - 1 - i)
                 : (offset + i);
             (versions[i], ) = getVersionInfo(s, name, branch, versionNumbers[idx]);
         }
@@ -62,7 +62,7 @@ library LibDappletRegistryRead {
             VersionInfoDto[] memory lastVersions,
             address[] memory owners,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         if (limit == 0) {
@@ -70,10 +70,10 @@ library LibDappletRegistryRead {
         }
 
         nextOffset = offset + limit;
-        totalModules = s.modules.length;
+        total = s.modules.length;
 
-        if (limit > totalModules - offset) {
-            limit = totalModules - offset;
+        if (limit > total - offset) {
+            limit = total - offset;
         }
 
         modules = new ModuleInfo[](limit);
@@ -112,7 +112,7 @@ library LibDappletRegistryRead {
             ModuleInfo[] memory modulesInfo,
             VersionInfoDto[] memory lastVersionsInfo,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         (
@@ -122,7 +122,7 @@ library LibDappletRegistryRead {
         ) = s._dappletNFTContract.getModulesIndexes(userId, offset, limit);
 
         nextOffset = nextOffsetFromNFT;
-        totalModules = totalModulesFromNFT;
+        total = totalModulesFromNFT;
 
         modulesInfo = new ModuleInfo[](dappIndxs.length);
         lastVersionsInfo = new VersionInfoDto[](dappIndxs.length);
@@ -190,7 +190,7 @@ library LibDappletRegistryRead {
         returns (
             ModuleInfo[] memory modules,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         if (limit == 0) {
@@ -200,10 +200,10 @@ library LibDappletRegistryRead {
         uint256[] memory moduleIndexes = s.listingByLister[lister].items();
 
         nextOffset = offset + limit;
-        totalModules = moduleIndexes.length;
+        total = moduleIndexes.length;
 
-        if (limit > totalModules - offset) {
-            limit = totalModules - offset;
+        if (limit > total - offset) {
+            limit = total - offset;
         }
 
         modules = new ModuleInfo[](limit);

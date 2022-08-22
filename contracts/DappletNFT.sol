@@ -41,18 +41,18 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         returns (
             uint256[] memory dappIndxs,
             uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
         if (limit == 0) {
             limit = 20;
         }
         
-        totalModules = balanceOf(owner);
+        total = balanceOf(owner);
         nextOffset = offset + limit;
 
-        if (limit > totalModules - offset) {
-            limit = totalModules - offset;
+        if (limit > total - offset) {
+            limit = total - offset;
         }
 
         dappIndxs = new uint256[](limit);

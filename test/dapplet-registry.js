@@ -616,7 +616,7 @@ describe("DappletRegistry", function () {
       addVersion({ branch: "default", version: "0x00010200" }),
     );
 
-    const { versions: forwardVersions, totalVersions: forwardTotalVersions } = 
+    const { versions: forwardVersions, total: forwardTotalVersions } = 
       await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
     expect(forwardTotalVersions.toString()).to.eql("3");
     expect(forwardVersions.map(x => x.version)).to.have.deep.members([
@@ -625,7 +625,7 @@ describe("DappletRegistry", function () {
       "0x00010200",
     ]);
 
-    const { versions: reversedVersions, totalVersions: reversedTotalVersions } = 
+    const { versions: reversedVersions, total: reversedTotalVersions } = 
       await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
     expect(reversedTotalVersions.toString()).to.eql("3");
     expect(reversedVersions.map(x => x.version)).to.have.deep.members([

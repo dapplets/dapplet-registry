@@ -66,7 +66,7 @@ describe("DappletRegistry Infinity Test", function () {
         "result",
         result["result"].length,
         result["nextOffset"],
-        result["totalModules"],
+        result["total"],
         result["result"][result["result"].length - 1].name,
       );
     }
