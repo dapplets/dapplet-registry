@@ -31,6 +31,7 @@ library LibDappletRegistryRead {
 
     function getModules(
         AppStorage storage s,
+        string memory branch,
         uint256 offset,
         uint256 limit
     )
@@ -38,6 +39,7 @@ library LibDappletRegistryRead {
         view
         returns (
             ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
             address[] memory owners,
             uint256 nextOffset,
             uint256 totalModules
@@ -55,11 +57,13 @@ library LibDappletRegistryRead {
         }
 
         modules = new ModuleInfo[](limit);
+        lastVersions = new VersionInfoDto[](limit);
         owners = new address[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = offset + i + 1; // zero index is reserved
             modules[i] = s.modules[idx];
+            lastVersions[i] = getLastVersionInfo(s, modules[i].name, branch);
             owners[i] = s._dappletNFTContract.ownerOf(idx);
         }
     }

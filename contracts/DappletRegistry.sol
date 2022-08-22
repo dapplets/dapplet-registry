@@ -142,17 +142,22 @@ contract DappletRegistry {
         return s.modules[index];
     }
 
-    function getModules(uint256 offset, uint256 limit)
+    function getModules(
+        string memory branch,
+        uint256 offset,
+        uint256 limit
+    )
         public
         view
         returns (
             ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
             address[] memory owners,
             uint256 nextOffset,
             uint256 totalModules
         )
     {
-        return LibDappletRegistryRead.getModules(s, offset, limit);
+        return LibDappletRegistryRead.getModules(s, branch, offset, limit);
     }
 
     function getModuleInfoByName(string memory mod_name)
@@ -570,9 +575,11 @@ contract DappletRegistry {
         bytes32 mKey = keccak256(abi.encodePacked(mod_name));
 
         if (mKey == _HEAD) {
-            return 0x0000000000000000000000000000000000000000000000000000000000000000;
+            return
+                0x0000000000000000000000000000000000000000000000000000000000000000;
         } else if (mKey == _TAIL) {
-            return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+            return
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
         } else {
             uint256 moduleIdx = s.moduleIdxs[mKey];
             require(moduleIdx != 0, "The module does not exist");
