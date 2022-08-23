@@ -511,6 +511,7 @@ describe("DappletRegistry", function () {
   });
 
   it("should return 20 elements with arguments (0, 10) and (10, 10)", async () => {
+    const names = [];
     for (let i = 0; i < 20; i++) {
       await addModuleInfo(contract, {
         accountAddress,
@@ -520,11 +521,20 @@ describe("DappletRegistry", function () {
         context: [],
         interfaces: [],
       });
+      names.push(`twitter-adapter-test-${i}`);
     }
 
     const page_1 = await contract.getModules("default", 0, 10, false);
+    expect(page_1.modules.map(x => x.name)).deep.eq([...names].splice(0, 10));
+
     const page_2 = await contract.getModules("default", 10, 10, false);
-    expect([...page_1[0], ...page_2[0]]).to.be.length(20);
+    expect(page_2.modules.map(x => x.name)).deep.eq([...names].splice(10, 10));
+
+    const page_1_reversed = await contract.getModules("default", 0, 10, true);
+    expect(page_1_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
+
+    const page_2_reversed = await contract.getModules("default", 10, 10, true);
+    expect(page_2_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
   });
 
   it("transmitting and verifying the addition of dynamically added data", async () => {
