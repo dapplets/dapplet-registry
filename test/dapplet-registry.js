@@ -657,6 +657,29 @@ describe("DappletRegistry", function () {
       "0x00010000",
     ]);
   });
+
+  
+  it("should fail incorrect versioning", async () => {
+    await addModuleInfo(contract, {
+      name: "versioning-test"
+    }, []);
+
+    try {
+      await contract.addModuleVersion(
+        "versioning-test",
+        addVersion({ branch: "default", version: "0x010203FF" }), // v1.2.3
+      );
+  
+      await contract.addModuleVersion(
+        "versioning-test",
+        addVersion({ branch: "default", version: "0x010202FF" }), // v1.2.2
+      );
+
+      expect.fail("contract is not failed");
+    } catch (e) {
+      expect(e.message).to.have.string("Version must be bumped");
+    }
+  });
 });
 
 describe("DappletNFT", function () {

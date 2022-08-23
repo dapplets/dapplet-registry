@@ -499,6 +499,15 @@ contract DappletRegistry {
             abi.encodePacked(mod_name, v.branch, v.version)
         );
         require(s.versions[vKey].modIdx == 0, "Version already exists");
+
+        bytes32 nbKey = keccak256(abi.encodePacked(mod_name, v.branch));
+        bytes4[] storage versionNumbers = s.versionNumbers[nbKey];
+        
+        // check correct versioning
+        if (versionNumbers.length > 0) {
+            bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
+            require(v.version > lastVersion, "Version must be bumped");
+        }
         
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
@@ -555,13 +564,12 @@ contract DappletRegistry {
         s.versions[vKey] = vInfo;
 
         // add branch if not exists
-        bytes32 nbKey = keccak256(abi.encodePacked(mod_name, vInfo.branch));
-        if (s.versionNumbers[nbKey].length == 0) {
+        if (versionNumbers.length == 0) {
             s.branches[moduleKey].push(v.branch);
         }
 
         // add version number
-        s.versionNumbers[nbKey].push(vInfo.version);
+        versionNumbers.push(vInfo.version);
 
         // reset IsUnderConstruction flag
         if (((s.modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {
