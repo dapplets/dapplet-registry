@@ -54,6 +54,7 @@ contract DappletRegistry {
 
     function getModulesOfListing(
         address lister,
+        string memory branch,
         uint256 offset,
         uint256 limit,
         bool reverse
@@ -61,7 +62,9 @@ contract DappletRegistry {
         public
         view
         returns (
-            ModuleInfo[] memory modules,
+            ModuleInfo[] memory modules, 
+            VersionInfoDto[] memory lastVersions,
+            address[] memory owners,
             uint256 total
         )
     {
@@ -69,6 +72,7 @@ contract DappletRegistry {
             LibDappletRegistryRead.getModulesOfListing(
                 s,
                 lister,
+                branch,
                 offset,
                 limit,
                 reverse

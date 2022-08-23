@@ -172,10 +172,16 @@ library LibDappletRegistryRead {
     function getModulesOfListing(
         AppStorage storage s,
         address lister,
+        string memory branch,
         uint256 offset,
         uint256 limit,
         bool reverse
-    ) external view returns (ModuleInfo[] memory modules, uint256 total) {
+    ) external view returns (
+        ModuleInfo[] memory modules, 
+        VersionInfoDto[] memory lastVersions,
+        address[] memory owners,
+        uint256 total
+    ) {
         if (limit == 0) {
             limit = 20;
         }
@@ -189,10 +195,14 @@ library LibDappletRegistryRead {
         }
 
         modules = new ModuleInfo[](limit);
+        lastVersions = new VersionInfoDto[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
-            modules[i] = s.modules[moduleIndexes[idx]];
+            uint256 mIdx = moduleIndexes[idx];
+            modules[i] = s.modules[mIdx];
+            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
+            owners[i] = s._dappletNFTContract.ownerOf(mIdx);
         }
     }
 
