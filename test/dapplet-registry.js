@@ -583,7 +583,7 @@ describe("DappletRegistry", function () {
   });
 
   it("returns an array of branches", async () => {
-    await addModuleInfo(contract, {});
+    await addModuleInfo(contract, {}, []);
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
