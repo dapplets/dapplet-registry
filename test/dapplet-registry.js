@@ -316,6 +316,10 @@ describe("DappletRegistry", function () {
         uris: [],
       },
       {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
+        uris: [],
+      },
+      {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000004",
         uris: [],
       },
@@ -755,7 +759,7 @@ describe("DappletRegistry + DappletNFT", function () {
     const dappletOwnerToRegistry = await registryContract.connect(dappletOwner);
 
     await addModuleInfo(dappletOwnerToRegistry, {});
-    const moduleIndex = await registryContract.getModuleIndx(
+    const moduleIndex = await registryContract.getModuleIndex(
       "twitter-adapter-test",
     );
 
@@ -785,7 +789,7 @@ describe("DappletRegistry + DappletNFT", function () {
   });
 
   it("gives NFT contract address", async () => {
-    const address = await registryContract.getNFTContractAddress();
+    const address = await registryContract.getNftContractAddress();
     expect(dappletContract.address).to.equal(address);
   });
 });

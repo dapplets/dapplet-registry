@@ -109,11 +109,11 @@ contract DappletRegistry {
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
-    function getNFTContractAddress() public view returns (address) {
+    function getNftContractAddress() public view returns (address) {
         return address(s._dappletNFTContract);
     }
 
-    function getModuleIndx(string memory moduleName)
+    function getModuleIndex(string memory moduleName)
         public
         view
         returns (uint256 moduleIdx)
@@ -128,10 +128,7 @@ contract DappletRegistry {
     )
         public
         view
-        returns (
-            ModuleInfo[][] memory modules,
-            address[][] memory owners
-        )
+        returns (ModuleInfo[][] memory modules, address[][] memory owners)
     {
         return
             LibDappletRegistryRead.getModulesInfoByListersBatch(
@@ -333,8 +330,9 @@ contract DappletRegistry {
         string memory name,
         string memory title,
         string memory description,
-        StorageRef memory manifest, // ToDo: rename to manifest?
-        StorageRef memory icon // ToDo: add nft reference
+        StorageRef memory image,
+        StorageRef memory manifest,
+        StorageRef memory icon
     ) public {
         uint256 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = s.modules[moduleIdx]; // WARNING! indexes are started from 1.
@@ -345,6 +343,7 @@ contract DappletRegistry {
 
         m.title = title;
         m.description = description;
+        m.image = image;
         m.manifest = manifest;
         m.icon = icon;
     }

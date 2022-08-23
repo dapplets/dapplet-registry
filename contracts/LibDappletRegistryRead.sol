@@ -178,11 +178,7 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modules[i] = s.modules[dappIndxs[i]];
-            lastVersions[i] = _getLastVersionInfo(
-                s,
-                modules[i].name,
-                branch
-            );
+            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
         }
     }
 
@@ -236,10 +232,7 @@ library LibDappletRegistryRead {
     )
         public
         view
-        returns (
-            ModuleInfo[][] memory modules,
-            address[][] memory owners
-        )
+        returns (ModuleInfo[][] memory modules, address[][] memory owners)
     {
         modules = new ModuleInfo[][](ctxIds.length);
         owners = new address[][](ctxIds.length);
