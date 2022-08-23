@@ -12,6 +12,7 @@ struct ModuleInfo {
     string name;
     string title;
     string description;
+    string nftImage;
     StorageRef fullDescription;
     StorageRef icon;
     string[] interfaces; //Exported interfaces in all versions. no duplicates.

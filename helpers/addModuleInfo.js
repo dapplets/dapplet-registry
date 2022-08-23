@@ -19,6 +19,7 @@ module.exports = addModuleInfo = async (
   {
     title = "twitter-adapter-test",
     description = "twitter-adapter-test",
+    nftImage = "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
     name = "twitter-adapter-test",
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
@@ -34,6 +35,7 @@ module.exports = addModuleInfo = async (
       name,
       title,
       description,
+      nftImage,
       fullDescription: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
         uris: [
