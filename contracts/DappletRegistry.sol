@@ -129,8 +129,8 @@ contract DappletRegistry {
         public
         view
         returns (
-            ModuleInfo[][] memory modulesInfos,
-            address[][] memory ctxIdsOwners
+            ModuleInfo[][] memory modules,
+            address[][] memory owners
         )
     {
         return
@@ -178,13 +178,13 @@ contract DappletRegistry {
     function getModuleInfoByName(string memory moduleName)
         public
         view
-        returns (ModuleInfo memory modulesInfo, address owner)
+        returns (ModuleInfo memory modules, address owner)
     {
         return LibDappletRegistryRead.getModuleInfoByName(s, moduleName);
     }
 
     function getModulesByOwner(
-        address userId,
+        address owner,
         string memory branch,
         uint256 offset,
         uint256 limit,
@@ -193,15 +193,15 @@ contract DappletRegistry {
         public
         view
         returns (
-            ModuleInfo[] memory modulesInfo,
-            VersionInfoDto[] memory lastVersionsInfo,
+            ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
             uint256 total
         )
     {
         return
             LibDappletRegistryRead.getModulesByOwner(
                 s,
-                userId,
+                owner,
                 branch,
                 offset,
                 limit,

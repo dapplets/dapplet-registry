@@ -154,8 +154,8 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    const resultDataByTwitter = moduleByTwitter.modulesInfos[0].map(getValues);
-    const resultDataByInstagram = moduleByInstagram.modulesInfos[0].map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modules[0].map(getValues);
+    const resultDataByInstagram = moduleByInstagram.modules[0].map(getValues);
 
     expect(resultDataByTwitter).to.have.deep.members([
       {
@@ -202,7 +202,7 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    const resultModuleById = moduleByContext.modulesInfos[0].map(getValues);
+    const resultModuleById = moduleByContext.modules[0].map(getValues);
     expect(resultModuleById).to.eql([
       {
         name: "twitter-adapter-test",
@@ -219,7 +219,7 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    expect(moduleInfo.modulesInfos[0]).to.eql([]);
+    expect(moduleInfo.modules[0]).to.eql([]);
   });
 
   it("only the Owner can add the ContextID", async () => {
@@ -271,7 +271,7 @@ describe("DappletRegistry", function () {
       0,
     );
 
-    expect(moduleInfo.modulesInfos[0]).to.be.equalTo([]);
+    expect(moduleInfo.modules[0]).to.be.equalTo([]);
   });
 
   it("should return information on the added module", async () => {
@@ -280,15 +280,15 @@ describe("DappletRegistry", function () {
     const moduleInfoByName = await contract.getModuleInfoByName(
       "twitter-adapter-test",
     );
-    const modulesInfoByOwner = await contract.getModulesByOwner(
+    const modulesByOwner = await contract.getModulesByOwner(
       accountAddress,
       "default",
       0,
       10,
       false
     );
-    const resultByName = getValues(moduleInfoByName.modulesInfo);
-    const resultByOwner = modulesInfoByOwner.modulesInfo.map(getValues);
+    const resultByName = getValues(moduleInfoByName.modules);
+    const resultByOwner = modulesByOwner.modules.map(getValues);
 
     expect(resultByName).to.eql({
       name: "twitter-adapter-test",
@@ -325,16 +325,16 @@ describe("DappletRegistry", function () {
       "twitter-adapter-test",
     );
     const resultByName = {
-      name: moduleInfo.modulesInfo.name,
-      title: moduleInfo.modulesInfo.title,
-      description: moduleInfo.modulesInfo.description,
+      name: moduleInfo.modules.name,
+      title: moduleInfo.modules.title,
+      description: moduleInfo.modules.description,
       manifest: {
-        hash: moduleInfo.modulesInfo.manifest.hash,
-        uris: moduleInfo.modulesInfo.manifest.uris,
+        hash: moduleInfo.modules.manifest.hash,
+        uris: moduleInfo.modules.manifest.uris,
       },
       icon: {
-        hash: moduleInfo.modulesInfo.icon.hash,
-        uris: moduleInfo.modulesInfo.icon.uris,
+        hash: moduleInfo.modules.icon.hash,
+        uris: moduleInfo.modules.icon.uris,
       },
     };
 
@@ -492,16 +492,16 @@ describe("DappletRegistry", function () {
     expect(page_2_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
 
     const page_1_owned = await contract.getModulesByOwner(accountAddress, "default", 0, 10, false);
-    expect(page_1_owned.modulesInfo.map(x => x.name)).deep.eq([...names].splice(0, 10));
+    expect(page_1_owned.modules.map(x => x.name)).deep.eq([...names].splice(0, 10));
 
     const page_2_owned = await contract.getModulesByOwner(accountAddress, "default", 10, 10, false);
-    expect(page_2_owned.modulesInfo.map(x => x.name)).deep.eq([...names].splice(10, 10));
+    expect(page_2_owned.modules.map(x => x.name)).deep.eq([...names].splice(10, 10));
 
     const page_1_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 0, 10, true);
-    expect(page_1_owned_reversed.modulesInfo.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
+    expect(page_1_owned_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
 
     const page_2_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 10, 10, true);
-    expect(page_2_owned_reversed.modulesInfo.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
+    expect(page_2_owned_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
   });
 
   it("transmitting and verifying the addition of dynamically added data", async () => {
@@ -739,7 +739,7 @@ describe("DappletRegistry + DappletNFT", function () {
       [accountAddress],
       0,
     );
-    const resultDataByTwitter = moduleByTwitter.modulesInfos[0].map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modules[0].map(getValues);
     expect(resultDataByTwitter).to.have.deep.members([
       {
         name: "twitter-adapter-test",
@@ -747,7 +747,7 @@ describe("DappletRegistry + DappletNFT", function () {
         description: "twitter-adapter-test",
       },
     ]);
-    expect(moduleByTwitter.ctxIdsOwners[0]).to.eql([accountAddress]);
+    expect(moduleByTwitter.owners[0]).to.eql([accountAddress]);
   });
 
   it("should transfer ownership of the module", async () => {
@@ -766,14 +766,14 @@ describe("DappletRegistry + DappletNFT", function () {
       moduleIndex,
     );
 
-    const modulesInfoByOwner = await registryContract.getModulesByOwner(
+    const modulesByOwner = await registryContract.getModulesByOwner(
       dappletBuyer.address,
       "default",
       0,
       10,
       false
     );
-    const resultByOwner = modulesInfoByOwner[0].map(getValues);
+    const resultByOwner = modulesByOwner[0].map(getValues);
 
     expect(resultByOwner).to.eql([
       {

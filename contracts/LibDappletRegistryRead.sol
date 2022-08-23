@@ -143,17 +143,17 @@ library LibDappletRegistryRead {
     function getModuleInfoByName(AppStorage storage s, string memory moduleName)
         external
         view
-        returns (ModuleInfo memory modulesInfo, address owner)
+        returns (ModuleInfo memory modules, address owner)
     {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         require(s.moduleIdxs[mKey] != 0, "The module does not exist");
-        modulesInfo = s.modules[s.moduleIdxs[mKey]];
+        modules = s.modules[s.moduleIdxs[mKey]];
         owner = s._dappletNFTContract.ownerOf(s.moduleIdxs[mKey]);
     }
 
     function getModulesByOwner(
         AppStorage storage s,
-        address userId,
+        address owner,
         string memory branch,
         uint256 offset,
         uint256 limit,
@@ -162,25 +162,25 @@ library LibDappletRegistryRead {
         external
         view
         returns (
-            ModuleInfo[] memory modulesInfo,
-            VersionInfoDto[] memory lastVersionsInfo,
+            ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
             uint256 total
         )
     {
         (uint256[] memory dappIndxs, uint256 totalNfts) = s
             ._dappletNFTContract
-            .getModulesIndexes(userId, offset, limit, reverse);
+            .getModulesIndexes(owner, offset, limit, reverse);
 
         total = totalNfts;
 
-        modulesInfo = new ModuleInfo[](dappIndxs.length);
-        lastVersionsInfo = new VersionInfoDto[](dappIndxs.length);
+        modules = new ModuleInfo[](dappIndxs.length);
+        lastVersions = new VersionInfoDto[](dappIndxs.length);
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
-            modulesInfo[i] = s.modules[dappIndxs[i]];
-            lastVersionsInfo[i] = _getLastVersionInfo(
+            modules[i] = s.modules[dappIndxs[i]];
+            lastVersions[i] = _getLastVersionInfo(
                 s,
-                modulesInfo[i].name,
+                modules[i].name,
                 branch
             );
         }
@@ -237,12 +237,12 @@ library LibDappletRegistryRead {
         public
         view
         returns (
-            ModuleInfo[][] memory modulesInfos,
-            address[][] memory ctxIdsOwners
+            ModuleInfo[][] memory modules,
+            address[][] memory owners
         )
     {
-        modulesInfos = new ModuleInfo[][](ctxIds.length);
-        ctxIdsOwners = new address[][](ctxIds.length);
+        modules = new ModuleInfo[][](ctxIds.length);
+        owners = new address[][](ctxIds.length);
 
         for (uint256 i = 0; i < ctxIds.length; ++i) {
             uint256[] memory outbuf = new uint256[](
@@ -256,15 +256,15 @@ library LibDappletRegistryRead {
                 0
             );
 
-            modulesInfos[i] = new ModuleInfo[](bufLen);
-            ctxIdsOwners[i] = new address[](bufLen);
+            modules[i] = new ModuleInfo[](bufLen);
+            owners[i] = new address[](bufLen);
 
             for (uint256 j = 0; j < bufLen; ++j) {
                 uint256 idx = outbuf[j];
                 address owner = s._dappletNFTContract.ownerOf(idx);
                 //ToDo: strip contentType indexes?
-                modulesInfos[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
-                ctxIdsOwners[i][j] = owner;
+                modules[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
+                owners[i][j] = owner;
             }
         }
     }
