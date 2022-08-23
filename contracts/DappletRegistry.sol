@@ -113,12 +113,12 @@ contract DappletRegistry {
         return address(s._dappletNFTContract);
     }
 
-    function getModuleIndx(string memory mod_name)
+    function getModuleIndx(string memory moduleName)
         public
         view
         returns (uint256 moduleIdx)
     {
-        moduleIdx = _getModuleIdx(mod_name);
+        moduleIdx = _getModuleIdx(moduleName);
     }
 
     function getModulesInfoByListersBatch(
@@ -175,12 +175,12 @@ contract DappletRegistry {
             );
     }
 
-    function getModuleInfoByName(string memory mod_name)
+    function getModuleInfoByName(string memory moduleName)
         public
         view
         returns (ModuleInfo memory modulesInfo, address owner)
     {
-        return LibDappletRegistryRead.getModuleInfoByName(s, mod_name);
+        return LibDappletRegistryRead.getModuleInfoByName(s, moduleName);
     }
 
     function getModulesByOwner(
@@ -244,21 +244,21 @@ contract DappletRegistry {
         return LibDappletRegistryRead.getVersionInfo(s, name, branch, version);
     }
 
-    function getAdminsByModule(string memory mod_name)
+    function getAdminsByModule(string memory moduleName)
         public
         view
         returns (address[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].values();
     }
 
-    function getContextIdsByModule(string memory mod_name)
+    function getContextIdsByModule(string memory moduleName)
         public
         view
         returns (string[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.contextIdsOfModules[mKey].values();
     }
 
@@ -350,64 +350,64 @@ contract DappletRegistry {
     }
 
     function addModuleVersion(
-        string memory mod_name,
+        string memory moduleName,
         VersionInfoDto memory vInfo
     ) public {
         // ******** TODO: check existing versions and version sorting
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint256 moduleIdx = _getModuleIdx(mod_name);
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
+        uint256 moduleIdx = _getModuleIdx(moduleName);
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender ||
                 s.adminsOfModules[mKey].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
 
-        _addModuleVersionNoChecking(mKey, moduleIdx, mod_name, vInfo);
+        _addModuleVersionNoChecking(mKey, moduleIdx, moduleName, vInfo);
     }
 
-    function addContextId(string memory mod_name, string memory contextId)
+    function addContextId(string memory moduleName, string memory contextId)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
     {
-        uint256 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         // ContextId adding
         s.modsByContextType[key].add(moduleIdx);
         s.contextIdsOfModules[mKey].add(contextId);
     }
 
-    function removeContextId(string memory mod_name, string memory contextId)
+    function removeContextId(string memory moduleName, string memory contextId)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
     {
-        uint256 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
 
         // // ContextId adding
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         bytes32 key = keccak256(abi.encodePacked(contextId));
 
         s.modsByContextType[key].remove(moduleIdx);
         s.contextIdsOfModules[mKey].remove(contextId);
     }
 
-    function addAdmin(string memory mod_name, address admin)
+    function addAdmin(string memory moduleName, address admin)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].add(admin);
     }
 
-    function removeAdmin(string memory mod_name, address admin)
+    function removeAdmin(string memory moduleName, address admin)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].remove(admin);
     }
 
@@ -418,15 +418,15 @@ contract DappletRegistry {
     function _addModuleVersionNoChecking(
         bytes32 moduleKey,
         uint256 moduleIdx,
-        string memory mod_name,
+        string memory moduleName,
         VersionInfoDto memory v
     ) private {
         bytes32 vKey = keccak256(
-            abi.encodePacked(mod_name, v.branch, v.version)
+            abi.encodePacked(moduleName, v.branch, v.version)
         );
         require(s.versions[vKey].modIdx == 0, "Version already exists");
 
-        bytes32 nbKey = keccak256(abi.encodePacked(mod_name, v.branch));
+        bytes32 nbKey = keccak256(abi.encodePacked(moduleName, v.branch));
         bytes4[] storage versionNumbers = s.versionNumbers[nbKey];
 
         // check correct versioning
@@ -505,12 +505,12 @@ contract DappletRegistry {
         }
     }
 
-    function _getModuleIdx(string memory mod_name)
+    function _getModuleIdx(string memory moduleName)
         internal
         view
         returns (uint256)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         if (mKey == _HEAD) {
             return

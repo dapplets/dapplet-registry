@@ -140,12 +140,12 @@ library LibDappletRegistryRead {
         }
     }
 
-    function getModuleInfoByName(AppStorage storage s, string memory mod_name)
+    function getModuleInfoByName(AppStorage storage s, string memory moduleName)
         external
         view
         returns (ModuleInfo memory modulesInfo, address owner)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         require(s.moduleIdxs[mKey] != 0, "The module does not exist");
         modulesInfo = s.modules[s.moduleIdxs[mKey]];
         owner = s._dappletNFTContract.ownerOf(s.moduleIdxs[mKey]);

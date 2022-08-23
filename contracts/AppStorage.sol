@@ -17,7 +17,7 @@ struct AppStorage {
     mapping(bytes32 => VersionInfo) versions; // keccak(name,branch,version) => VersionInfo>
     mapping(bytes32 => uint256) moduleIdxs; // key - keccak256(name) => value - index of element in "s.modules" array
     mapping(bytes32 => EnumerableSet.UintSet) modsByContextType; // key - keccak256(contextId, owner), value - index of element in "s.modules" array
-    mapping(bytes32 => EnumerableSet.AddressSet) adminsOfModules; // key - mod_name => EnumerableSet address for added, removed and get all address
-    mapping(bytes32 => EnumerableStringSet.StringSet) contextIdsOfModules; // key - mod_name => EnumerableSet
+    mapping(bytes32 => EnumerableSet.AddressSet) adminsOfModules; // key - moduleName => EnumerableSet address for added, removed and get all address
+    mapping(bytes32 => EnumerableStringSet.StringSet) contextIdsOfModules; // key - moduleName => EnumerableSet
     mapping(address => LinkedList.LinkedListUint32) listingByLister;
 }
