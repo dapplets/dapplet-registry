@@ -49,7 +49,7 @@ library LibDappletRegistryRead {
 
         (address[] memory listers, ) = getListers(s, offset, limit);
 
-        address[] memory buf = new address[](limit);
+        address[] memory buf = new address[](listers.length);
         uint256 count = 0;
 
         for (uint256 i = 0; i < listers.length; ++i) {
