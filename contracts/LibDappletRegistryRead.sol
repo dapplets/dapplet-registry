@@ -63,7 +63,7 @@ library LibDappletRegistryRead {
             limit = 20;
         }
 
-        total = s.modules.length;
+        total = s.modules.length - 1; // zero index is reserved
 
         if (limit > total - offset) {
             limit = total - offset;
