@@ -495,6 +495,11 @@ contract DappletRegistry {
         string memory mod_name,
         VersionInfoDto memory v
     ) private {
+        bytes32 vKey = keccak256(
+            abi.encodePacked(mod_name, v.branch, v.version)
+        );
+        require(s.versions[vKey].modIdx == 0, "Version already exists");
+        
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
@@ -546,9 +551,6 @@ contract DappletRegistry {
             v.flags,
             v.extensionVersion,
             block.timestamp
-        );
-        bytes32 vKey = keccak256(
-            abi.encodePacked(mod_name, v.branch, v.version)
         );
         s.versions[vKey] = vInfo;
 
