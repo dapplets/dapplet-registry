@@ -535,6 +535,18 @@ describe("DappletRegistry", function () {
 
     const page_2_reversed = await contract.getModules("default", 10, 10, true);
     expect(page_2_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
+
+    const page_1_owned = await contract.getModulesByOwner(accountAddress, "default", 0, 10, false);
+    expect(page_1_owned.modulesInfo.map(x => x.name)).deep.eq([...names].splice(0, 10));
+
+    const page_2_owned = await contract.getModulesByOwner(accountAddress, "default", 10, 10, false);
+    expect(page_2_owned.modulesInfo.map(x => x.name)).deep.eq([...names].splice(10, 10));
+
+    const page_1_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 0, 10, true);
+    expect(page_1_owned_reversed.modulesInfo.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
+
+    const page_2_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 10, 10, true);
+    expect(page_2_owned_reversed.modulesInfo.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
   });
 
   it("transmitting and verifying the addition of dynamically added data", async () => {
