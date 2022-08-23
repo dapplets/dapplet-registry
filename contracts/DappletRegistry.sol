@@ -62,7 +62,7 @@ contract DappletRegistry {
         public
         view
         returns (
-            ModuleInfo[] memory modules, 
+            ModuleInfo[] memory modules,
             VersionInfoDto[] memory lastVersions,
             address[] memory owners,
             uint256 total
@@ -79,12 +79,26 @@ contract DappletRegistry {
             );
     }
 
-    function getListers(uint256 offset, uint256 limit) public view returns (address[] memory listers, uint256 total) {
+    function getListers(uint256 offset, uint256 limit)
+        public
+        view
+        returns (address[] memory listers, uint256 total)
+    {
         return LibDappletRegistryRead.getListers(s, offset, limit);
     }
 
-    function getListersByModule(string memory moduleName, uint256 offset, uint256 limit) public view returns (address[] memory out) {
-        return LibDappletRegistryRead.getListersByModule(s, moduleName, offset, limit);
+    function getListersByModule(
+        string memory moduleName,
+        uint256 offset,
+        uint256 limit
+    ) public view returns (address[] memory out) {
+        return
+            LibDappletRegistryRead.getListersByModule(
+                s,
+                moduleName,
+                offset,
+                limit
+            );
     }
 
     function containsModuleInListing(address lister, string memory moduleName)
@@ -170,7 +184,14 @@ contract DappletRegistry {
             uint256 total
         )
     {
-        return LibDappletRegistryRead.getModules(s, branch, offset, limit, reverse);
+        return
+            LibDappletRegistryRead.getModules(
+                s,
+                branch,
+                offset,
+                limit,
+                reverse
+            );
     }
 
     function getModuleInfoByName(string memory mod_name)
@@ -222,14 +243,7 @@ contract DappletRegistry {
         uint256 offset,
         uint256 limit,
         bool reverse
-    )
-        public
-        view
-        returns (
-            VersionInfoDto[] memory versions,
-            uint256 total
-        )
-    {
+    ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
         return
             LibDappletRegistryRead.getVersionsByModule(
                 s,
@@ -497,13 +511,13 @@ contract DappletRegistry {
 
         bytes32 nbKey = keccak256(abi.encodePacked(mod_name, v.branch));
         bytes4[] storage versionNumbers = s.versionNumbers[nbKey];
-        
+
         // check correct versioning
         if (versionNumbers.length > 0) {
             bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
             require(v.version > lastVersion, "Version must be bumped");
         }
-        
+
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];

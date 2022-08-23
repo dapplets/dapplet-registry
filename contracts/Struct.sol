@@ -28,7 +28,7 @@ struct VersionInfo {
     bytes32[] interfaces; //Exported interfaces. no duplicates.
     uint8 flags;
     bytes4 extensionVersion;
-    uint createdAt;
+    uint256 createdAt;
 }
 
 struct VersionInfoDto {
@@ -39,7 +39,7 @@ struct VersionInfoDto {
     DependencyDto[] interfaces; //Exported interfaces. no duplicates.
     uint8 flags;
     bytes4 extensionVersion;
-    uint createdAt;
+    uint256 createdAt;
 }
 
 struct DependencyDto {
