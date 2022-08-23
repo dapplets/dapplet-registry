@@ -458,4 +458,25 @@ describe("Listings", () => {
       expect(e.message).to.have.string("Inconsistent changes");
     }
   });
+
+  it("should return listers", async () => {
+    const accounts = await ethers.getSigners();
+    const expectedAccounts = [accounts[0].address];
+
+    for (let i = 1; i < 11; i++) {
+      const account = accounts[i];
+      const _contract = await contract.connect(account);
+      const receipt = await _contract.changeMyListing(
+        prepareArguments([
+          [H, 1],
+          [1, T],
+        ]),
+      );
+      await receipt.wait();
+      expectedAccounts.push(account.address);
+    }
+
+    const listers = await contract.getListersByModule("module-1", 0, 0);
+    expect(listers).deep.eq(expectedAccounts);
+  });
 });
