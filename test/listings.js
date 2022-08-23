@@ -395,6 +395,34 @@ describe("Listings", () => {
     );
   });
 
+  it("paginate listing forward", async () => {
+    const page_1 = await contract.getModulesOfListing(accountAddress, 0, 2, false);
+    expect(page_1.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["5", "4"]));    
+    expect(page_1.total.toString()).to.equal("5");
+    
+    const page_2 = await contract.getModulesOfListing(accountAddress, 2, 2, false);
+    expect(page_2.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["2", "3"]));    
+    expect(page_2.total.toString()).to.equal("5");
+
+    const page_3 = await contract.getModulesOfListing(accountAddress, 4, 2, false);
+    expect(page_3.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["1"]));    
+    expect(page_3.total.toString()).to.equal("5");
+  });
+
+  it("paginate listing backward", async () => {
+    const page_1 = await contract.getModulesOfListing(accountAddress, 0, 2, true);
+    expect(page_1.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["1", "3"]));    
+    expect(page_1.total.toString()).to.equal("5");
+    
+    const page_2 = await contract.getModulesOfListing(accountAddress, 2, 2, true);
+    expect(page_2.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["2", "4"]));    
+    expect(page_2.total.toString()).to.equal("5");
+
+    const page_3 = await contract.getModulesOfListing(accountAddress, 4, 2, true);
+    expect(page_3.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["5"]));    
+    expect(page_3.total.toString()).to.equal("5");
+  });
+
   it("should fail on inconsistent changes", async () => {
     try {
       await contract.changeMyListing(prepareArguments([[4, 3]]));
