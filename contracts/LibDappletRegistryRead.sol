@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./lib/LinkedList.sol";
 
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
@@ -8,6 +9,11 @@ import {AppStorage} from "./AppStorage.sol";
 
 library LibDappletRegistryRead {
     using LinkedList for LinkedList.LinkedListUint32;
+    using EnumerableSet for EnumerableSet.UintSet;
+
+    // -------------------------------------------------------------------------
+    // View functions
+    // -------------------------------------------------------------------------
 
     function getListers(
         AppStorage storage s,
@@ -222,6 +228,47 @@ library LibDappletRegistryRead {
         moduleType = s.modules[v.modIdx].moduleType;
     }
 
+    function getModulesInfoByListersBatch(
+        AppStorage storage s,
+        string[] memory ctxIds,
+        address[] memory listers,
+        uint256 maxBufLen
+    )
+        public
+        view
+        returns (
+            ModuleInfo[][] memory modulesInfos,
+            address[][] memory ctxIdsOwners
+        )
+    {
+        modulesInfos = new ModuleInfo[][](ctxIds.length);
+        ctxIdsOwners = new address[][](ctxIds.length);
+
+        for (uint256 i = 0; i < ctxIds.length; ++i) {
+            uint256[] memory outbuf = new uint256[](
+                maxBufLen > 0 ? maxBufLen : 1000
+            );
+            uint256 bufLen = _fetchModulesByUsersTag(
+                s,
+                ctxIds[i],
+                listers,
+                outbuf,
+                0
+            );
+
+            modulesInfos[i] = new ModuleInfo[](bufLen);
+            ctxIdsOwners[i] = new address[](bufLen);
+
+            for (uint256 j = 0; j < bufLen; ++j) {
+                uint256 idx = outbuf[j];
+                address owner = s._dappletNFTContract.ownerOf(idx);
+                //ToDo: strip contentType indexes?
+                modulesInfos[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
+                ctxIdsOwners[i][j] = owner;
+            }
+        }
+    }
+
     function getModulesOfListing(
         AppStorage storage s,
         address lister,
@@ -262,6 +309,76 @@ library LibDappletRegistryRead {
             lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
             owners[i] = s._dappletNFTContract.ownerOf(mIdx);
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal functions
+    // -------------------------------------------------------------------------
+
+    function _fetchModulesByUsersTag(
+        AppStorage storage s,
+        string memory ctxId,
+        address[] memory listers,
+        uint256[] memory outbuf,
+        uint256 _bufLen
+    ) internal view returns (uint256) {
+        uint256 bufLen = _bufLen;
+        bytes32 key = keccak256(abi.encodePacked(ctxId));
+        uint256[] memory modIdxs = s.modsByContextType[key].values();
+
+        //add if no duplicates in buffer[0..nn-1]
+        for (uint256 j = 0; j < modIdxs.length; ++j) {
+            uint256 modIdx = modIdxs[j];
+
+            // k - index of duplicated element
+            uint256 k = 0;
+            for (; k < bufLen; ++k) {
+                if (outbuf[k] == modIdx) break; //duplicate found
+            }
+
+            // ToDo: check what happens when duplicated element is in the end of outbuf
+
+            //no duplicates found  -- add the module's index
+            if (k != bufLen) continue;
+
+            // add module if it is in the listings
+            for (uint256 l = 0; l < listers.length; ++l) {
+                if (s.listingByLister[listers[l]].contains(modIdx)) {
+                    outbuf[bufLen++] = modIdx;
+                }
+            }
+
+            uint256 prevBufLen = bufLen;
+
+            ModuleInfo memory m = s.modules[modIdx];
+            bufLen = _fetchModulesByUsersTag(
+                s,
+                m.name,
+                listers,
+                outbuf,
+                bufLen
+            ); // using index as a tag
+
+            // ToDo: add interface as separate module to outbuf?
+            for (uint256 l = 0; l < m.interfaces.length; ++l) {
+                bufLen = _fetchModulesByUsersTag(
+                    s,
+                    m.interfaces[l],
+                    listers,
+                    outbuf,
+                    bufLen
+                );
+            }
+
+            // something depends on the current module
+            if (bufLen != prevBufLen) {
+                outbuf[bufLen++] = modIdx;
+            }
+
+            //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
+        }
+
+        return bufLen;
     }
 
     function _getLastVersionInfo(

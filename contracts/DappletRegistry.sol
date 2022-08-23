@@ -17,11 +17,10 @@ struct LinkString {
 }
 
 contract DappletRegistry {
-    using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
+    using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableStringSet for EnumerableStringSet.StringSet;
-    using LinkedList for LinkedList.LinkedListUint32;
 
     bytes32 internal constant _HEAD =
         0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
@@ -134,31 +133,13 @@ contract DappletRegistry {
             address[][] memory ctxIdsOwners
         )
     {
-        modulesInfos = new ModuleInfo[][](ctxIds.length);
-        ctxIdsOwners = new address[][](ctxIds.length);
-
-        for (uint256 i = 0; i < ctxIds.length; ++i) {
-            uint256[] memory outbuf = new uint256[](
-                maxBufLen > 0 ? maxBufLen : 1000
-            );
-            uint256 bufLen = _fetchModulesByUsersTag(
-                ctxIds[i],
+        return
+            LibDappletRegistryRead.getModulesInfoByListersBatch(
+                s,
+                ctxIds,
                 listers,
-                outbuf,
-                0
+                maxBufLen
             );
-
-            modulesInfos[i] = new ModuleInfo[](bufLen);
-            ctxIdsOwners[i] = new address[](bufLen);
-
-            for (uint256 j = 0; j < bufLen; ++j) {
-                uint256 idx = outbuf[j];
-                address owner = s._dappletNFTContract.ownerOf(idx);
-                //ToDo: strip contentType indexes?
-                modulesInfos[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
-                ctxIdsOwners[i][j] = owner;
-            }
-        }
     }
 
     function getModuleByIndex(uint256 index)
@@ -311,17 +292,20 @@ contract DappletRegistry {
         string[] memory contextIds,
         LinkString[] memory links,
         ModuleInfo memory mInfo,
-        VersionInfoDto[] memory vInfos
+        VersionInfoDto memory vInfo
     ) public {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(s.moduleIdxs[mKey] == 0, "The module already exists"); // module does not exist
 
         address owner = msg.sender;
 
-        // ModuleInfo adding
-        mInfo.flags = (vInfos.length == 0) // is under construction (no any version)
+        bool isUnderConstruction = vInfo.version == bytes3(0x0);
+
+        mInfo.flags = (isUnderConstruction) // is under construction (no any version)
             ? (mInfo.flags | (uint256(1) << 0)) // flags[255] == 1
             : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
+
+        // ModuleInfo adding
         s.modules.push(mInfo);
         uint256 mIdx = s.modules.length - 1; // WARNING! indexes are started from 1.
         s.moduleIdxs[mKey] = mIdx;
@@ -334,8 +318,8 @@ contract DappletRegistry {
         }
 
         // Versions Adding
-        for (uint256 i = 0; i < vInfos.length; ++i) {
-            _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfos[i]);
+        if (!isUnderConstruction) {
+            _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfo);
         }
 
         // Creating Dapplet NFT
@@ -349,8 +333,8 @@ contract DappletRegistry {
         string memory name,
         string memory title,
         string memory description,
-        StorageRef memory fullDescription,
-        StorageRef memory icon
+        StorageRef memory manifest, // ToDo: rename to manifest?
+        StorageRef memory icon // ToDo: add nft reference
     ) public {
         uint256 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = s.modules[moduleIdx]; // WARNING! indexes are started from 1.
@@ -361,7 +345,7 @@ contract DappletRegistry {
 
         m.title = title;
         m.description = description;
-        m.fullDescription = fullDescription;
+        m.manifest = manifest;
         m.icon = icon;
     }
 
@@ -430,73 +414,6 @@ contract DappletRegistry {
     // -------------------------------------------------------------------------
     // Internal functions
     // -------------------------------------------------------------------------
-
-    // ctxId - URL or ContextType [IdentityAdapter]
-    function _fetchModulesByUsersTag(
-        string memory ctxId,
-        address[] memory listers,
-        uint256[] memory outbuf,
-        uint256 _bufLen
-    ) internal view returns (uint256) {
-        uint256 bufLen = _bufLen;
-        bytes32 key = keccak256(abi.encodePacked(ctxId));
-        uint256[] memory modIdxs = s.modsByContextType[key].values();
-
-        //add if no duplicates in buffer[0..nn-1]
-        uint256 lastBufLen = bufLen; // 1) 0  2) 1
-        for (uint256 j = 0; j < modIdxs.length; ++j) {
-            uint256 modIdx = modIdxs[j];
-
-            // k - index of duplicated element
-            uint256 k = 0;
-            for (; k < lastBufLen; ++k) {
-                if (outbuf[k] == modIdx) break; //duplicate found
-            }
-
-            // ToDo: check what happens when duplicated element is in the end of outbuf
-
-            //no duplicates found  -- add the module's index
-            if (k == lastBufLen) {
-                // add module if it is in the listings
-                for (uint256 l = 0; l < listers.length; ++l) {
-                    if (
-                        s.listingByLister[listers[l]].contains(modIdx) == true
-                    ) {
-                        outbuf[bufLen++] = modIdx;
-                    }
-                }
-
-                uint256 prevBufLen = bufLen;
-
-                ModuleInfo memory m = s.modules[modIdx];
-                bufLen = _fetchModulesByUsersTag(
-                    m.name,
-                    listers,
-                    outbuf,
-                    bufLen
-                ); // using index as a tag
-
-                // ToDo: add interface as separate module to outbuf?
-                for (uint256 l = 0; l < m.interfaces.length; ++l) {
-                    bufLen = _fetchModulesByUsersTag(
-                        m.interfaces[l],
-                        listers,
-                        outbuf,
-                        bufLen
-                    );
-                }
-
-                // something depends on the current module
-                if (bufLen != prevBufLen) {
-                    outbuf[bufLen++] = modIdx;
-                }
-
-                //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
-            }
-        }
-
-        return bufLen;
-    }
 
     function _addModuleVersionNoChecking(
         bytes32 moduleKey,

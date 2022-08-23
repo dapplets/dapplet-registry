@@ -12,8 +12,8 @@ struct ModuleInfo {
     string name;
     string title;
     string description;
-    string nftImage;
-    StorageRef fullDescription;
+    StorageRef image;
+    StorageRef manifest;
     StorageRef icon;
     string[] interfaces; //Exported interfaces in all versions. no duplicates.
     uint256 flags; // 255 bit - IsUnderConstruction

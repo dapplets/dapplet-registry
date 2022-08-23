@@ -51,6 +51,20 @@ const addVersion = ({
   };
 };
 
+const EMPTY_VERSION_INFO = {
+  branch: "",
+  version: "0x00000000",
+  flags: 0,
+  binary: {
+    hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    uris: [],
+  },
+  dependencies: [],
+  interfaces: [],
+  extensionVersion: "0x00000000",
+  createdAt: 0
+};
+
 describe("DappletRegistry", function () {
   let contract;
   let accountAddress;
@@ -314,9 +328,9 @@ describe("DappletRegistry", function () {
       name: moduleInfo.modulesInfo.name,
       title: moduleInfo.modulesInfo.title,
       description: moduleInfo.modulesInfo.description,
-      fullDescription: {
-        hash: moduleInfo.modulesInfo.fullDescription.hash,
-        uris: moduleInfo.modulesInfo.fullDescription.uris,
+      manifest: {
+        hash: moduleInfo.modulesInfo.manifest.hash,
+        uris: moduleInfo.modulesInfo.manifest.uris,
       },
       icon: {
         hash: moduleInfo.modulesInfo.icon.hash,
@@ -328,7 +342,7 @@ describe("DappletRegistry", function () {
       name: "twitter-adapter-test",
       title: "twitter-adapter-title",
       description: "twitter-adapter-description",
-      fullDescription: {
+      manifest: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
         uris: [],
       },
@@ -524,7 +538,7 @@ describe("DappletRegistry", function () {
   });
 
   it("returns an array of branches", async () => {
-    await addModuleInfo(contract, {}, []);
+    await addModuleInfo(contract, {}, EMPTY_VERSION_INFO);
 
     await contract.addModuleVersion(
       "twitter-adapter-test",
@@ -563,7 +577,7 @@ describe("DappletRegistry", function () {
   it("returns an array of versions desc and asc", async () => {
     await addModuleInfo(contract, {
       name: "version-numbers-test"
-    }, []);
+    }, EMPTY_VERSION_INFO);
 
     await contract.addModuleVersion(
       "version-numbers-test",
@@ -603,7 +617,7 @@ describe("DappletRegistry", function () {
   it("should fail incorrect versioning", async () => {
     await addModuleInfo(contract, {
       name: "versioning-test"
-    }, []);
+    }, EMPTY_VERSION_INFO);
 
     try {
       await contract.addModuleVersion(

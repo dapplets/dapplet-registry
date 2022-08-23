@@ -19,13 +19,12 @@ module.exports = addModuleInfo = async (
   {
     title = "twitter-adapter-test",
     description = "twitter-adapter-test",
-    nftImage = "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
     name = "twitter-adapter-test",
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
   },
-  versions = undefined
+  version = undefined
 ) => {
   await contract.addModuleInfo(
     context,
@@ -35,8 +34,13 @@ module.exports = addModuleInfo = async (
       name,
       title,
       description,
-      nftImage,
-      fullDescription: {
+      image: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        ]
+      },
+      manifest: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
         uris: [
           "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -51,7 +55,7 @@ module.exports = addModuleInfo = async (
       },
       flags: 0,
     },
-    versions === undefined ? [
+    version === undefined ? 
       {
         branch: "default",
         version: "0x00010000",
@@ -66,7 +70,7 @@ module.exports = addModuleInfo = async (
         interfaces: [],
         extensionVersion: "0x00ff0100",
         createdAt: 0
-      },
-    ] : versions,
+      }
+     : version,
   );
 };
