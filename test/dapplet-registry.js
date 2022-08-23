@@ -363,65 +363,6 @@ describe("DappletRegistry", function () {
     });
   });
 
-  it("should add a new batch version to the module", async () => {
-    await addModuleInfo(contract, {
-      interfaces: [],
-    });
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["instagram.com"],
-      interfaces: [],
-      description: "instagram-adapter-test",
-      name: "instagram-adapter-test",
-      title: "instagram-adapter-test",
-    });
-
-    await contract.addModuleVersionBatch(
-      ["twitter-adapter-test", "instagram-adapter-test"],
-      [
-        addVersion({
-          branch: "default",
-          version: "0x07060500"
-        }),
-        addVersion({
-          branch: "master",
-          version: "0x01020300"
-        }),
-      ],
-    );
-
-    await contract.changeMyListing(
-      [
-        ["H", "twitter-adapter-test"],
-        ["twitter-adapter-test", "instagram-adapter-test"],
-        ["instagram-adapter-test", "T"],
-      ],
-    );
-
-    const modulesInfoByListersBatch =
-      await contract.getModulesInfoByListersBatch(
-        ["twitter.com", "instagram.com"],
-        [accountAddress],
-        1000,
-      );
-    
-    const result = modulesInfoByListersBatch.modulesInfos.map((item) =>
-      getValues(item[0]),
-    );
-    expect(result).to.eql([
-      {
-        name: "twitter-adapter-test",
-        title: "twitter-adapter-test",
-        description: "twitter-adapter-test",
-      },
-      {
-        name: "instagram-adapter-test",
-        title: "instagram-adapter-test",
-        description: "instagram-adapter-test",
-      },
-    ]);
-  });
-
   it("should create and delete admins for the module", async () => {
     const [_, acc2, acc3] = await ethers.getSigners();
 

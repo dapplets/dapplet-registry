@@ -9,6 +9,59 @@ import {AppStorage} from "./AppStorage.sol";
 library LibDappletRegistryRead {
     using LinkedList for LinkedList.LinkedListUint32;
 
+    function getListers(
+        AppStorage storage s,
+        uint256 offset,
+        uint256 limit
+    ) public view returns (address[] memory listers, uint256 total) {
+        if (limit == 0) {
+            limit = 20;
+        }
+
+        total = s.listers.length;
+
+        if (limit > total - offset) {
+            limit = total - offset;
+        }
+
+        listers = new address[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            listers[i] = s.listers[offset + i];
+        }
+    }
+
+    function getListersByModule(
+        AppStorage storage s,
+        string memory moduleName,
+        uint256 offset,
+        uint256 limit
+    ) public view returns (address[] memory out) {
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
+        uint256 moduleIdx = s.moduleIdxs[mKey];
+        require(moduleIdx != 0, "The module does not exist");
+
+        (address[] memory listers, ) = getListers(s, offset, limit);
+
+        address[] memory buf = new address[](limit);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < listers.length; ++i) {
+            address lister = listers[i];
+            bool contains = s.listingByLister[lister].contains(moduleIdx);
+
+            if (contains) {
+                buf[count] = lister;
+                count++;
+            }
+        }
+
+        out = new address[](count);
+        for (uint256 i = 0; i < count; ++i) {
+            out[i] = buf[i];
+        }
+    }
+
     function getVersionsByModule(
         AppStorage storage s,
         string memory name,
@@ -176,12 +229,16 @@ library LibDappletRegistryRead {
         uint256 offset,
         uint256 limit,
         bool reverse
-    ) external view returns (
-        ModuleInfo[] memory modules, 
-        VersionInfoDto[] memory lastVersions,
-        address[] memory owners,
-        uint256 total
-    ) {
+    )
+        external
+        view
+        returns (
+            ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
+            address[] memory owners,
+            uint256 total
+        )
+    {
         if (limit == 0) {
             limit = 20;
         }
@@ -196,6 +253,7 @@ library LibDappletRegistryRead {
 
         modules = new ModuleInfo[](limit);
         lastVersions = new VersionInfoDto[](limit);
+        owners = new address[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);

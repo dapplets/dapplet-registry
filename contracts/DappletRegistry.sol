@@ -79,8 +79,12 @@ contract DappletRegistry {
             );
     }
 
-    function getListers() public view returns (address[] memory) {
-        return s.listers;
+    function getListers(uint256 offset, uint256 limit) public view returns (address[] memory listers, uint256 total) {
+        return LibDappletRegistryRead.getListers(s, offset, limit);
+    }
+
+    function getListersByModule(string memory moduleName, uint256 offset, uint256 limit) public view returns (address[] memory out) {
+        return LibDappletRegistryRead.getListersByModule(s, moduleName, offset, limit);
     }
 
     function containsModuleInListing(address lister, string memory moduleName)
@@ -361,19 +365,6 @@ contract DappletRegistry {
         );
 
         _addModuleVersionNoChecking(mKey, moduleIdx, mod_name, vInfo);
-    }
-
-    function addModuleVersionBatch(
-        string[] memory mod_name,
-        VersionInfoDto[] memory vInfo
-    ) public {
-        require(
-            mod_name.length == vInfo.length,
-            "Number of elements must be equal"
-        );
-        for (uint256 i = 0; i < mod_name.length; ++i) {
-            addModuleVersion(mod_name[i], vInfo[i]);
-        }
     }
 
     function addContextId(string memory mod_name, string memory contextId)

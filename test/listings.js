@@ -116,13 +116,13 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "2", "3", "4", "5"]);
     expect(actual).to.deep.equal(expected);
     expect(total.toString()).to.equal(expected.length.toString());
 
-    const listers = await contract.getListers();
+    const { listers } = await contract.getListers(0, 100);
     expect(listers).to.deep.equal([accountAddress]);
 
     await checkExistence(
@@ -143,7 +143,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);    
@@ -166,7 +166,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);    
@@ -189,7 +189,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);    
@@ -212,7 +212,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["10", "1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);    
@@ -235,7 +235,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5", "7"]);
     expect(actual).to.deep.equal(expected);    
@@ -258,7 +258,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "11", "3", "5"]);
     expect(actual).to.deep.equal(expected);    
@@ -281,7 +281,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "4", "2", "3", "5"]);
     expect(actual).to.deep.equal(expected);    
@@ -306,7 +306,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);    
@@ -330,7 +330,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["1", "5", "4", "2", "3"]);
     expect(actual).to.deep.equal(expected);    
@@ -354,7 +354,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);    
@@ -381,7 +381,7 @@ describe("Listings", () => {
     );
     console.log(`GasUsed: ${(await receipt.wait()).gasUsed.toString()}`);
 
-    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, 0, 0, false);
+    const { modules: items, total } = await contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
     const actual = items.map((x) => x.name.toString());
     const expected = convertIndexesToNames(["5", "4", "2", "3", "1"]);
     expect(actual).to.deep.equal(expected);    
@@ -396,29 +396,29 @@ describe("Listings", () => {
   });
 
   it("paginate listing forward", async () => {
-    const page_1 = await contract.getModulesOfListing(accountAddress, 0, 2, false);
+    const page_1 = await contract.getModulesOfListing(accountAddress, "default", 0, 2, false);
     expect(page_1.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["5", "4"]));    
     expect(page_1.total.toString()).to.equal("5");
     
-    const page_2 = await contract.getModulesOfListing(accountAddress, 2, 2, false);
+    const page_2 = await contract.getModulesOfListing(accountAddress, "default", 2, 2, false);
     expect(page_2.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["2", "3"]));    
     expect(page_2.total.toString()).to.equal("5");
 
-    const page_3 = await contract.getModulesOfListing(accountAddress, 4, 2, false);
+    const page_3 = await contract.getModulesOfListing(accountAddress, "default", 4, 2, false);
     expect(page_3.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["1"]));    
     expect(page_3.total.toString()).to.equal("5");
   });
 
   it("paginate listing backward", async () => {
-    const page_1 = await contract.getModulesOfListing(accountAddress, 0, 2, true);
+    const page_1 = await contract.getModulesOfListing(accountAddress, "default", 0, 2, true);
     expect(page_1.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["1", "3"]));    
     expect(page_1.total.toString()).to.equal("5");
     
-    const page_2 = await contract.getModulesOfListing(accountAddress, 2, 2, true);
+    const page_2 = await contract.getModulesOfListing(accountAddress, "default", 2, 2, true);
     expect(page_2.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["2", "4"]));    
     expect(page_2.total.toString()).to.equal("5");
 
-    const page_3 = await contract.getModulesOfListing(accountAddress, 4, 2, true);
+    const page_3 = await contract.getModulesOfListing(accountAddress, "default", 4, 2, true);
     expect(page_3.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["5"]));    
     expect(page_3.total.toString()).to.equal("5");
   });
