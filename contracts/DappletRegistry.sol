@@ -17,22 +17,15 @@ struct LinkString {
 }
 
 contract DappletRegistry {
-    using EnumerableSet for EnumerableSet.AddressSet;
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
+    using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableStringSet for EnumerableStringSet.StringSet;
-    using LinkedList for LinkedList.LinkedListUint32;
 
     bytes32 internal constant _HEAD =
         0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
     bytes32 internal constant _TAIL =
         0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
-
-    event ModuleInfoAdded(
-        string[] contextIds,
-        address owner,
-        uint32 moduleIndex
-    );
 
     AppStorage internal s;
 
@@ -58,25 +51,53 @@ contract DappletRegistry {
     // View functions
     // -------------------------------------------------------------------------
 
-    function getListingSize(address lister) public view returns (uint32) {
-        return s.listingByLister[lister].size;
-    }
-
-    function getModulesOfListing(address lister)
+    function getModulesOfListing(
+        address lister,
+        string memory branch,
+        uint256 offset,
+        uint256 limit,
+        bool reverse
+    )
         public
         view
-        returns (string[] memory out)
+        returns (
+            ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
+            address[] memory owners,
+            uint256 total
+        )
     {
-        uint32[] memory moduleIndexes = s.listingByLister[lister].items();
-        out = new string[](moduleIndexes.length);
-
-        for (uint256 i = 0; i < moduleIndexes.length; ++i) {
-            out[i] = s.modules[moduleIndexes[i]].name;
-        }
+        return
+            LibDappletRegistryRead.getModulesOfListing(
+                s,
+                lister,
+                branch,
+                offset,
+                limit,
+                reverse
+            );
     }
 
-    function getListers() public view returns (address[] memory) {
-        return s.listers;
+    function getListers(uint256 offset, uint256 limit)
+        public
+        view
+        returns (address[] memory listers, uint256 total)
+    {
+        return LibDappletRegistryRead.getListers(s, offset, limit);
+    }
+
+    function getListersByModule(
+        string memory moduleName,
+        uint256 offset,
+        uint256 limit
+    ) public view returns (address[] memory out) {
+        return
+            LibDappletRegistryRead.getListersByModule(
+                s,
+                moduleName,
+                offset,
+                limit
+            );
     }
 
     function containsModuleInListing(address lister, string memory moduleName)
@@ -84,164 +105,157 @@ contract DappletRegistry {
         view
         returns (bool)
     {
-        uint32 moduleIdx = _getModuleIdx(moduleName);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
         return s.listingByLister[lister].contains(moduleIdx);
     }
 
-    function getNFTContractAddress() public view returns (address) {
+    function getNftContractAddress() public view returns (address) {
         return address(s._dappletNFTContract);
     }
 
-    function getModuleIndx(string memory mod_name)
+    function getModuleIndex(string memory moduleName)
         public
         view
-        returns (uint32 moduleIdx)
+        returns (uint256 moduleIdx)
     {
-        moduleIdx = _getModuleIdx(mod_name);
+        moduleIdx = _getModuleIdx(moduleName);
     }
 
     function getModulesInfoByListersBatch(
         string[] memory ctxIds,
         address[] memory listers,
-        uint32 maxBufLen
+        uint256 maxBufLen
     )
         public
         view
-        returns (
-            ModuleInfo[][] memory modulesInfos,
-            address[][] memory ctxIdsOwners
-        )
+        returns (ModuleInfo[][] memory modules, address[][] memory owners)
     {
-        modulesInfos = new ModuleInfo[][](ctxIds.length);
-        ctxIdsOwners = new address[][](ctxIds.length);
-        
-        for (uint256 i = 0; i < ctxIds.length; ++i) {
-            (
-                ModuleInfo[] memory mods_info,
-                address[] memory owners
-            ) = getModulesInfoByListers(ctxIds[i], listers, maxBufLen);
-            modulesInfos[i] = mods_info;
-            ctxIdsOwners[i] = owners;
-        }
+        return
+            LibDappletRegistryRead.getModulesInfoByListersBatch(
+                s,
+                ctxIds,
+                listers,
+                maxBufLen
+            );
+    }
+
+    function getModuleByIndex(uint256 index)
+        public
+        view
+        returns (ModuleInfo memory)
+    {
+        return s.modules[index];
     }
 
     function getModules(
-        // offset when receiving data
+        string memory branch,
         uint256 offset,
-        // limit on receiving items
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         public
         view
         returns (
             ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
             address[] memory owners,
-            uint256 nextOffset,
-            uint256 totalModules
+            uint256 total
         )
     {
-        return LibDappletRegistryRead.getModules(s, offset, limit);
+        return
+            LibDappletRegistryRead.getModules(
+                s,
+                branch,
+                offset,
+                limit,
+                reverse
+            );
     }
 
-    // Very naive impl.
-    function getModulesInfoByListers(
-        string memory ctxId,
-        address[] memory listers,
-        uint32 maxBufLen
-    )
+    function getModuleInfoByName(string memory moduleName)
         public
         view
-        returns (ModuleInfo[] memory modulesInfo, address[] memory owners)
+        returns (ModuleInfo memory modules, address owner)
     {
-        uint256[] memory outbuf = new uint256[](
-            maxBufLen > 0 ? maxBufLen : 1000
-        );
-        uint256 bufLen = _fetchModulesByUsersTag(ctxId, listers, outbuf, 0);
-        modulesInfo = new ModuleInfo[](bufLen);
-        owners = new address[](bufLen);
-        for (uint256 i = 0; i < bufLen; ++i) {
-            uint256 idx = outbuf[i];
-            address owner = s._dappletNFTContract.ownerOf(idx);
-            //ToDo: strip contentType indexes?
-            modulesInfo[i] = s.modules[idx]; // WARNING! indexes are started from 1.
-            owners[i] = owner;
-        }
+        return LibDappletRegistryRead.getModuleInfoByName(s, moduleName);
     }
 
-    function getModuleInfoByName(string memory mod_name)
-        public
-        view
-        returns (ModuleInfo memory modulesInfo, address owner)
-    {
-        return LibDappletRegistryRead.getModuleInfoByName(s, mod_name);
-    }
-
-    function getModulesInfoByOwner(
-        address userId,
-        // offset when receiving data
+    function getModulesByOwner(
+        address owner,
+        string memory branch,
         uint256 offset,
-        // limit on receiving items
-        uint256 limit
+        uint256 limit,
+        bool reverse
     )
         public
         view
         returns (
-            ModuleInfo[] memory modulesInfo,
-            uint256 nextOffset,
-            uint256 totalModules
+            ModuleInfo[] memory modules,
+            VersionInfoDto[] memory lastVersions,
+            uint256 total
         )
     {
         return
-            LibDappletRegistryRead.getModulesInfoByOwner(
+            LibDappletRegistryRead.getModulesByOwner(
                 s,
-                userId,
+                owner,
+                branch,
                 offset,
-                limit
+                limit,
+                reverse
             );
     }
 
-    function getVersionNumbers(string memory name, string memory branch)
+    function getBranchesByModule(string memory name)
         public
         view
-        returns (bytes memory)
+        returns (string[] memory)
     {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
-        return s.versionNumbers[key];
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        return s.branches[mKey];
+    }
+
+    function getVersionsByModule(
+        string memory name,
+        string memory branch,
+        uint256 offset,
+        uint256 limit,
+        bool reverse
+    ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
+        return
+            LibDappletRegistryRead.getVersionsByModule(
+                s,
+                name,
+                branch,
+                offset,
+                limit,
+                reverse
+            );
     }
 
     function getVersionInfo(
         string memory name,
         string memory branch,
-        uint8 major,
-        uint8 minor,
-        uint8 patch
+        bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        return
-            LibDappletRegistryRead.getVersionInfo(
-                s,
-                name,
-                branch,
-                major,
-                minor,
-                patch
-            );
+        return LibDappletRegistryRead.getVersionInfo(s, name, branch, version);
     }
 
-    function getAdminsByModule(string memory mod_name)
+    function getAdminsByModule(string memory moduleName)
         public
         view
         returns (address[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].values();
     }
 
-    function getContextIdsByModule(string memory mod_name)
+    function getContextIdsByModule(string memory moduleName)
         public
         view
         returns (string[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.contextIdsOfModules[mKey].values();
     }
 
@@ -258,7 +272,7 @@ contract DappletRegistry {
             uint256 prev = _getModuleIdx(links[i].prev);
             uint256 next = _getModuleIdx(links[i].next);
 
-            linksOfModuleIdxs[i] = LinkedList.Link(uint32(prev), uint32(next));
+            linksOfModuleIdxs[i] = LinkedList.Link(prev, next);
         }
 
         LinkedList.LinkedListUint32 storage listing = s.listingByLister[
@@ -275,19 +289,22 @@ contract DappletRegistry {
         string[] memory contextIds,
         LinkString[] memory links,
         ModuleInfo memory mInfo,
-        VersionInfoDto[] memory vInfos
+        VersionInfoDto memory vInfo
     ) public {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(s.moduleIdxs[mKey] == 0, "The module already exists"); // module does not exist
 
         address owner = msg.sender;
 
-        // ModuleInfo adding
-        mInfo.flags = (vInfos.length == 0) // is under construction (no any version)
+        bool isUnderConstruction = vInfo.version == bytes3(0x0);
+
+        mInfo.flags = (isUnderConstruction) // is under construction (no any version)
             ? (mInfo.flags | (uint256(1) << 0)) // flags[255] == 1
             : (mInfo.flags & ~(uint256(1) << 0)); // flags[255] == 0
+
+        // ModuleInfo adding
         s.modules.push(mInfo);
-        uint32 mIdx = uint32(s.modules.length - 1); // WARNING! indexes are started from 1.
+        uint256 mIdx = s.modules.length - 1; // WARNING! indexes are started from 1.
         s.moduleIdxs[mKey] = mIdx;
 
         // ContextId adding
@@ -297,11 +314,9 @@ contract DappletRegistry {
             s.contextIdsOfModules[mKey].add(contextIds[i]);
         }
 
-        emit ModuleInfoAdded(contextIds, owner, mIdx);
-
         // Versions Adding
-        for (uint256 i = 0; i < vInfos.length; ++i) {
-            _addModuleVersionNoChecking(mIdx, mInfo.name, vInfos[i]);
+        if (!isUnderConstruction) {
+            _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfo);
         }
 
         // Creating Dapplet NFT
@@ -315,10 +330,11 @@ contract DappletRegistry {
         string memory name,
         string memory title,
         string memory description,
-        StorageRef memory fullDescription,
+        StorageRef memory image,
+        StorageRef memory manifest,
         StorageRef memory icon
     ) public {
-        uint32 moduleIdx = _getModuleIdx(name);
+        uint256 moduleIdx = _getModuleIdx(name);
         ModuleInfo storage m = s.modules[moduleIdx]; // WARNING! indexes are started from 1.
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
@@ -327,82 +343,70 @@ contract DappletRegistry {
 
         m.title = title;
         m.description = description;
-        m.fullDescription = fullDescription;
+        m.image = image;
+        m.manifest = manifest;
         m.icon = icon;
     }
 
     function addModuleVersion(
-        string memory mod_name,
+        string memory moduleName,
         VersionInfoDto memory vInfo
     ) public {
         // ******** TODO: check existing versions and version sorting
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
+        uint256 moduleIdx = _getModuleIdx(moduleName);
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender ||
                 s.adminsOfModules[mKey].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
 
-        _addModuleVersionNoChecking(moduleIdx, mod_name, vInfo);
+        _addModuleVersionNoChecking(mKey, moduleIdx, moduleName, vInfo);
     }
 
-    function addModuleVersionBatch(
-        string[] memory mod_name,
-        VersionInfoDto[] memory vInfo
-    ) public {
-        require(
-            mod_name.length == vInfo.length,
-            "Number of elements must be equal"
-        );
-        for (uint256 i = 0; i < mod_name.length; ++i) {
-            addModuleVersion(mod_name[i], vInfo[i]);
-        }
-    }
-
-    function addContextId(string memory mod_name, string memory contextId)
+    function addContextId(string memory moduleName, string memory contextId)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
     {
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         // ContextId adding
         s.modsByContextType[key].add(moduleIdx);
         s.contextIdsOfModules[mKey].add(contextId);
     }
 
-    function removeContextId(string memory mod_name, string memory contextId)
+    function removeContextId(string memory moduleName, string memory contextId)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
     {
-        uint32 moduleIdx = _getModuleIdx(mod_name);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
 
         // // ContextId adding
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         bytes32 key = keccak256(abi.encodePacked(contextId));
 
         s.modsByContextType[key].remove(moduleIdx);
         s.contextIdsOfModules[mKey].remove(contextId);
     }
 
-    function addAdmin(string memory mod_name, address admin)
+    function addAdmin(string memory moduleName, address admin)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].add(admin);
     }
 
-    function removeAdmin(string memory mod_name, address admin)
+    function removeAdmin(string memory moduleName, address admin)
         public
-        onlyModuleOwner(mod_name)
+        onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].remove(admin);
     }
 
@@ -410,85 +414,31 @@ contract DappletRegistry {
     // Internal functions
     // -------------------------------------------------------------------------
 
-    // ctxId - URL or ContextType [IdentityAdapter]
-    function _fetchModulesByUsersTag(
-        string memory ctxId,
-        address[] memory listers,
-        uint256[] memory outbuf,
-        uint256 _bufLen
-    ) internal view returns (uint256) {
-        uint256 bufLen = _bufLen;
-        bytes32 key = keccak256(abi.encodePacked(ctxId));
-        uint256[] memory modIdxs = s.modsByContextType[key].values();
-
-        //add if no duplicates in buffer[0..nn-1]
-        uint256 lastBufLen = bufLen; // 1) 0  2) 1
-        for (uint256 j = 0; j < modIdxs.length; ++j) {
-            uint256 modIdx = modIdxs[j];
-
-            // k - index of duplicated element
-            uint256 k = 0;
-            for (; k < lastBufLen; ++k) {
-                if (outbuf[k] == modIdx) break; //duplicate found
-            }
-
-            // ToDo: check what happens when duplicated element is in the end of outbuf
-
-            //no duplicates found  -- add the module's index
-            if (k == lastBufLen) {
-                // add module if it is in the listings
-                for (uint256 l = 0; l < listers.length; ++l) {
-                    if (
-                        s.listingByLister[listers[l]].contains(
-                            uint32(modIdx)
-                        ) == true
-                    ) {
-                        outbuf[bufLen++] = modIdx;
-                    }
-                }
-
-                uint256 prevBufLen = bufLen;
-
-                ModuleInfo memory m = s.modules[modIdx];
-                bufLen = _fetchModulesByUsersTag(
-                    m.name,
-                    listers,
-                    outbuf,
-                    bufLen
-                ); // using index as a tag
-
-                // ToDo: add interface as separate module to outbuf?
-                for (uint256 l = 0; l < m.interfaces.length; ++l) {
-                    bufLen = _fetchModulesByUsersTag(
-                        m.interfaces[l],
-                        listers,
-                        outbuf,
-                        bufLen
-                    );
-                }
-
-                // something depends on the current module
-                if (bufLen != prevBufLen) {
-                    outbuf[bufLen++] = modIdx;
-                }
-
-                //ToDo: what if owner changes? CREATE MODULE ENS  NAMES! on creating ENS
-            }
-        }
-
-        return bufLen;
-    }
-
     function _addModuleVersionNoChecking(
+        bytes32 moduleKey,
         uint256 moduleIdx,
-        string memory mod_name,
+        string memory moduleName,
         VersionInfoDto memory v
     ) private {
+        bytes32 vKey = keccak256(
+            abi.encodePacked(moduleName, v.branch, v.version)
+        );
+        require(s.versions[vKey].modIdx == 0, "Version already exists");
+
+        bytes32 nbKey = keccak256(abi.encodePacked(moduleName, v.branch));
+        bytes4[] storage versionNumbers = s.versionNumbers[nbKey];
+
+        // check correct versioning
+        if (versionNumbers.length > 0) {
+            bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
+            require(v.version > lastVersion, "Version must be bumped");
+        }
+
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
             bytes32 dKey = keccak256(
-                abi.encodePacked(d.name, d.branch, d.major, d.minor, d.patch)
+                abi.encodePacked(d.name, d.branch, d.version)
             );
             require(s.versions[dKey].modIdx != 0, "Dependency doesn't exist");
             deps[i] = dKey;
@@ -498,13 +448,7 @@ contract DappletRegistry {
         for (uint256 i = 0; i < v.interfaces.length; ++i) {
             DependencyDto memory interf = v.interfaces[i];
             bytes32 iKey = keccak256(
-                abi.encodePacked(
-                    interf.name,
-                    interf.branch,
-                    interf.major,
-                    interf.minor,
-                    interf.patch
-                )
+                abi.encodePacked(interf.name, interf.branch, interf.version)
             );
             require(s.versions[iKey].modIdx != 0, "Interface doesn't exist");
             interfaces[i] = iKey;
@@ -534,25 +478,23 @@ contract DappletRegistry {
         VersionInfo memory vInfo = VersionInfo(
             moduleIdx,
             v.branch,
-            v.major,
-            v.minor,
-            v.patch,
+            v.version,
             v.binary,
             deps,
             interfaces,
             v.flags,
-            v.extensionVersion
-        );
-        bytes32 vKey = keccak256(
-            abi.encodePacked(mod_name, v.branch, v.major, v.minor, v.patch)
+            v.extensionVersion,
+            block.timestamp
         );
         s.versions[vKey] = vInfo;
 
-        bytes32 nbKey = keccak256(abi.encodePacked(mod_name, vInfo.branch));
-        s.versionNumbers[nbKey].push(bytes1(vInfo.major));
-        s.versionNumbers[nbKey].push(bytes1(vInfo.minor));
-        s.versionNumbers[nbKey].push(bytes1(vInfo.patch));
-        s.versionNumbers[nbKey].push(bytes1(0x0));
+        // add branch if not exists
+        if (versionNumbers.length == 0) {
+            s.branches[moduleKey].push(v.branch);
+        }
+
+        // add version number
+        versionNumbers.push(vInfo.version);
 
         // reset IsUnderConstruction flag
         if (((s.modules[moduleIdx].flags >> 0) & uint256(1)) == 1) {
@@ -562,21 +504,23 @@ contract DappletRegistry {
         }
     }
 
-    function _getModuleIdx(string memory mod_name)
+    function _getModuleIdx(string memory moduleName)
         internal
         view
-        returns (uint32)
+        returns (uint256)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(mod_name));
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         if (mKey == _HEAD) {
-            return 0x00000000;
+            return
+                0x0000000000000000000000000000000000000000000000000000000000000000;
         } else if (mKey == _TAIL) {
-            return 0xFFFFFFFF;
+            return
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
         } else {
-            uint32 moduleIdx = s.moduleIdxs[mKey];
+            uint256 moduleIdx = s.moduleIdxs[mKey];
             require(moduleIdx != 0, "The module does not exist");
             return moduleIdx;
-        }        
+        }
     }
 }
