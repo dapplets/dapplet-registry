@@ -312,6 +312,13 @@ describe("DappletRegistry", function () {
       icon: {
         hash: '0xa4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
         uris: []
+      },
+      image: {
+        hash: '0xa4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
+        uris: [
+          "bzz://e073745366ec7ad6605c00bffd232a59fb523a8529b8b24cf1578412ec56b466",
+          "ipfs://Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu"
+        ]
       }
     });
 
@@ -320,24 +327,39 @@ describe("DappletRegistry", function () {
 
     const base64 = uri.replace('data:application/json;base64,', '');
     const json = atob(base64);
-    console.log('json', json)
     const metadata = JSON.parse(json);
 
-    const description = `This NFT is a proof of ownership of the "twitter-adapter-test".\n` + 
-      `twitter-adapter-test\n` + 
-      `This dapplet is a part of the Dapplets Project ecosystem for augmented web. All dapplets are available in the Dapplets Store.`;
+    const description = `This NFT is a proof of ownership of the "twitter-adapter-test".\n\n` + 
+      `twitter-adapter-test\n\n` + 
+      `This module is a part of the Dapplets Project ecosystem for augmented web. All modules are available in the Dapplets Store.`;
 
     expect(metadata).to.eql({
-      name: "Dapplet \"twitter-adapter-test\"",
-      image: 'https://dapplet-api.s3.nl-ams.scw.cloud/a4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
+      name: "Adapter \"twitter-adapter-test\"",
+      image: 'ipfs://Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu',
       description: description,
       attributes: [{
         trait_type: "Name", 
         value: "twitter-adapter-test"
-      },{
+      }, {
         trait_type: "Module Type", 
-        value: "2"
+        value: "Adapter"
       }]
+    });
+  });
+
+  it("should return NFT metadata of the added module", async () => {
+    const uri = await nftContract.contractURI();
+    expect(uri).to.contain('data:application/json;base64,');
+
+    const base64 = uri.replace('data:application/json;base64,', '');
+    const json = atob(base64);
+    const metadata = JSON.parse(json);
+
+    expect(metadata).to.eql({
+      "name": "Dapplets",
+      "description": "Dapplets Project is an open Augmented Web infrastructure for decentralized Apps (dapplets), all powered by crypto technologies. Our system is open-source and available to developers anywhere in the world.",
+      "image": "ipfs://QmbU1jjPeHN4ikENaAatqkNPPNL4tKByJg7B4be4ESWDwn",
+      "external_link": "https://dapplets.org"
     });
   });
 

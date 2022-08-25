@@ -28,7 +28,13 @@ module.exports = addModuleInfo = async (
       uris: [
         "0x0000000000000000000000000000000000000000000000000000000000000000",
       ],
-    }
+    },
+    image = {
+      hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+      uris: [
+        "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+      ]
+    },
   },
   version = undefined
 ) => {
@@ -40,12 +46,7 @@ module.exports = addModuleInfo = async (
       name,
       title,
       description,
-      image: {
-        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-        uris: [
-          "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-        ]
-      },
+      image,
       manifest: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
         uris: [
