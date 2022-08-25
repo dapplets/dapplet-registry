@@ -24,6 +24,7 @@ module.exports = addModuleInfo = async (
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
   },
+  version = undefined
 ) => {
   await contract.addModuleInfo(
     context,
@@ -33,7 +34,13 @@ module.exports = addModuleInfo = async (
       name,
       title,
       description,
-      fullDescription: {
+      image: {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+        uris: [
+          "ipfs://deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        ]
+      },
+      manifest: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
         uris: [
           "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -48,12 +55,10 @@ module.exports = addModuleInfo = async (
       },
       flags: 0,
     },
-    [
+    version === undefined ? 
       {
         branch: "default",
-        major: 0,
-        minor: 0,
-        patch: 1,
+        version: "0x00010000",
         flags: 0,
         binary: {
           hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -63,8 +68,9 @@ module.exports = addModuleInfo = async (
         },
         dependencies: [],
         interfaces: [],
-        extensionVersion: "0x00ff01",
-      },
-    ],
+        extensionVersion: "0x00ff0100",
+        createdAt: 0
+      }
+     : version,
   );
 };

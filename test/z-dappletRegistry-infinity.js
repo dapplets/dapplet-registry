@@ -60,13 +60,12 @@ describe("DappletRegistry Infinity Test", function () {
         console.log(`Added ${j * 100 + i + 1} modules`);
       }
 
-      const result = await contract.getModules(j * 100, 100);
+      const result = await contract.getModules("default", j * 100, 100, false);
       console.log(
         { result },
         "result",
         result["result"].length,
-        result["nextOffset"],
-        result["totalModules"],
+        result["total"],
         result["result"][result["result"].length - 1].name,
       );
     }
