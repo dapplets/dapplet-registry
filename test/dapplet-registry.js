@@ -25,36 +25,44 @@ const getValues = (data) => {
 const getVersion = (data) => {
   return {
     branch: data.branch,
-    major: data.major,
-    minor: data.minor,
-    patch: data.patch,
+    version: data.version,
     extensionVersion: data.extensionVersion,
   };
 };
 
 const addVersion = ({
   branch = "default",
-  major = 9,
-  minor = 8,
-  patch = 7,
-  extensionVersion = "0x00ff01",
+  version = "0x09080700",
+  extensionVersion = "0x00ff0100",
+  createdAt = 0
 }) => {
   return {
     branch,
-    major,
-    minor,
-    patch,
+    version,
     flags: 0,
     binary: {
       hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      uris: [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
+      uris: [],
     },
     dependencies: [],
     interfaces: [],
     extensionVersion,
+    createdAt
   };
+};
+
+const EMPTY_VERSION_INFO = {
+  branch: "",
+  version: "0x00000000",
+  flags: 0,
+  binary: {
+    hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    uris: [],
+  },
+  dependencies: [],
+  interfaces: [],
+  extensionVersion: "0x00000000",
+  createdAt: 0
 };
 
 describe("DappletRegistry", function () {
@@ -99,12 +107,12 @@ describe("DappletRegistry", function () {
   });
 
   it("should return zero modules by contextId", async () => {
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    expect(moduleInfo).to.eql([[], []]);
+    expect(moduleInfo).to.eql([[[]], [[]]]);
   });
 
   it("should return modules by contextId after addModuleInfo and added it to listing ", async () => {
@@ -138,19 +146,19 @@ describe("DappletRegistry", function () {
       ],
     );
 
-    const moduleByTwitter = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleByTwitter = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    const moduleByInstagram = await contract.getModulesInfoByListers(
-      "instagram.com",
+    const moduleByInstagram = await contract.getModulesInfoByListersBatch(
+      ["instagram.com"],
       [accountAddress],
       0,
     );
 
-    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
-    const resultDataByInstagram = moduleByInstagram.modulesInfo.map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modules[0].map(getValues);
+    const resultDataByInstagram = moduleByInstagram.modules[0].map(getValues);
 
     expect(resultDataByTwitter).to.have.deep.members([
       {
@@ -191,13 +199,13 @@ describe("DappletRegistry", function () {
 
     await contract.addContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleByContext = await contract.getModulesInfoByListers(
-      "yahoo.com",
+    const moduleByContext = await contract.getModulesInfoByListersBatch(
+      ["yahoo.com"],
       [accountAddress],
       0,
     );
 
-    const resultModuleById = moduleByContext.modulesInfo.map(getValues);
+    const resultModuleById = moduleByContext.modules[0].map(getValues);
     expect(resultModuleById).to.eql([
       {
         name: "twitter-adapter-test",
@@ -208,13 +216,13 @@ describe("DappletRegistry", function () {
 
     await contract.removeContextId("twitter-adapter-test", "yahoo.com");
 
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "yahoo.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["yahoo.com"],
       [accountAddress],
       0,
     );
 
-    expect(moduleInfo.modulesInfo).to.eql([]);
+    expect(moduleInfo.modules[0]).to.eql([]);
   });
 
   it("only the Owner can add the ContextID", async () => {
@@ -260,13 +268,13 @@ describe("DappletRegistry", function () {
 
     await addModuleInfo(contract, {});
 
-    const moduleInfo = await contract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleInfo = await contract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [acc2.address],
       0,
     );
 
-    expect(moduleInfo.modulesInfo).to.be.equalTo([]);
+    expect(moduleInfo.modules[0]).to.be.equalTo([]);
   });
 
   it("should return information on the added module", async () => {
@@ -275,13 +283,15 @@ describe("DappletRegistry", function () {
     const moduleInfoByName = await contract.getModuleInfoByName(
       "twitter-adapter-test",
     );
-    const modulesInfoByOwner = await contract.getModulesInfoByOwner(
+    const modulesByOwner = await contract.getModulesByOwner(
       accountAddress,
+      "default",
       0,
       10,
+      false
     );
-    const resultByName = getValues(moduleInfoByName.modulesInfo);
-    const resultByOwner = modulesInfoByOwner.modulesInfo.map(getValues);
+    const resultByName = getValues(moduleInfoByName.modules);
+    const resultByOwner = modulesByOwner.modules.map(getValues);
 
     expect(resultByName).to.eql({
       name: "twitter-adapter-test",
@@ -325,15 +335,15 @@ describe("DappletRegistry", function () {
       "twitter-adapter-description",
       {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000003",
-        ],
+        uris: [],
+      },
+      {
+        hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
+        uris: [],
       },
       {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000004",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000005",
-        ],
+        uris: [],
       },
     );
 
@@ -341,16 +351,16 @@ describe("DappletRegistry", function () {
       "twitter-adapter-test",
     );
     const resultByName = {
-      name: moduleInfo.modulesInfo.name,
-      title: moduleInfo.modulesInfo.title,
-      description: moduleInfo.modulesInfo.description,
-      fullDescription: {
-        hash: moduleInfo.modulesInfo.fullDescription.hash,
-        uris: moduleInfo.modulesInfo.fullDescription.uris,
+      name: moduleInfo.modules.name,
+      title: moduleInfo.modules.title,
+      description: moduleInfo.modules.description,
+      manifest: {
+        hash: moduleInfo.modules.manifest.hash,
+        uris: moduleInfo.modules.manifest.uris,
       },
       icon: {
-        hash: moduleInfo.modulesInfo.icon.hash,
-        uris: moduleInfo.modulesInfo.icon.uris,
+        hash: moduleInfo.modules.icon.hash,
+        uris: moduleInfo.modules.icon.uris,
       },
     };
 
@@ -358,17 +368,13 @@ describe("DappletRegistry", function () {
       name: "twitter-adapter-test",
       title: "twitter-adapter-title",
       description: "twitter-adapter-description",
-      fullDescription: {
+      manifest: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000002",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000003",
-        ],
+        uris: [],
       },
       icon: {
         hash: "0x0000000000000000000000000000000000000000000000000000000000000004",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000005",
-        ],
+        uris: [],
       },
     });
   });
@@ -379,89 +385,22 @@ describe("DappletRegistry", function () {
     await contract.addModuleVersion(
       "twitter-adapter-test",
       addVersion({
-        extensionVersion: "0x00f119",
+        extensionVersion: "0x00f11900",
       }),
     );
 
     const getVersionInfo = await contract.getVersionInfo(
       "twitter-adapter-test",
       "default",
-      9,
-      8,
-      7,
+      "0x09080700"
     );
 
     const resultVersion = getVersionInfo.map(getVersion)[0];
     expect(resultVersion).to.eql({
       branch: "default",
-      major: 9,
-      minor: 8,
-      patch: 7,
-      extensionVersion: "0x00f119",
+      version: "0x09080700",
+      extensionVersion: "0x00f11900",
     });
-  });
-
-  it("should add a new batch version to the module", async () => {
-    await addModuleInfo(contract, {
-      interfaces: [],
-    });
-    await addModuleInfo(contract, {
-      moduleType: 2,
-      context: ["instagram.com"],
-      interfaces: [],
-      description: "instagram-adapter-test",
-      name: "instagram-adapter-test",
-      title: "instagram-adapter-test",
-    });
-
-    await contract.addModuleVersionBatch(
-      ["twitter-adapter-test", "instagram-adapter-test"],
-      [
-        addVersion({
-          branch: "default",
-          major: 7,
-          minor: 6,
-          patch: 5,
-        }),
-        addVersion({
-          branch: "master",
-          major: 1,
-          minor: 2,
-          patch: 3,
-        }),
-      ],
-    );
-
-    await contract.changeMyListing(
-      [
-        ["H", "twitter-adapter-test"],
-        ["twitter-adapter-test", "instagram-adapter-test"],
-        ["instagram-adapter-test", "T"],
-      ],
-    );
-
-    const modulesInfoByListersBatch =
-      await contract.getModulesInfoByListersBatch(
-        ["twitter.com", "instagram.com"],
-        [accountAddress],
-        1000,
-      );
-    
-    const result = modulesInfoByListersBatch.modulesInfos.map((item) =>
-      getValues(item[0]),
-    );
-    expect(result).to.eql([
-      {
-        name: "twitter-adapter-test",
-        title: "twitter-adapter-test",
-        description: "twitter-adapter-test",
-      },
-      {
-        name: "instagram-adapter-test",
-        title: "instagram-adapter-test",
-        description: "instagram-adapter-test",
-      },
-    ]);
   });
 
   it("should create and delete admins for the module", async () => {
@@ -510,18 +449,14 @@ describe("DappletRegistry", function () {
     const getVersionInfo = await contract.getVersionInfo(
       "twitter-adapter-test",
       "default",
-      9,
-      8,
-      7,
+      "0x09080700"
     );
     const resultVersion = getVersionInfo.map(getVersion)[0];
 
     expect(resultVersion).to.eql({
       branch: "default",
-      major: 9,
-      minor: 8,
-      patch: 7,
-      extensionVersion: "0x00ff01",
+      version: "0x09080700",
+      extensionVersion: "0x00ff0100",
     });
   });
 
@@ -556,7 +491,8 @@ describe("DappletRegistry", function () {
     ]);
   });
 
-  it("should return 20 elements with arguments (0, 10) and (11, 10)", async () => {
+  it("should return 20 elements with arguments (0, 10) and (10, 10)", async () => {
+    const names = [];
     for (let i = 0; i < 20; i++) {
       await addModuleInfo(contract, {
         accountAddress,
@@ -566,11 +502,32 @@ describe("DappletRegistry", function () {
         context: [],
         interfaces: [],
       });
+      names.push(`twitter-adapter-test-${i}`);
     }
 
-    const page_1 = await contract.getModules(0, 10);
-    const page_2 = await contract.getModules(11, 10);
-    expect([...page_1[0], ...page_2[0]]).to.be.length(20);
+    const page_1 = await contract.getModules("default", 0, 10, false);
+    expect(page_1.modules.map(x => x.name)).deep.eq([...names].splice(0, 10));
+
+    const page_2 = await contract.getModules("default", 10, 10, false);
+    expect(page_2.modules.map(x => x.name)).deep.eq([...names].splice(10, 10));
+
+    const page_1_reversed = await contract.getModules("default", 0, 10, true);
+    expect(page_1_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
+
+    const page_2_reversed = await contract.getModules("default", 10, 10, true);
+    expect(page_2_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
+
+    const page_1_owned = await contract.getModulesByOwner(accountAddress, "default", 0, 10, false);
+    expect(page_1_owned.modules.map(x => x.name)).deep.eq([...names].splice(0, 10));
+
+    const page_2_owned = await contract.getModulesByOwner(accountAddress, "default", 10, 10, false);
+    expect(page_2_owned.modules.map(x => x.name)).deep.eq([...names].splice(10, 10));
+
+    const page_1_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 0, 10, true);
+    expect(page_1_owned_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(0, 10));
+
+    const page_2_owned_reversed = await contract.getModulesByOwner(accountAddress, "default", 10, 10, true);
+    expect(page_2_owned_reversed.modules.map(x => x.name)).deep.eq([...names].reverse().splice(10, 10));
   });
 
   it("transmitting and verifying the addition of dynamically added data", async () => {
@@ -593,7 +550,7 @@ describe("DappletRegistry", function () {
       ],
     );
 
-    const moduleByContext = await contract.getModules(0, 1);
+    const moduleByContext = await contract.getModules("default", 0, 1, false);
 
     const result = moduleByContext.modules.map(getValues);
 
@@ -604,6 +561,105 @@ describe("DappletRegistry", function () {
         description,
       },
     ]);
+  });
+
+  it("returns an array of branches", async () => {
+    await addModuleInfo(contract, {}, EMPTY_VERSION_INFO);
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "default", version: "0x00010000" }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "default", version: "0x00010100" }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "new", version: "0x00010000" }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "new", version: "0x00010100" }),
+    );
+    
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "legacy", version: "0x00010000" }),
+    );
+
+    await contract.addModuleVersion(
+      "twitter-adapter-test",
+      addVersion({ branch: "legacy", version: "0x00010100" }),
+    );
+
+    const branches = await contract.getBranchesByModule("twitter-adapter-test");
+    expect(branches).to.deep.eq(["default", "new", "legacy"]);
+  });
+
+  it("returns an array of versions desc and asc", async () => {
+    await addModuleInfo(contract, {
+      name: "version-numbers-test"
+    }, EMPTY_VERSION_INFO);
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", version: "0x00010000" }),
+    );
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", version: "0x00010100" }),
+    );
+
+    await contract.addModuleVersion(
+      "version-numbers-test",
+      addVersion({ branch: "default", version: "0x00010200" }),
+    );
+
+    const { versions: forwardVersions, total: forwardTotalVersions } = 
+      await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
+    expect(forwardTotalVersions.toString()).to.eql("3");
+    expect(forwardVersions.map(x => x.version)).to.have.deep.members([
+      "0x00010000",
+      "0x00010100",
+      "0x00010200",
+    ]);
+
+    const { versions: reversedVersions, total: reversedTotalVersions } = 
+      await contract.getVersionsByModule("version-numbers-test", "default", 0, 100, false);
+    expect(reversedTotalVersions.toString()).to.eql("3");
+    expect(reversedVersions.map(x => x.version)).to.have.deep.members([
+      "0x00010200",
+      "0x00010100",
+      "0x00010000",
+    ]);
+  });
+
+  
+  it("should fail incorrect versioning", async () => {
+    await addModuleInfo(contract, {
+      name: "versioning-test"
+    }, EMPTY_VERSION_INFO);
+
+    try {
+      await contract.addModuleVersion(
+        "versioning-test",
+        addVersion({ branch: "default", version: "0x010203FF" }), // v1.2.3
+      );
+  
+      await contract.addModuleVersion(
+        "versioning-test",
+        addVersion({ branch: "default", version: "0x010202FF" }), // v1.2.2
+      );
+
+      expect.fail("contract is not failed");
+    } catch (e) {
+      expect(e.message).to.have.string("Version must be bumped");
+    }
   });
 });
 
@@ -704,12 +760,12 @@ describe("DappletRegistry + DappletNFT", function () {
       ["twitter-adapter-test", "T"],
     ]);
 
-    const moduleByTwitter = await registryContract.getModulesInfoByListers(
-      "twitter.com",
+    const moduleByTwitter = await registryContract.getModulesInfoByListersBatch(
+      ["twitter.com"],
       [accountAddress],
       0,
     );
-    const resultDataByTwitter = moduleByTwitter.modulesInfo.map(getValues);
+    const resultDataByTwitter = moduleByTwitter.modules[0].map(getValues);
     expect(resultDataByTwitter).to.have.deep.members([
       {
         name: "twitter-adapter-test",
@@ -717,7 +773,7 @@ describe("DappletRegistry + DappletNFT", function () {
         description: "twitter-adapter-test",
       },
     ]);
-    expect(moduleByTwitter.owners).to.eql([accountAddress]);
+    expect(moduleByTwitter.owners[0]).to.eql([accountAddress]);
   });
 
   it("should transfer ownership of the module", async () => {
@@ -725,7 +781,7 @@ describe("DappletRegistry + DappletNFT", function () {
     const dappletOwnerToRegistry = await registryContract.connect(dappletOwner);
 
     await addModuleInfo(dappletOwnerToRegistry, {});
-    const moduleIndex = await registryContract.getModuleIndx(
+    const moduleIndex = await registryContract.getModuleIndex(
       "twitter-adapter-test",
     );
 
@@ -736,12 +792,14 @@ describe("DappletRegistry + DappletNFT", function () {
       moduleIndex,
     );
 
-    const modulesInfoByOwner = await registryContract.getModulesInfoByOwner(
+    const modulesByOwner = await registryContract.getModulesByOwner(
       dappletBuyer.address,
+      "default",
       0,
       10,
+      false
     );
-    const resultByOwner = modulesInfoByOwner[0].map(getValues);
+    const resultByOwner = modulesByOwner[0].map(getValues);
 
     expect(resultByOwner).to.eql([
       {
@@ -753,7 +811,7 @@ describe("DappletRegistry + DappletNFT", function () {
   });
 
   it("gives NFT contract address", async () => {
-    const address = await registryContract.getNFTContractAddress();
+    const address = await registryContract.getNftContractAddress();
     expect(dappletContract.address).to.equal(address);
   });
 });
