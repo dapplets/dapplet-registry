@@ -23,6 +23,12 @@ module.exports = addModuleInfo = async (
     context = ["twitter.com"],
     interfaces = ["identity-adapter-test"],
     moduleType = 2,
+    icon = {
+      hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+      uris: [
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      ],
+    }
   },
   version = undefined
 ) => {
@@ -47,12 +53,7 @@ module.exports = addModuleInfo = async (
         ],
       },
       interfaces,
-      icon: {
-        hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-        uris: [
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ],
-      },
+      icon: icon,
       flags: 0,
     },
     version === undefined ? 
