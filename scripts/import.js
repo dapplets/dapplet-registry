@@ -4,19 +4,25 @@ const semver = require("semver");
 
 const PAGE_SIZE = 1;
 
+const EMPTY_HASH_URIS = {
+    hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    uris: [],
+};
+
 function convertStorageRefToEth(ref) {
-    return ref === null
-        ? {
-              hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-              uris: [],
-          }
-        : {
-              hash: ref.hash,
-              uris: ref.uris.map((x) =>
-                  hre.ethers.utils.hexlify(hre.ethers.utils.toUtf8Bytes(x))
-              ),
-          };
+    return (!ref) ? EMPTY_HASH_URIS : ref;
 }
+
+const EMPTY_VERSION = {
+    branch: "",
+    version: "0x00000000",
+    binary: EMPTY_HASH_URIS,
+    dependencies: [],
+    interfaces: [],
+    flags: "0x0",
+    extensionVersion: "0x00000000",
+    createdAt: "0x0"
+};
 
 function convertMiToEth(mi) {
     return {
@@ -24,10 +30,11 @@ function convertMiToEth(mi) {
         name: mi.name,
         title: mi.title,
         description: mi.description,
-        fullDescription: convertStorageRefToEth(mi.fullDescription),
+        manifest: convertStorageRefToEth(mi.manifest),
         icon: convertStorageRefToEth(mi.icon),
+        image: convertStorageRefToEth(mi.image),
         flags: mi.flags,
-        interfaces: mi.interfaces,
+        interfaces: mi.interfaces ?? [],
     };
 }
 
@@ -36,21 +43,31 @@ function convertViToEth(vi) {
         return n.length < 2 ? "0" + n : n.length > 2 ? "ff" : n;
     };
 
+    const convertVersionToBytes = (x) => {
+        return "0x" + 
+        toTwoDigits(x.major.toString(16)) +
+        toTwoDigits(x.minor.toString(16)) +
+        toTwoDigits(x.patch.toString(16)) +
+        (x.prerelease ? toTwoDigits(x.prerelease.toString(16)) : "ff");
+    }
+
     return {
         branch: vi.branch,
-        major: vi.major,
-        minor: vi.minor,
-        patch: vi.patch,
+        version: convertVersionToBytes(vi),
         binary: convertStorageRefToEth(vi.binary),
-        dependencies: vi.dependencies,
-        interfaces: vi.interfaces,
+        dependencies: vi.dependencies.map(x => ({
+            name: x.name,
+            branch: x.branch,
+            version: convertVersionToBytes(x),
+        })),
+        interfaces: vi.interfaces.map(x => ({
+            name: x.name,
+            branch: x.branch,
+            version: convertVersionToBytes(x),
+        })),
         flags: vi.flags,
-        extensionVersion: !vi.extensionVersion
-            ? "0x000000"
-            : "0x" +
-              toTwoDigits(semver.major(vi.extensionVersion).toString(16)) +
-              toTwoDigits(semver.minor(vi.extensionVersion).toString(16)) +
-              toTwoDigits(semver.patch(vi.extensionVersion).toString(16)),
+        extensionVersion: vi.extensionVersion,
+        createdAt: "0x0"
     };
 }
 
@@ -73,16 +90,36 @@ task("import", "Import a state of the registry from JSON")
         );
 
         for (const module of data.modules) {
+            console.log(`${module.name}`);
             const mi = convertMiToEth(module);
-            await contract.addModuleInfo(module.contextIds, [], mi, []);
-            console.log(`${mi.name}`);
+            try {
+                const tx = await contract.addModuleInfo(module.contextIds ?? [], [], mi, EMPTY_VERSION);
+                await tx.wait();
+            } catch (e) {
+                if (e?.error?.message.indexOf('The module already exists') != -1) {
+                    console.log('The module already exists');
+                } else {
+                    throw e;
+                }
+            }
+            console.log('deployed');
 
             for (const version of module.versions) {
-                const vi = convertViToEth(version);
-                await contract.addModuleVersion(module.name, vi);
                 console.log(
-                    `    ${vi.branch}@${vi.major}.${vi.minor}.${vi.patch}`
+                    `    ${version.branch}@${version.major}.${version.minor}.${version.patch}`
                 );
+                const vi = convertViToEth(version);
+                try {
+                    const tx = await contract.addModuleVersion(module.name, vi);
+                    await tx.wait();
+                } catch (e) {
+                    if (e?.error?.message.indexOf('Version already exists') != -1) {
+                        console.log('Version already exists');
+                    } else {
+                        throw e;
+                    }
+                }
+                console.log(`    deployed`);
             }
         }
 
@@ -104,5 +141,6 @@ task("import", "Import a state of the registry from JSON")
                 : [];
 
         await contract.changeMyListing(links);
+        // console.log('changeMyListing', links);
         console.log(`added ${links.length} links`)
     });
