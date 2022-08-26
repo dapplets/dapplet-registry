@@ -59,21 +59,24 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         ModuleInfo memory module = registry.getModuleByIndex(tokenId);
 
         string memory image;
-        if (module.image.hash != bytes32(0x0)) {
-            string[] memory supportedProtocols = new string[](3);
-            supportedProtocols[0] = "ipfs://";
-            supportedProtocols[1] = "ar://";
-            supportedProtocols[2] = "https://";
+        string[] memory supportedProtocols = new string[](3);
+        supportedProtocols[0] = "ipfs://";
+        supportedProtocols[1] = "ar://";
+        supportedProtocols[2] = "https://";
 
+        // a picture of a module ownership certificate
+        if (module.image.hash != bytes32(0x0)) {
             (bool isImageFound, uint256 imageUriIndex) = _findFirstOccurrence(module.image.uris, supportedProtocols);
-            
             if (isImageFound) {
                 image = module.image.uris[imageUriIndex];
-            } else {
-                (bool isIconFound, uint256 iconUriIndex) = _findFirstOccurrence(module.icon.uris, supportedProtocols);
-                if (isIconFound) {
-                    image = module.icon.uris[iconUriIndex];
-                }
+            }
+        }
+        
+        // use icon if an image is not found
+        if (bytes(image).length == 0 && module.icon.hash != bytes32(0x0)) {
+            (bool isIconFound, uint256 iconUriIndex) = _findFirstOccurrence(module.icon.uris, supportedProtocols);
+            if (isIconFound) {
+                image = module.icon.uris[iconUriIndex];
             }
         }
 

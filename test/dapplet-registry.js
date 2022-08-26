@@ -311,13 +311,14 @@ describe("DappletRegistry", function () {
     await addModuleInfo(contract, {
       icon: {
         hash: '0xa4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
-        uris: []
+        uris: [
+          "ipfs://Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu"
+        ]
       },
       image: {
         hash: '0xa4e7276f2d161a820266adcc3dff5deaeb1845015b4c07fe2667068349578968',
         uris: [
           "bzz://e073745366ec7ad6605c00bffd232a59fb523a8529b8b24cf1578412ec56b466",
-          "ipfs://Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu"
         ]
       }
     });
