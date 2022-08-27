@@ -291,6 +291,8 @@ contract DappletRegistry {
         ModuleInfo memory mInfo,
         VersionInfoDto memory vInfo
     ) public {
+        require(s.modules.length < 0xFFFFFFFF, "Maximum number of modules exceeded");
+
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
         require(s.moduleIdxs[mKey] == 0, "The module already exists"); // module does not exist
 
@@ -512,11 +514,9 @@ contract DappletRegistry {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         if (mKey == _HEAD) {
-            return
-                0x0000000000000000000000000000000000000000000000000000000000000000;
+            return 0x00000000;
         } else if (mKey == _TAIL) {
-            return
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+            return 0xFFFFFFFF;
         } else {
             uint256 moduleIdx = s.moduleIdxs[mKey];
             require(moduleIdx != 0, "The module does not exist");

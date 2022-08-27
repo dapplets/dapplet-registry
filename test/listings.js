@@ -395,6 +395,21 @@ describe("Listings", () => {
     );
   });
 
+  it("should fail on inconsistent changes", async () => {
+    try {
+      await contract.changeMyListing(
+        prepareArguments([
+          [H, 2],
+          [H, 4],
+          [4, 5],
+        ]),
+      );
+      expect.fail("contract is not failed");
+    } catch (e) {
+      expect(e.message).to.have.string("Links must be ordered by ascending and must not be repeated");
+    }
+  });
+
   it("paginate listing forward", async () => {
     const page_1 = await contract.getModulesOfListing(accountAddress, "default", 0, 2, false);
     expect(page_1.modules.map((x) => x.name.toString())).to.deep.equal(convertIndexesToNames(["5", "4"]));    
