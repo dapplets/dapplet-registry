@@ -291,10 +291,13 @@ contract DappletRegistry {
         ModuleInfo memory mInfo,
         VersionInfoDto memory vInfo
     ) public {
-        require(s.modules.length < 0xFFFFFFFF, "Maximum number of modules exceeded");
-
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
-        require(s.moduleIdxs[mKey] == 0, "The module already exists"); // module does not exist
+
+        require(s.modules.length < 0xFFFFFFFF, "Max modules reached");
+        require(_isValidModuleName(mInfo.name), "Invalid module name");
+        require(bytes(mInfo.title).length > 0, "Module title is required");
+        require(mInfo.moduleType != 0, "Module type is required");
+        require(s.moduleIdxs[mKey] == 0, "The module already exists");
 
         address owner = msg.sender;
 
@@ -522,5 +525,44 @@ contract DappletRegistry {
             require(moduleIdx != 0, "The module does not exist");
             return moduleIdx;
         }
+    }
+
+    function _isValidModuleName(string memory moduleName)
+        internal
+        pure
+        returns (bool)
+    {
+        bytes memory bytesName = bytes(moduleName);
+        uint256 len = bytesName.length;
+
+        if (len < 3 || len > 255) {
+            return false;
+        }
+
+        for (uint256 i = 0; i < len; ++i) {
+            bytes1 c = bytesName[i];
+            bool isCommonValid = (c >= 0x61 && c <= 0x7a) ||
+                (c >= 0x30 && c <= 0x39);
+
+            if (
+                (i == 0 ||
+                    i == len - 1 ||
+                    bytesName[i - 1] == 0x2d ||
+                    bytesName[i - 1] == 0x2e)
+            ) {
+                // first, last character or after [\-\.]
+                if (!(isCommonValid)) {
+                    // not in [a-z0-9]
+                    return false;
+                }
+            } else {
+                if (!(isCommonValid || c <= 0x2d || c <= 0x2e)) {
+                    // not in [a-z9-0\-\.]
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
