@@ -191,36 +191,18 @@ library LibDappletRegistryRead {
         bytes32 key = keccak256(abi.encodePacked(name, branch, version));
         VersionInfo memory v = s.versions[key];
         require(v.modIdx != 0, "Version doesn't exist");
-        DependencyDto[] memory deps = new DependencyDto[](
-            v.dependencies.length
-        );
-        for (uint256 i = 0; i < v.dependencies.length; ++i) {
-            VersionInfo memory depVi = s.versions[v.dependencies[i]];
-            ModuleInfo memory depMod = s.modules[depVi.modIdx];
-            deps[i] = DependencyDto(depMod.name, depVi.branch, depVi.version);
-        }
-        DependencyDto[] memory interfaces = new DependencyDto[](
-            v.interfaces.length
-        );
-        for (uint256 i = 0; i < v.interfaces.length; ++i) {
-            VersionInfo memory intVi = s.versions[v.interfaces[i]];
-            ModuleInfo memory intMod = s.modules[intVi.modIdx];
-            interfaces[i] = DependencyDto(
-                intMod.name,
-                intVi.branch,
-                intVi.version
-            );
-        }
+
         dto = VersionInfoDto(
             v.branch,
             v.version,
             v.binary,
-            deps,
-            interfaces,
+            _toDependencyDtos(s, v.dependencies),
+            _toDependencyDtos(s, v.interfaces),
             v.flags,
             v.extensionVersion,
             v.createdAt
         );
+
         moduleType = s.modules[v.modIdx].moduleType;
     }
 
@@ -254,10 +236,8 @@ library LibDappletRegistryRead {
 
             for (uint256 j = 0; j < bufLen; ++j) {
                 uint256 idx = outbuf[j];
-                address owner = s._dappletNFTContract.ownerOf(idx);
-                //ToDo: strip contentType indexes?
                 modules[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
-                owners[i][j] = owner;
+                owners[i][j] = s._dappletNFTContract.ownerOf(idx);
             }
         }
     }
@@ -298,9 +278,17 @@ library LibDappletRegistryRead {
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
             uint256 mIdx = moduleIndexes[idx];
-            modules[i] = s.modules[mIdx];
-            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
-            owners[i] = s._dappletNFTContract.ownerOf(mIdx);
+
+            // prevent exception on inconsistent listing
+            if (mIdx != 0) {
+                modules[i] = s.modules[mIdx];
+                lastVersions[i] = _getLastVersionInfo(
+                    s,
+                    modules[i].name,
+                    branch
+                );
+                owners[i] = s._dappletNFTContract.ownerOf(mIdx);
+            }
         }
     }
 
@@ -385,6 +373,19 @@ library LibDappletRegistryRead {
         if (versionNumbers.length > 0) {
             bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
             (dto, ) = getVersionInfo(s, name, branch, lastVersion);
+        }
+    }
+
+    function _toDependencyDtos(
+        AppStorage storage s,
+        bytes32[] memory dependencies
+    ) internal view returns (DependencyDto[] memory out) {
+        out = new DependencyDto[](dependencies.length);
+
+        for (uint256 i = 0; i < dependencies.length; ++i) {
+            VersionInfo memory intVi = s.versions[dependencies[i]];
+            ModuleInfo memory intMod = s.modules[intVi.modIdx];
+            out[i] = DependencyDto(intMod.name, intVi.branch, intVi.version);
         }
     }
 }
