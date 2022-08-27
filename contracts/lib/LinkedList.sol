@@ -2,12 +2,9 @@
 pragma solidity ^0.8.13;
 
 library LinkedList {
-    uint256 constant _NULL =
-        0x0000000000000000000000000000000000000000000000000000000000000000;
-    uint256 constant _HEAD =
-        0x0000000000000000000000000000000000000000000000000000000000000000;
-    uint256 constant _TAIL =
-        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 constant _NULL = 0x00000000;
+    uint256 constant _HEAD = 0x00000000;
+    uint256 constant _TAIL = 0xFFFFFFFF;
 
     struct LinkedListUint32 {
         mapping(uint256 => uint256) map;
@@ -27,8 +24,11 @@ library LinkedList {
     {
         result = new uint256[](self.size);
         uint256 current = _HEAD;
+
         for (uint256 i = 0; i < self.size; ++i) {
-            current = result[i] = self.map[current];
+            uint256 next = self.map[current];
+            if (next == _TAIL || next == _HEAD) break; // prevent exception on inconsistency
+            current = result[i] = next;
         }
     }
 
@@ -55,7 +55,8 @@ library LinkedList {
         }
 
         // Count inconsistent changes
-        int64 scores = 0;
+        uint256 sumA = 0;
+        uint256 sumB = 0;
 
         for (uint256 i = 0; i < links.length; i++) {
             Link memory link = links[i];
@@ -67,25 +68,35 @@ library LinkedList {
             // Skip an existing link
             if (oldNext == next) continue;
 
-            // The sum of the values of the elements whose predecessor has changed
-            scores += int64(uint64((next == 0) ? prev : next));
+            require(prev <= _TAIL && next <= _TAIL, "Maximum pointer exceeded");
 
-            // The diff of the values of the elements whose that have lost their predecessors
-            scores -= int64(
-                uint64((oldNext == 0) ? (prev == 0) ? _TAIL : prev : oldNext)
+            require(
+                i == 0 || links[i - 1].prev < prev,
+                "Links must be ordered by ascending and must not be repeated"
             );
 
-            if (prev != _HEAD && next != _NULL && self.map[prev] == _NULL) {
+            require(
+                prev != next,
+                "Circular dependency. Prev must not be equal Next."
+            );
+
+            // The sum of elements whose predecessors have added and elements removed from the list
+            sumA += (next == _NULL) ? prev : next;
+
+            // The sum of elements whose predecessors have been removed and elements added to the list
+            sumB += (oldNext == _NULL)
+                ? (prev == _HEAD) ? _TAIL : prev
+                : oldNext;
+
+            if (prev != _HEAD && next != _NULL && oldNext == _NULL) {
                 self.size += 1;
-            } else if (
-                prev != _HEAD && next == _NULL && self.map[prev] != _NULL
-            ) {
+            } else if (prev != _HEAD && next == _NULL && oldNext != _NULL) {
                 self.size -= 1;
             }
 
             self.map[prev] = next;
         }
 
-        require(scores == 0, "Inconsistent changes");
+        require(sumA == sumB, "Inconsistent changes");
     }
 }

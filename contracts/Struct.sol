@@ -26,7 +26,7 @@ struct VersionInfo {
     StorageRef binary;
     bytes32[] dependencies; // key of module
     bytes32[] interfaces; //Exported interfaces. no duplicates.
-    uint8 flags;
+    uint256 flags;
     bytes4 extensionVersion;
     uint256 createdAt;
 }
@@ -37,7 +37,7 @@ struct VersionInfoDto {
     StorageRef binary;
     DependencyDto[] dependencies; // key of module
     DependencyDto[] interfaces; //Exported interfaces. no duplicates.
-    uint8 flags;
+    uint256 flags;
     bytes4 extensionVersion;
     uint256 createdAt;
 }
