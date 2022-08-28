@@ -406,7 +406,7 @@ describe("Listings", () => {
       );
       expect.fail("contract is not failed");
     } catch (e) {
-      expect(e.message).to.have.string("Links must be ordered by ascending and must not be repeated");
+      expect(e.message).to.have.string("Pointers within one side must not be repeated");
     }
   });
 

@@ -60,20 +60,24 @@ library LinkedList {
 
         for (uint256 i = 0; i < links.length; i++) {
             Link memory link = links[i];
-
             uint256 prev = link.prev;
             uint256 next = link.next;
+
+            // prevent duplicates
+            for (uint256 j = 0; j < links.length; ++j) {
+                if (i == j) continue; // skip itself
+                require(
+                    prev != links[j].prev && next != links[j].next,
+                    "Pointers within one side must not be repeated"
+                );
+            }
+
             uint256 oldNext = self.map[prev];
 
             // Skip an existing link
             if (oldNext == next) continue;
 
             require(prev <= _TAIL && next <= _TAIL, "Maximum pointer exceeded");
-
-            require(
-                i == 0 || links[i - 1].prev < prev,
-                "Links must be ordered by ascending and must not be repeated"
-            );
 
             require(
                 prev != next,
