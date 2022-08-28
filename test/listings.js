@@ -494,4 +494,25 @@ describe("Listings", () => {
     const listers = await contract.getListersByModule("module-1", 0, 0);
     expect(listers).deep.eq(expectedAccounts);
   });
+
+  it("should wipe a listing", async () => {
+    const accounts = await ethers.getSigners();
+    const accountAddress = accounts[0].address;
+    const _contract = await contract.connect(accounts[0]);
+
+    const { modules: items } = await _contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
+    
+    const links = [
+      { prev: "H", next: "T" },
+      ...items.map(x => ({ prev: x.name, next: "H" }))
+    ];
+
+    const receipt = await _contract.changeMyListing(links);
+    await receipt.wait();
+
+    const { modules: itemsAfter, total } = await _contract.getModulesOfListing(accountAddress, "default", 0, 0, false);
+
+    expect(itemsAfter).length(0);
+    expect(total.toString()).eql("0");
+  });
 });

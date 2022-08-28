@@ -67,7 +67,8 @@ library LinkedList {
             for (uint256 j = 0; j < links.length; ++j) {
                 if (i == j) continue; // skip itself
                 require(
-                    prev != links[j].prev && next != links[j].next,
+                    prev != links[j].prev &&
+                        (next != links[j].next || next == _NULL),
                     "Pointers within one side must not be repeated"
                 );
             }
