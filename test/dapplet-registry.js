@@ -348,7 +348,7 @@ describe("DappletRegistry", function () {
     });
   });
 
-  it("should return NFT metadata of the added module", async () => {
+  it("should return NFT contract level metadata", async () => {
     const uri = await nftContract.contractURI();
     expect(uri).to.contain('data:application/json;base64,');
 
