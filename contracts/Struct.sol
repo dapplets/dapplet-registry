@@ -13,7 +13,7 @@ struct ModuleInfo {
     string title;
     string description;
     StorageRef image;
-    StorageRef manifest;
+    StorageRef manifest; // ToDo: rename to metadata
     StorageRef icon;
     string[] interfaces; //Exported interfaces in all versions. no duplicates.
     uint256 flags; // 255 bit - IsUnderConstruction

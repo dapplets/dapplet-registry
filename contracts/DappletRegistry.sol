@@ -175,7 +175,7 @@ contract DappletRegistry {
     function getModuleInfoByName(string memory moduleName)
         public
         view
-        returns (ModuleInfo memory modules, address owner)
+        returns (ModuleInfo memory modules, address owner) // ToDo: rename modules to module
     {
         return LibDappletRegistryRead.getModuleInfoByName(s, moduleName);
     }
@@ -285,6 +285,8 @@ contract DappletRegistry {
         }
     }
 
+    // ToDo: separate function for moduleinfo with version
+
     function addModuleInfo(
         string[] memory contextIds,
         LinkString[] memory links,
@@ -345,6 +347,7 @@ contract DappletRegistry {
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender,
             "You are not the owner of this module"
         );
+        // ToDo: allow edit module for admin
 
         m.title = title;
         m.description = description;
