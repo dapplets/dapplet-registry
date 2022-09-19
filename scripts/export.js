@@ -1,108 +1,47 @@
 const fs = require("fs");
 const path = require("path");
+const {
+    convertFromEthVi,
+    convertFromEthMi,
+    paginateAll,
+} = require("../helpers/helpers");
 
-const PAGE_SIZE = 1;
-
-function hex_to_ascii(str1) {
-    var hex = str1.toString();
-    var str = "";
-    for (var n = 0; n < hex.length; n += 2) {
-        str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-    }
-    return str;
-}
-
-function convertHashUri(hashUri) {
-    return hashUri.hash !==
-        "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ? {
-              hash: hashUri.hash,
-              uris: hashUri.uris.map((x) => hex_to_ascii(x.replace("0x", ""))),
-          }
-        : null;
-}
-
-function convertBytes3Version(v) {
-    return (
-        parseInt(v[2] + v[3], 16) +
-        "." +
-        parseInt(v[4] + v[5], 16) +
-        "." +
-        parseInt(v[6] + v[7], 16)
-    );
-}
+const PAGE_SIZE = 10;
 
 async function fetchModulesByBranch(contract, module, owner, branches) {
     const modules = [];
-
     const versions = [];
 
     for (const branch of branches) {
-        const versionNumbersHex = await contract.getVersionNumbers(
-            module.name,
-            branch
-        ); // ToDo: branch default is hardcoded
-        const versionNumbers = (
-            versionNumbersHex.replace("0x", "").match(/.{1,8}/g) ?? []
-        ).map((x) => {
-            const major = parseInt("0x" + x[0] + x[1]);
-            const minor = parseInt("0x" + x[2] + x[3]);
-            const patch = parseInt("0x" + x[4] + x[5]);
-            return { major, minor, patch };
-        });
-    
-        const _versions = await Promise.all(
-            versionNumbers.map((x) =>
-                contract.getVersionInfo(
-                    module.name,
+        const _versions = await paginateAll((offset, limit) => {
+            console.log(
+                `getVersionsByModule(${module.name}, ${branch}, ${offset}, ${limit}, true)`
+            );
+            return contract
+                .getVersionsByModule(module.name, branch, offset, limit, false)
+                .then(({ versions, total }) => ({
+                    items: versions,
+                    total: total.toNumber(),
+                }));
+        }, PAGE_SIZE);
+
+        versions.push(
+            ..._versions.map((x) =>
+                convertFromEthVi(x, module.moduleType, {
+                    name: module.name,
                     branch,
-                    x.major,
-                    x.minor,
-                    x.patch
-                )
+                })
             )
         );
-
-        versions.push(..._versions);
     }
 
     const contextIds = await contract.getContextIdsByModule(module.name);
-
     const admins = await contract.getAdminsByModule(module.name);
 
     modules.push({
-        moduleType: module.moduleType,
-        name: module.name,
-        title: module.title,
-        description: module.description,
-        fullDescription: convertHashUri(module.fullDescription),
-        icon: convertHashUri(module.icon),
-        interfaces: module.interfaces,
-        flags: module.flags.toHexString(),
+        ...convertFromEthMi(module),
         owner: owner,
-        versions: versions.map(({ dto, moduleType }) => ({
-            branch: dto.branch,
-            major: dto.major,
-            minor: dto.minor,
-            patch: dto.patch,
-            binary: convertHashUri(dto.binary),
-            dependencies: dto.dependencies.map((x) => ({
-                name: x.name,
-                branch: x.branch,
-                major: x.major,
-                minor: x.minor,
-                patch: x.patch,
-            })), // key of module
-            interfaces: dto.interfaces.map((x) => ({
-                name: x.name,
-                branch: x.branch,
-                major: x.major,
-                minor: x.minor,
-                patch: x.patch,
-            })), //Exported interfaces. no duplicates.
-            flags: dto.flags,
-            extensionVersion: convertBytes3Version(dto.extensionVersion),
-        })),
+        versions: versions,
         contextIds: contextIds,
         admins: admins,
     });
@@ -122,34 +61,57 @@ task("export", "Exports a state of the registry into JSON")
         let offset = 0;
 
         while (true) {
-            const response = await contract.getModules(offset, PAGE_SIZE);
+            console.log(`getModules('default', ${offset}, ${PAGE_SIZE}, true)`);
+            const response = await contract.getModules(
+                "default",
+                offset,
+                PAGE_SIZE,
+                false
+            );
 
             for (let i = 0; i < response.modules.length; i++) {
                 const m = response.modules[i];
-                const branches = ["default", "new", "legacy"];
-                
+                const owner = response.owners[i];
+
+                console.log(`getBranchesByModule(${m.name})`);
+                const branches = await contract.getBranchesByModule(m.name);
                 const _modules = await fetchModulesByBranch(
                     contract,
                     m,
-                    response.owners[i],
+                    owner,
                     branches
                 );
                 modules.push(..._modules);
             }
 
-            if (modules.length >= Number(response.totalModules.toString())) {
+            if (modules.length >= Number(response.total.toString())) {
                 break;
             } else {
-                offset = Number(response.nextOffset.toString());
+                offset += PAGE_SIZE;
             }
         }
 
-        const listers = await contract.getListers();
+        const listers = await paginateAll((offset, limit) => {
+            console.log(`getListers(${offset}, ${limit})`);
+            return contract
+                .getListers(offset, limit)
+                .then(({ listers, total }) => ({
+                    items: listers,
+                    total: total.toNumber(),
+                }));
+        }, PAGE_SIZE);
 
         const modulesByListers = {};
 
         for (const lister of listers) {
-            const modules = await contract.getModulesOfListing(lister);
+            const modules = await paginateAll((offset, limit) => {
+                console.log(`getModulesOfListing(${offset}, ${limit})`);
+                return contract.getModulesOfListing(lister, 'default', offset, limit, true)
+                    .then(({ modules, total }) => ({
+                        items: modules.map(x => x.name),
+                        total: total.toNumber(),
+                    }));
+            }, PAGE_SIZE);
             modulesByListers[lister] = modules;
         }
 

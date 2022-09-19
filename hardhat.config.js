@@ -33,6 +33,10 @@ module.exports = {
       url: process.env.RINKEBY_RPC,
       accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
+    ganache: {
+      url: process.env.GANACHE_RPC,
+      accounts: [process.env.GANACHE_PRIVATE_KEY],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_KEY,

@@ -8,7 +8,7 @@ struct StorageRef {
 
 // ToDo: introduce mapping for alternative sources,
 struct ModuleInfo {
-    uint8 moduleType;
+    uint8 moduleType; // 1 - dapplet, 2 - adapter, 3 - library, 4 - interface
     string name;
     string title;
     string description;
