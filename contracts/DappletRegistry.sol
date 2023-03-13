@@ -258,6 +258,8 @@ contract DappletRegistry {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.contextIdsOfModules[mKey].values();
     }
+    
+    // ToDo: add function to find implementations by specific interface name
 
     // -------------------------------------------------------------------------
     // State modifying functions
