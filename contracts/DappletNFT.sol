@@ -17,6 +17,8 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
     // View functions
     // -------------------------------------------------------------------------
 
+    // The following functions are overrides required by Solidity.
+
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -158,11 +160,15 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
     // -------------------------------------------------------------------------
 
     function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
+        address from, 
+        address to, 
+        uint256 tokenId, 
+        uint256 batchSize
+    )
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     function _findFirstOccurrence(string[] memory where, string[] memory what) internal pure returns (bool isFound, uint256 index) {

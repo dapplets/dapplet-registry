@@ -10,13 +10,14 @@ import {DappletNFT} from "./DappletNFT.sol";
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
 import {LibDappletRegistryRead} from "./LibDappletRegistryRead.sol";
 import {AppStorage} from "./AppStorage.sol";
+import {ReservationStake} from "./ReservationStake.sol";
 
 struct LinkString {
     string prev;
     string next;
 }
 
-contract DappletRegistry {
+contract DappletRegistry is ReservationStake {
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -35,7 +36,7 @@ contract DappletRegistry {
     }
 
     // -------------------------------------------------------------------------
-    // Modificators
+    // Modifiers
     // -------------------------------------------------------------------------
 
     modifier onlyModuleOwner(string memory name) {
@@ -293,12 +294,12 @@ contract DappletRegistry {
         string[] memory contextIds,
         LinkString[] memory links,
         ModuleInfo memory mInfo,
-        VersionInfoDto memory vInfo
+        VersionInfoDto memory vInfo,
+        uint256 reservationPeriod
     ) public {
         bytes32 mKey = keccak256(abi.encodePacked(mInfo.name));
 
         require(s.modules.length < 0xFFFFFFFF, "Max modules reached");
-        require(_isValidModuleName(mInfo.name), "Invalid module name");
         require(bytes(mInfo.title).length > 0, "Module title is required");
         require(mInfo.moduleType != 0, "Module type is required");
         require(s.moduleIdxs[mKey] == 0, "The module already exists");
@@ -326,6 +327,11 @@ contract DappletRegistry {
         // Versions Adding
         if (!isUnderConstruction) {
             _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfo);
+        }
+        
+        // Require stake for DUC
+        if (isUnderConstruction && _isStakingActive()) {
+            extendReservation(mInfo.name, reservationPeriod);
         }
 
         // Creating Dapplet NFT
@@ -370,6 +376,12 @@ contract DappletRegistry {
                 s.adminsOfModules[mKey].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
+        
+        // Return stake if a regular dapplet is deploying
+        if (_isStakingActive() && getStakeStatus(moduleName) != _NO_STAKE) {
+            require(getStakeStatus(moduleName) == _WAITING_FOR_REGULAR_DAPPLET, "Reservation period is expired");
+            _withdrawStake(moduleName, msg.sender);
+        }
 
         _addModuleVersionNoChecking(mKey, moduleIdx, moduleName, vInfo);
     }
@@ -394,7 +406,7 @@ contract DappletRegistry {
     {
         uint256 moduleIdx = _getModuleIdx(moduleName);
 
-        // // ContextId adding
+        // ContextId removing
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         bytes32 key = keccak256(abi.encodePacked(contextId));
 
@@ -418,6 +430,13 @@ contract DappletRegistry {
     {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         return s.adminsOfModules[mKey].remove(admin);
+    }
+
+    function burnDUC(string memory moduleName) public {
+        require(getStakeStatus(moduleName) == _READY_TO_BURN, "Reservation is not expired");
+        _burnStake(moduleName, msg.sender);
+
+        // ToDo: clean maps
     }
 
     // -------------------------------------------------------------------------
@@ -532,42 +551,7 @@ contract DappletRegistry {
         }
     }
 
-    function _isValidModuleName(string memory moduleName)
-        internal
-        pure
-        returns (bool)
-    {
-        bytes memory bytesName = bytes(moduleName);
-        uint256 len = bytesName.length;
-
-        if (len < 3 || len > 255) {
-            return false;
-        }
-
-        for (uint256 i = 0; i < len; ++i) {
-            bytes1 c = bytesName[i];
-            bool isCommonValid = (c >= 0x61 && c <= 0x7a) ||
-                (c >= 0x30 && c <= 0x39);
-
-            if (
-                (i == 0 ||
-                    i == len - 1 ||
-                    bytesName[i - 1] == 0x2d ||
-                    bytesName[i - 1] == 0x2e)
-            ) {
-                // first, last character or after [\-\.]
-                if (!(isCommonValid)) {
-                    // not in [a-z0-9]
-                    return false;
-                }
-            } else {
-                if (!(isCommonValid || c <= 0x2d || c <= 0x2e)) {
-                    // not in [a-z9-0\-\.]
-                    return false;
-                }
-            }
-        }
-
-        return true;
+    function isDUC(uint256 moduleIdx) internal view returns (bool) {
+        return (s.modules[moduleIdx].flags >> 0) & uint256(1) == 1;
     }
 }

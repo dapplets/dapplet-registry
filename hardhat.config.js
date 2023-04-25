@@ -16,7 +16,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1000,
+        runs: 10,
       },
     },
   },
@@ -35,7 +35,7 @@ module.exports = {
     },
     ganache: {
       url: process.env.GANACHE_RPC,
-      accounts: [process.env.GANACHE_PRIVATE_KEY],
+      accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
   },
   etherscan: {
