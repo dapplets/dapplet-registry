@@ -6,14 +6,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 abstract contract ReservationStake is Ownable {
-
     // -------------------------------------------------------------------------
     // Constants
     // -------------------------------------------------------------------------
 
-    uint8 constant internal _NO_STAKE = 0;
-    uint8 constant internal _READY_TO_BURN = 1;
-    uint8 constant internal _WAITING_FOR_REGULAR_DAPPLET = 2;
+    uint8 internal constant _NO_STAKE = 0;
+    uint8 internal constant _WAITING_FOR_REGULAR_DAPPLET = 1;
+    uint8 internal constant _READY_TO_BURN = 2;
 
     // -------------------------------------------------------------------------
     // State
@@ -39,7 +38,7 @@ abstract contract ReservationStake is Ownable {
     // -------------------------------------------------------------------------
 
     function calcStake(uint256 duration) public view returns (uint256) {
-        if (duration == 0) return 0; // ToDo: remove?
+        require(duration >= minDuration, "Increase duration");
 
         uint256 price = basePrice;
 
@@ -62,19 +61,19 @@ abstract contract ReservationStake is Ownable {
         string memory name,
         uint256 secondsDuration
     ) public view returns (uint256) {
-        uint256 duration = stakes[name].duration;
-        return calcStake(secondsDuration + duration) - calcStake(duration);
+        uint256 d = stakes[name].duration;
+        return calcStake(secondsDuration + d) - (d == 0 ? 0 : calcStake(d));
     }
 
     function getStakeStatus(string memory name) public view returns (uint8) {
         Stake memory stake = stakes[name];
 
         if (stake.endsAt == 0) {
-            return _NO_STAKE;
-        } else if (stake.endsAt <= block.timestamp) {
-            return _READY_TO_BURN;
+            return _NO_STAKE; // 0
+        } else if (stake.endsAt > block.timestamp) {
+            return _WAITING_FOR_REGULAR_DAPPLET; // 1
         } else {
-            return _WAITING_FOR_REGULAR_DAPPLET;
+            return _READY_TO_BURN; // 2
         }
     }
 
@@ -129,11 +128,7 @@ abstract contract ReservationStake is Ownable {
         Stake memory stake = stakes[name];
         require(stake.amount != 0, "Nothing to withdraw");
         require(
-            IERC20(stakingToken).transferFrom(
-                address(this),
-                recipient,
-                stake.amount
-            ),
+            IERC20(stakingToken).transfer(recipient, stake.amount),
             "Token transfer failed"
         );
 
@@ -144,27 +139,14 @@ abstract contract ReservationStake is Ownable {
         Stake memory stake = stakes[name];
         require(stake.amount != 0, "Nothing to withdraw");
 
-        uint256 tokensToBurn = Math.mulDiv(burnShare, stake.amount, 1e18);
-        uint256 tokensToReturn = stake.amount - tokensToBurn;
+        // uint256 tokensToBurn = Math.mulDiv(burnShare, stake.amount, 1e18);
+        // uint256 tokensToReturn = stake.amount - tokensToBurn;
 
         // ToDo: burn via bonding curve
-        // Burn tokens
-        require(
-            IERC20(stakingToken).transferFrom(
-                address(this),
-                address(0x0),
-                tokensToBurn
-            ),
-            "Burn failed"
-        );
 
         // Return tokens to the burner
         require(
-            IERC20(stakingToken).transferFrom(
-                address(this),
-                recipient,
-                tokensToReturn
-            ),
+            IERC20(stakingToken).transfer(recipient, stake.amount),
             "Token transfer failed"
         );
 

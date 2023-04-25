@@ -3,10 +3,13 @@ const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
 const chaiAsPromised = require("chai-as-promised");
 const addModuleInfo = require("../helpers/addModuleInfo");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const { convertToEthMi, convertToEthVi } = require("../helpers/convert");
 const md5 = require("md5");
 use(assertArrays);
 use(chaiAsPromised);
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const H = 0;
 const T = 4294967295;
@@ -70,6 +73,7 @@ describe("DappletRegistry", function () {
     let contract;
     let nftContract;
     let accountAddress;
+    let tokenContract;
 
     beforeEach(async function () {
         const [acc1] = await ethers.getSigners();
@@ -104,9 +108,13 @@ describe("DappletRegistry", function () {
         await deployDappletNFT.transferOwnership(contract.address);
 
         nftContract = deployDappletNFT;
+
+        const ERC20Mock = await ethers.getContractFactory("ERC20Mock", acc1);
+        tokenContract = await ERC20Mock.deploy();
+        await tokenContract.deployed();
     });
 
-    it("The contract is being deposited", async function () {
+    it("The contract is constructed", async function () {
         expect(contract.address).to.be.properAddress;
     });
 
@@ -117,6 +125,184 @@ describe("DappletRegistry", function () {
             0
         );
         expect(moduleInfo).to.eql([[[]], [[]]]);
+    });
+
+    it("DUC staking should be disabled", async () => {
+        const stakingToken = await contract.stakingToken();
+        expect(stakingToken).to.eql(ZERO_ADDRESS);
+    });
+
+    it("should deploy DUC with disabled staking", async () => {
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO);
+
+        const moduleInfo = await contract.getModuleInfoByName("duc");
+        const stakeStatus = await contract.getStakeStatus("duc");
+
+        // deploy regular dapplet
+        await contract.addModuleVersion(
+            "duc",
+            addVersion({ branch: "default", version: "0x00010000" })
+        );
+
+        const moduleInfoAfter = await contract.getModuleInfoByName("duc");
+
+        expect(moduleInfo.modules.name).to.eql("duc");
+        expect(moduleInfo.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(moduleInfoAfter.modules.flags.toString()).to.eql("0"); // DUC flag
+        expect(stakeStatus).to.eql(0); // NO_STAKE
+    });
+
+    it("should deploy DUC with enabled staking + stake release", async () => {
+        // enable staking
+        await contract.setStakeParameters(
+            tokenContract.address,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        const stakingToken = await contract.stakingToken();
+
+        // approve tokens
+        const price = "1000000000000000000"; 
+        const [acc1] = await ethers.getSigners();
+        await tokenContract.mint(acc1.address, price);
+        await tokenContract.approve(contract.address, price);
+
+        // deploy DUC
+        const reservationPeriod = 60 * 60 * 24 * 30; // 1 month
+
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO, reservationPeriod);
+
+        const timestamp_1 = await helpers.time.latest();
+        const moduleInfo_1 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_1 = await contract.getStakeStatus("duc");
+        const userBalance_1 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_1 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_1 = await contract.stakes("duc");
+
+        // deploy regular dapplet
+        await contract.addModuleVersion(
+            "duc",
+            addVersion({ branch: "default", version: "0x00010000" })
+        );
+
+        const moduleInfo_2 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_2 = await contract.getStakeStatus("duc");
+        const userBalance_2 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_2 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_2 = await contract.stakes("duc");
+
+        expect(stakingToken).to.eql(tokenContract.address);
+        expect(moduleInfo_1.modules.name).to.eql("duc");
+        expect(moduleInfo_1.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(stakeStatus_1).to.eql(1); // WAITING_FOR_REGULAR_DAPPLET
+        expect(userBalance_1.toString()).to.eql("0");
+        expect(ducBalance_1.toString()).to.eql(price);
+        expect(stakeInfo_1.amount.toString()).to.eql(price);
+        expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
+        expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+
+        expect(moduleInfo_2.modules.flags.toString()).to.eql("0"); // DUC flag
+        expect(stakeStatus_2).to.eql(0); // NO_STAKE
+        expect(userBalance_2.toString()).to.eql(price);
+        expect(ducBalance_2.toString()).to.eql("0");
+        expect(stakeInfo_2.amount.toString()).to.eql("0");
+        expect(stakeInfo_2.duration.toString()).to.eql("0");
+        expect(stakeInfo_2.endsAt.toString()).to.eql("0");
+    });
+
+    it("should deploy DUC with enabled staking + burn stake", async () => {
+        // enable staking
+        await contract.setStakeParameters(
+            tokenContract.address,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        const stakingToken = await contract.stakingToken();
+
+        // approve tokens
+        const price = "1000000000000000000"; 
+        const [acc1] = await ethers.getSigners();
+        await tokenContract.mint(acc1.address, price);
+        await tokenContract.approve(contract.address, price);
+
+        // deploy DUC
+        const reservationPeriod = 60 * 60 * 24 * 30; // 1 month
+
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO, reservationPeriod);
+
+        const timestamp_1 = await helpers.time.latest();
+        const moduleInfo_1 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_1 = await contract.getStakeStatus("duc");
+        const userBalance_1 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_1 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_1 = await contract.stakes("duc");
+
+        // stake expired
+        await helpers.time.increaseTo(stakeInfo_1.endsAt);
+        const stakeStatus_2 = await contract.getStakeStatus("duc");
+
+        // third person burns stake
+        const [, burner] = await ethers.getSigners();
+        await contract.connect(burner).burnDUC("duc");
+
+        const stakeStatus_3 = await contract.getStakeStatus("duc");
+        const burnerBalance_3 = await tokenContract.balanceOf(burner.address);
+        const ducBalance_3 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_3 = await contract.stakes("duc");
+
+        expect(stakingToken).to.eql(tokenContract.address);
+        expect(moduleInfo_1.modules.name).to.eql("duc");
+        expect(moduleInfo_1.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(stakeStatus_1).to.eql(1); // WAITING_FOR_REGULAR_DAPPLET
+        expect(userBalance_1.toString()).to.eql("0");
+        expect(ducBalance_1.toString()).to.eql(price);
+        expect(stakeInfo_1.amount.toString()).to.eql(price);
+        expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
+        expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+
+        expect(stakeStatus_2).to.eql(2); // READY_TO_BURN
+
+        // expect(moduleInfo_3.modules.flags.toString()).to.eql("0"); // DUC flag
+        expect(stakeStatus_3).to.eql(0); // NO_STAKE
+        expect(burnerBalance_3.toString()).to.eql(price);
+        expect(ducBalance_3.toString()).to.eql("0");
+        expect(stakeInfo_3.amount.toString()).to.eql("0");
+        expect(stakeInfo_3.duration.toString()).to.eql("0");
+        expect(stakeInfo_3.endsAt.toString()).to.eql("0");
+
+        try {
+            await contract.getModuleInfoByName("duc");
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("The module does not exist");
+        }
     });
 
     it("should return modules by contextId after addModuleInfo and added it to listing ", async () => {
@@ -797,7 +983,8 @@ describe("DappletRegistry", function () {
               ['example-interface', 'T'],
             ],
             convertToEthMi({ name: "example-interface", moduleType: 4 }),
-            convertToEthVi({ version: "0x000100ff" })
+            convertToEthVi({ version: "0x000100ff" }),
+            0
         );
 
         await ownerConnectedContract.addModuleInfo(
@@ -815,7 +1002,8 @@ describe("DappletRegistry", function () {
                         version: "0x000100ff",
                     },
                 ],
-            })
+            }),
+            0
         );
 
         for (let i = 1; i <= 20; i++) {
@@ -829,7 +1017,8 @@ describe("DappletRegistry", function () {
                     ["example-dapplet-" + i, "T"],
                 ],
                 convertToEthMi({ name: "example-dapplet-" + i, moduleType: 1 }),
-                convertToEthVi({})
+                convertToEthVi({}),
+                0
             );
         }
 
@@ -844,11 +1033,6 @@ describe("DappletRegistry", function () {
             ["example.com"],
             [lister.address],
             0
-        );
-
-        console.log(
-            response.modules[0].map((x) => x.name),
-            response.owners
         );
     });
 });

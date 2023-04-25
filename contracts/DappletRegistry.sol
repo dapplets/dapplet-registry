@@ -212,8 +212,7 @@ contract DappletRegistry is ReservationStake {
         view
         returns (string[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        return s.branches[mKey];
+        return s.branches[_getModuleIdx(name)];
     }
 
     function getVersionsByModule(
@@ -247,8 +246,7 @@ contract DappletRegistry is ReservationStake {
         view
         returns (address[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        return s.adminsOfModules[mKey].values();
+        return s.adminsOfModules[_getModuleIdx(moduleName)].values();
     }
 
     function getContextIdsByModule(string memory moduleName)
@@ -256,8 +254,7 @@ contract DappletRegistry is ReservationStake {
         view
         returns (string[] memory)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        return s.contextIdsOfModules[mKey].values();
+        return s.contextIdsOfModules[_getModuleIdx(moduleName)].values();
     }
     
     // ToDo: add function to find implementations by specific interface name
@@ -321,12 +318,12 @@ contract DappletRegistry is ReservationStake {
         for (uint256 i = 0; i < contextIds.length; ++i) {
             bytes32 key = keccak256(abi.encodePacked(contextIds[i]));
             s.modsByContextType[key].add(mIdx);
-            s.contextIdsOfModules[mKey].add(contextIds[i]);
+            s.contextIdsOfModules[mIdx].add(contextIds[i]);
         }
 
         // Versions Adding
         if (!isUnderConstruction) {
-            _addModuleVersionNoChecking(mKey, mIdx, mInfo.name, vInfo);
+            _addModuleVersionNoChecking(mIdx, vInfo);
         }
         
         // Require stake for DUC
@@ -369,11 +366,10 @@ contract DappletRegistry is ReservationStake {
         VersionInfoDto memory vInfo
     ) public {
         // ******** TODO: check existing versions and version sorting
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         uint256 moduleIdx = _getModuleIdx(moduleName);
         require(
             s._dappletNFTContract.ownerOf(moduleIdx) == msg.sender ||
-                s.adminsOfModules[mKey].contains(msg.sender) == true,
+                s.adminsOfModules[moduleIdx].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
         
@@ -383,7 +379,7 @@ contract DappletRegistry is ReservationStake {
             _withdrawStake(moduleName, msg.sender);
         }
 
-        _addModuleVersionNoChecking(mKey, moduleIdx, moduleName, vInfo);
+        _addModuleVersionNoChecking(moduleIdx, vInfo);
     }
 
     function addContextId(string memory moduleName, string memory contextId)
@@ -393,11 +389,10 @@ contract DappletRegistry is ReservationStake {
         uint256 moduleIdx = _getModuleIdx(moduleName);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         // ContextId adding
         s.modsByContextType[key].add(moduleIdx);
-        s.contextIdsOfModules[mKey].add(contextId);
+        s.contextIdsOfModules[moduleIdx].add(contextId);
     }
 
     function removeContextId(string memory moduleName, string memory contextId)
@@ -406,12 +401,11 @@ contract DappletRegistry is ReservationStake {
     {
         uint256 moduleIdx = _getModuleIdx(moduleName);
 
-        // ContextId removing
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         bytes32 key = keccak256(abi.encodePacked(contextId));
 
+        // ContextId removing
         s.modsByContextType[key].remove(moduleIdx);
-        s.contextIdsOfModules[mKey].remove(contextId);
+        s.contextIdsOfModules[moduleIdx].remove(contextId);
     }
 
     function addAdmin(string memory moduleName, address admin)
@@ -419,8 +413,8 @@ contract DappletRegistry is ReservationStake {
         onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        return s.adminsOfModules[mKey].add(admin);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
+        return s.adminsOfModules[moduleIdx].add(admin);
     }
 
     function removeAdmin(string memory moduleName, address admin)
@@ -428,15 +422,23 @@ contract DappletRegistry is ReservationStake {
         onlyModuleOwner(moduleName)
         returns (bool)
     {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        return s.adminsOfModules[mKey].remove(admin);
+        uint256 moduleIdx = _getModuleIdx(moduleName);
+        return s.adminsOfModules[moduleIdx].remove(admin);
     }
 
     function burnDUC(string memory moduleName) public {
-        require(getStakeStatus(moduleName) == _READY_TO_BURN, "Reservation is not expired");
+        require(getStakeStatus(moduleName) == _READY_TO_BURN, "DUC is not ready to burn");
         _burnStake(moduleName, msg.sender);
 
-        // ToDo: clean maps
+        // ToDo: clean modsByContextType?
+
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
+        uint256 mIdx = s.moduleIdxs[mKey];
+
+        delete s.moduleIdxs[mKey];
+        delete s.modules[mIdx]; // ToDo: what happens with NFT?
+
+        s.burnedByModule[mIdx] = true;
     }
 
     // -------------------------------------------------------------------------
@@ -444,17 +446,15 @@ contract DappletRegistry is ReservationStake {
     // -------------------------------------------------------------------------
 
     function _addModuleVersionNoChecking(
-        bytes32 moduleKey,
         uint256 moduleIdx,
-        string memory moduleName,
         VersionInfoDto memory v
     ) private {
         bytes32 vKey = keccak256(
-            abi.encodePacked(moduleName, v.branch, v.version)
+            abi.encodePacked(moduleIdx, v.branch, v.version)
         );
         require(s.versions[vKey].modIdx == 0, "Version already exists");
 
-        bytes32 nbKey = keccak256(abi.encodePacked(moduleName, v.branch));
+        bytes32 nbKey = keccak256(abi.encodePacked(moduleIdx, v.branch));
         bytes4[] storage versionNumbers = s.versionNumbers[nbKey];
 
         // check correct versioning
@@ -466,8 +466,9 @@ contract DappletRegistry is ReservationStake {
         bytes32[] memory deps = new bytes32[](v.dependencies.length);
         for (uint256 i = 0; i < v.dependencies.length; ++i) {
             DependencyDto memory d = v.dependencies[i];
+            uint256 dIdx = _getModuleIdx(d.name);
             bytes32 dKey = keccak256(
-                abi.encodePacked(d.name, d.branch, d.version)
+                abi.encodePacked(dIdx, d.branch, d.version)
             );
             require(s.versions[dKey].modIdx != 0, "Dependency doesn't exist");
             deps[i] = dKey;
@@ -476,12 +477,14 @@ contract DappletRegistry is ReservationStake {
         bytes32[] memory interfaces = new bytes32[](v.interfaces.length);
         for (uint256 i = 0; i < v.interfaces.length; ++i) {
             DependencyDto memory interf = v.interfaces[i];
+            uint256 interfIdx = _getModuleIdx(interf.name);
             bytes32 iKey = keccak256(
-                abi.encodePacked(interf.name, interf.branch, interf.version)
+                abi.encodePacked(interfIdx, interf.branch, interf.version)
             );
             require(s.versions[iKey].modIdx != 0, "Interface doesn't exist");
             interfaces[i] = iKey;
 
+            // ToDo: replace with Set?
             // add interface name to ModuleInfo if not exist
             bool isInterfaceExist = false;
             for (
@@ -519,7 +522,7 @@ contract DappletRegistry is ReservationStake {
 
         // add branch if not exists
         if (versionNumbers.length == 0) {
-            s.branches[moduleKey].push(v.branch);
+            s.branches[moduleIdx].push(v.branch);
         }
 
         // add version number
@@ -551,7 +554,7 @@ contract DappletRegistry is ReservationStake {
         }
     }
 
-    function isDUC(uint256 moduleIdx) internal view returns (bool) {
+    function _isDUC(uint256 moduleIdx) internal view returns (bool) {
         return (s.modules[moduleIdx].flags >> 0) & uint256(1) == 1;
     }
 }

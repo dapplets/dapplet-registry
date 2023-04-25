@@ -76,7 +76,9 @@ library LibDappletRegistryRead {
         uint256 limit,
         bool reverse
     ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        uint256 moduleIdx = s.moduleIdxs[mKey];
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (limit == 0) {
@@ -143,7 +145,7 @@ library LibDappletRegistryRead {
     function getModuleInfoByName(AppStorage storage s, string memory moduleName)
         external
         view
-        returns (ModuleInfo memory modules, address owner)
+        returns (ModuleInfo memory modules, address owner) // ToDo: rename modules to module
     {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         require(s.moduleIdxs[mKey] != 0, "The module does not exist");
@@ -188,7 +190,9 @@ library LibDappletRegistryRead {
         string memory branch,
         bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 key = keccak256(abi.encodePacked(name, branch, version));
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        uint256 moduleIdx = s.moduleIdxs[mKey];
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch, version));
         VersionInfo memory v = s.versions[key];
         require(v.modIdx != 0, "Version doesn't exist");
 
@@ -311,6 +315,9 @@ library LibDappletRegistryRead {
         for (uint256 j = 0; j < modIdxs.length; ++j) {
             uint256 modIdx = modIdxs[j];
 
+            // skip burned modules
+            if (s.burnedByModule[modIdx]) continue;
+
             // k - index of duplicated element
             uint256 k = 0;
             for (; k < bufLen; ++k) {
@@ -367,7 +374,9 @@ library LibDappletRegistryRead {
         string memory name,
         string memory branch
     ) internal view returns (VersionInfoDto memory dto) {
-        bytes32 key = keccak256(abi.encodePacked(name, branch));
+        bytes32 mKey = keccak256(abi.encodePacked(name));
+        uint256 moduleIdx = s.moduleIdxs[mKey];
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (versionNumbers.length > 0) {
