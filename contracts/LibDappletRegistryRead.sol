@@ -11,6 +11,11 @@ library LibDappletRegistryRead {
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    bytes32 internal constant _HEAD =
+        0x321c2cb0b0673952956a3bfa56cf1ce4df0cd3371ad51a2c5524561250b01836; // keccak256(abi.encodePacked("H"))
+    bytes32 internal constant _TAIL =
+        0x846b7b6deb1cfa110d0ea7ec6162a7123b761785528db70cceed5143183b11fc; // keccak256(abi.encodePacked("T"))
+
     // -------------------------------------------------------------------------
     // View functions
     // -------------------------------------------------------------------------
@@ -43,10 +48,7 @@ library LibDappletRegistryRead {
         uint256 offset,
         uint256 limit
     ) public view returns (address[] memory out) {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        uint256 moduleIdx = s.moduleIdxs[mKey];
-        require(moduleIdx != 0, "The module does not exist");
-
+        uint256 moduleIdx = _getModuleIdx(s, moduleName);
         (address[] memory listers, ) = getListers(s, offset, limit);
 
         address[] memory buf = new address[](listers.length);
@@ -76,9 +78,9 @@ library LibDappletRegistryRead {
         uint256 limit,
         bool reverse
     ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        uint256 moduleIdx = s.moduleIdxs[mKey];
-        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
+        bytes32 key = keccak256(
+            abi.encodePacked(_getModuleIdx(s, name), branch)
+        );
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (limit == 0) {
@@ -142,15 +144,20 @@ library LibDappletRegistryRead {
         }
     }
 
-    function getModuleInfoByName(AppStorage storage s, string memory moduleName)
+    function getModuleInfoByName(
+        AppStorage storage s,
+        string memory moduleName
+    )
         external
         view
-        returns (ModuleInfo memory modules, address owner) // ToDo: rename modules to module
+        returns (
+            ModuleInfo memory modules,
+            address owner // ToDo: rename modules to module
+        )
     {
-        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
-        require(s.moduleIdxs[mKey] != 0, "The module does not exist");
-        modules = s.modules[s.moduleIdxs[mKey]];
-        owner = s._dappletNFTContract.ownerOf(s.moduleIdxs[mKey]);
+        uint256 moduleIdx = _getModuleIdx(s, moduleName);
+        modules = s.modules[moduleIdx];
+        owner = s._dappletNFTContract.ownerOf(moduleIdx);
     }
 
     function getModulesByOwner(
@@ -190,9 +197,9 @@ library LibDappletRegistryRead {
         string memory branch,
         bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        uint256 moduleIdx = s.moduleIdxs[mKey];
-        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch, version));
+        bytes32 key = keccak256(
+            abi.encodePacked(_getModuleIdx(s, name), branch, version)
+        );
         VersionInfo memory v = s.versions[key];
         require(v.modIdx != 0, "Version doesn't exist");
 
@@ -374,9 +381,7 @@ library LibDappletRegistryRead {
         string memory name,
         string memory branch
     ) internal view returns (VersionInfoDto memory dto) {
-        bytes32 mKey = keccak256(abi.encodePacked(name));
-        uint256 moduleIdx = s.moduleIdxs[mKey];
-        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
+        bytes32 key = keccak256(abi.encodePacked(_getModuleIdx(s, name), branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (versionNumbers.length > 0) {
@@ -395,6 +400,23 @@ library LibDappletRegistryRead {
             VersionInfo memory intVi = s.versions[dependencies[i]];
             ModuleInfo memory intMod = s.modules[intVi.modIdx];
             out[i] = DependencyDto(intMod.name, intVi.branch, intVi.version);
+        }
+    }
+
+    function _getModuleIdx(
+        AppStorage storage s,
+        string memory moduleName
+    ) internal view returns (uint256) {
+        bytes32 mKey = keccak256(abi.encodePacked(moduleName));
+
+        if (mKey == _HEAD) {
+            return 0x00000000;
+        } else if (mKey == _TAIL) {
+            return 0xFFFFFFFF;
+        } else {
+            uint256 moduleIdx = s.moduleIdxs[mKey];
+            require(moduleIdx != 0, "The module does not exist");
+            return moduleIdx;
         }
     }
 }

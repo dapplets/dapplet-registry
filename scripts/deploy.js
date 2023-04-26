@@ -13,12 +13,16 @@ async function main() {
   libRegistryRead = await deploy("LibDappletRegistryRead");
   contracts.push(libRegistryRead);
 
+  libRegistryReadExt = await deploy("LibDappletRegistryReadExt");
+  contracts.push(libRegistryReadExt);
+
   dappletRegistry = await deploy(
     "DappletRegistry",
     [dappletNFT.address],
     {},
     {
       LibDappletRegistryRead: libRegistryRead.address,
+      LibDappletRegistryReadExt: libRegistryReadExt.address,
     },
   );
 

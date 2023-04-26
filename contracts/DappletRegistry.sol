@@ -9,15 +9,17 @@ import "./lib/LinkedList.sol";
 import {DappletNFT} from "./DappletNFT.sol";
 import {ModuleInfo, StorageRef, VersionInfo, VersionInfoDto, DependencyDto} from "./Struct.sol";
 import {LibDappletRegistryRead} from "./LibDappletRegistryRead.sol";
+import {LibDappletRegistryReadExt} from "./LibDappletRegistryReadExt.sol";
 import {AppStorage} from "./AppStorage.sol";
 import {ReservationStake} from "./ReservationStake.sol";
+import {I_ProjectOwnershipAdapter} from "./I_ProjectOwnershipAdapter.sol";
 
 struct LinkString {
     string prev;
     string next;
 }
 
-contract DappletRegistry is ReservationStake {
+contract DappletRegistry is ReservationStake, I_ProjectOwnershipAdapter {
     using LinkedList for LinkedList.LinkedListUint32;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -79,11 +81,10 @@ contract DappletRegistry is ReservationStake {
             );
     }
 
-    function getListers(uint256 offset, uint256 limit)
-        public
-        view
-        returns (address[] memory listers, uint256 total)
-    {
+    function getListers(
+        uint256 offset,
+        uint256 limit
+    ) public view returns (address[] memory listers, uint256 total) {
         return LibDappletRegistryRead.getListers(s, offset, limit);
     }
 
@@ -101,11 +102,10 @@ contract DappletRegistry is ReservationStake {
             );
     }
 
-    function containsModuleInListing(address lister, string memory moduleName)
-        public
-        view
-        returns (bool)
-    {
+    function containsModuleInListing(
+        address lister,
+        string memory moduleName
+    ) public view returns (bool) {
         uint256 moduleIdx = _getModuleIdx(moduleName);
         return s.listingByLister[lister].contains(moduleIdx);
     }
@@ -114,11 +114,9 @@ contract DappletRegistry is ReservationStake {
         return address(s._dappletNFTContract);
     }
 
-    function getModuleIndex(string memory moduleName)
-        public
-        view
-        returns (uint256 moduleIdx)
-    {
+    function getModuleIndex(
+        string memory moduleName
+    ) public view returns (uint256 moduleIdx) {
         moduleIdx = _getModuleIdx(moduleName);
     }
 
@@ -140,11 +138,9 @@ contract DappletRegistry is ReservationStake {
             );
     }
 
-    function getModuleByIndex(uint256 index)
-        public
-        view
-        returns (ModuleInfo memory)
-    {
+    function getModuleByIndex(
+        uint256 index
+    ) public view returns (ModuleInfo memory) {
         return s.modules[index];
     }
 
@@ -173,10 +169,15 @@ contract DappletRegistry is ReservationStake {
             );
     }
 
-    function getModuleInfoByName(string memory moduleName)
+    function getModuleInfoByName(
+        string memory moduleName
+    )
         public
         view
-        returns (ModuleInfo memory modules, address owner) // ToDo: rename modules to module
+        returns (
+            ModuleInfo memory modules,
+            address owner // ToDo: rename modules to module
+        )
     {
         return LibDappletRegistryRead.getModuleInfoByName(s, moduleName);
     }
@@ -207,11 +208,9 @@ contract DappletRegistry is ReservationStake {
             );
     }
 
-    function getBranchesByModule(string memory name)
-        public
-        view
-        returns (string[] memory)
-    {
+    function getBranchesByModule(
+        string memory name
+    ) public view returns (string[] memory) {
         return s.branches[_getModuleIdx(name)];
     }
 
@@ -241,23 +240,40 @@ contract DappletRegistry is ReservationStake {
         return LibDappletRegistryRead.getVersionInfo(s, name, branch, version);
     }
 
-    function getAdminsByModule(string memory moduleName)
-        public
-        view
-        returns (address[] memory)
-    {
+    function getAdminsByModule(
+        string memory moduleName
+    ) public view returns (address[] memory) {
         return s.adminsOfModules[_getModuleIdx(moduleName)].values();
     }
 
-    function getContextIdsByModule(string memory moduleName)
-        public
-        view
-        returns (string[] memory)
-    {
+    function getContextIdsByModule(
+        string memory moduleName
+    ) public view returns (string[] memory) {
         return s.contextIdsOfModules[_getModuleIdx(moduleName)].values();
     }
-    
+
     // ToDo: add function to find implementations by specific interface name
+
+    // -------------------------------------------------------------------------
+    // View functions for external integrations
+    // -------------------------------------------------------------------------
+
+    function isDUC(string memory moduleName) external view returns (bool) {
+        return _isDUC(_getModuleIdx(moduleName));
+    }
+
+    function includesDependency(
+        string memory moduleName,
+        string memory dependencyName
+    ) external view returns (bool) {
+        return LibDappletRegistryReadExt.includesDependency(s, moduleName, dependencyName);
+    }
+
+    function ownerOf(
+        string memory projectId
+    ) external view returns (address) {
+        return s._dappletNFTContract.ownerOf(_getModuleIdx(projectId));
+    }
 
     // -------------------------------------------------------------------------
     // State modifying functions
@@ -325,7 +341,7 @@ contract DappletRegistry is ReservationStake {
         if (!isUnderConstruction) {
             _addModuleVersionNoChecking(mIdx, vInfo);
         }
-        
+
         // Require stake for DUC
         if (isUnderConstruction && _isStakingActive()) {
             extendReservation(mInfo.name, reservationPeriod);
@@ -372,20 +388,23 @@ contract DappletRegistry is ReservationStake {
                 s.adminsOfModules[moduleIdx].contains(msg.sender) == true,
             "You are not the owner of this module"
         );
-        
+
         // Return stake if a regular dapplet is deploying
         if (_isStakingActive() && getStakeStatus(moduleName) != _NO_STAKE) {
-            require(getStakeStatus(moduleName) == _WAITING_FOR_REGULAR_DAPPLET, "Reservation period is expired");
+            require(
+                getStakeStatus(moduleName) == _WAITING_FOR_REGULAR_DAPPLET,
+                "Reservation period is expired"
+            );
             _withdrawStake(moduleName, msg.sender);
         }
 
         _addModuleVersionNoChecking(moduleIdx, vInfo);
     }
 
-    function addContextId(string memory moduleName, string memory contextId)
-        public
-        onlyModuleOwner(moduleName)
-    {
+    function addContextId(
+        string memory moduleName,
+        string memory contextId
+    ) public onlyModuleOwner(moduleName) {
         uint256 moduleIdx = _getModuleIdx(moduleName);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
@@ -395,10 +414,10 @@ contract DappletRegistry is ReservationStake {
         s.contextIdsOfModules[moduleIdx].add(contextId);
     }
 
-    function removeContextId(string memory moduleName, string memory contextId)
-        public
-        onlyModuleOwner(moduleName)
-    {
+    function removeContextId(
+        string memory moduleName,
+        string memory contextId
+    ) public onlyModuleOwner(moduleName) {
         uint256 moduleIdx = _getModuleIdx(moduleName);
 
         bytes32 key = keccak256(abi.encodePacked(contextId));
@@ -408,26 +427,27 @@ contract DappletRegistry is ReservationStake {
         s.contextIdsOfModules[moduleIdx].remove(contextId);
     }
 
-    function addAdmin(string memory moduleName, address admin)
-        public
-        onlyModuleOwner(moduleName)
-        returns (bool)
-    {
+    function addAdmin(
+        string memory moduleName,
+        address admin
+    ) public onlyModuleOwner(moduleName) returns (bool) {
         uint256 moduleIdx = _getModuleIdx(moduleName);
         return s.adminsOfModules[moduleIdx].add(admin);
     }
 
-    function removeAdmin(string memory moduleName, address admin)
-        public
-        onlyModuleOwner(moduleName)
-        returns (bool)
-    {
+    function removeAdmin(
+        string memory moduleName,
+        address admin
+    ) public onlyModuleOwner(moduleName) returns (bool) {
         uint256 moduleIdx = _getModuleIdx(moduleName);
         return s.adminsOfModules[moduleIdx].remove(admin);
     }
 
     function burnDUC(string memory moduleName) public {
-        require(getStakeStatus(moduleName) == _READY_TO_BURN, "DUC is not ready to burn");
+        require(
+            getStakeStatus(moduleName) == _READY_TO_BURN,
+            "DUC is not ready to burn"
+        );
         _burnStake(moduleName, msg.sender);
 
         // ToDo: clean modsByContextType?
@@ -536,11 +556,9 @@ contract DappletRegistry is ReservationStake {
         }
     }
 
-    function _getModuleIdx(string memory moduleName)
-        internal
-        view
-        returns (uint256)
-    {
+    function _getModuleIdx(
+        string memory moduleName
+    ) internal view returns (uint256) {
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
 
         if (mKey == _HEAD) {

@@ -80,15 +80,22 @@ describe("DappletRegistry", function () {
         accountAddress = acc1.address;
 
         const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+        const deployDappletNFT = await DappletNFT.deploy();
+        await deployDappletNFT.deployed();
+
         const LibRegistryRead = await ethers.getContractFactory(
             "LibDappletRegistryRead",
             acc1
         );
-        const deployDappletNFT = await DappletNFT.deploy();
         const libRegistryRead = await LibRegistryRead.deploy();
-
-        await deployDappletNFT.deployed();
         await libRegistryRead.deployed();
+
+        const LibRegistryReadExt = await ethers.getContractFactory(
+            "LibDappletRegistryReadExt",
+            acc1
+        );
+        const libRegistryReadExt = await LibRegistryReadExt.deploy();
+        await libRegistryReadExt.deployed();
 
         const DappletRegistry = await ethers.getContractFactory(
             "DappletRegistry",
@@ -96,6 +103,7 @@ describe("DappletRegistry", function () {
                 signer: acc1,
                 libraries: {
                     LibDappletRegistryRead: libRegistryRead.address,
+                    LibDappletRegistryReadExt: libRegistryReadExt.address,
                 },
             }
         );
@@ -195,6 +203,7 @@ describe("DappletRegistry", function () {
         const userBalance_1 = await tokenContract.balanceOf(acc1.address);
         const ducBalance_1 = await tokenContract.balanceOf(contract.address);
         const stakeInfo_1 = await contract.stakes("duc");
+        const isDUC_1 = await contract.isDUC("duc");
 
         // deploy regular dapplet
         await contract.addModuleVersion(
@@ -207,6 +216,7 @@ describe("DappletRegistry", function () {
         const userBalance_2 = await tokenContract.balanceOf(acc1.address);
         const ducBalance_2 = await tokenContract.balanceOf(contract.address);
         const stakeInfo_2 = await contract.stakes("duc");
+        const isDUC_2 = await contract.isDUC("duc");
 
         expect(stakingToken).to.eql(tokenContract.address);
         expect(moduleInfo_1.modules.name).to.eql("duc");
@@ -217,6 +227,7 @@ describe("DappletRegistry", function () {
         expect(stakeInfo_1.amount.toString()).to.eql(price);
         expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
         expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+        expect(isDUC_1).to.eql(true);
 
         expect(moduleInfo_2.modules.flags.toString()).to.eql("0"); // DUC flag
         expect(stakeStatus_2).to.eql(0); // NO_STAKE
@@ -225,6 +236,7 @@ describe("DappletRegistry", function () {
         expect(stakeInfo_2.amount.toString()).to.eql("0");
         expect(stakeInfo_2.duration.toString()).to.eql("0");
         expect(stakeInfo_2.endsAt.toString()).to.eql("0");
+        expect(isDUC_2).to.eql(false);
     });
 
     it("should deploy DUC with enabled staking + burn stake", async () => {
@@ -263,10 +275,12 @@ describe("DappletRegistry", function () {
         const userBalance_1 = await tokenContract.balanceOf(acc1.address);
         const ducBalance_1 = await tokenContract.balanceOf(contract.address);
         const stakeInfo_1 = await contract.stakes("duc");
+        const isDUC_1 = await contract.isDUC("duc");
 
         // stake expired
         await helpers.time.increaseTo(stakeInfo_1.endsAt);
         const stakeStatus_2 = await contract.getStakeStatus("duc");
+        const isDUC_2 = await contract.isDUC("duc");
 
         // third person burns stake
         const [, burner] = await ethers.getSigners();
@@ -286,16 +300,24 @@ describe("DappletRegistry", function () {
         expect(stakeInfo_1.amount.toString()).to.eql(price);
         expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
         expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+        expect(isDUC_1).to.eql(true);
 
         expect(stakeStatus_2).to.eql(2); // READY_TO_BURN
+        expect(isDUC_2).to.eql(true);
 
-        // expect(moduleInfo_3.modules.flags.toString()).to.eql("0"); // DUC flag
         expect(stakeStatus_3).to.eql(0); // NO_STAKE
         expect(burnerBalance_3.toString()).to.eql(price);
         expect(ducBalance_3.toString()).to.eql("0");
         expect(stakeInfo_3.amount.toString()).to.eql("0");
         expect(stakeInfo_3.duration.toString()).to.eql("0");
         expect(stakeInfo_3.endsAt.toString()).to.eql("0");
+
+        try {
+            await contract.isDUC("duc");
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("The module does not exist");
+        }
 
         try {
             await contract.getModuleInfoByName("duc");
@@ -1034,6 +1056,70 @@ describe("DappletRegistry", function () {
             [lister.address],
             0
         );
+
+        // ToDo: implement asserts
+    });
+
+    it("should return an owner of the module", async () => {
+        const [acc1] = await ethers.getSigners();
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 1,
+            context: ["example.com"],
+            description: "example-test",
+            name: "example-test",
+            title: "Example Test",
+        });
+
+        expect(await contract.ownerOf("example-test")).to.equal(acc1.address);
+    });
+
+    it("should return dependency inclusiveness", async () => {
+        const [acc1] = await ethers.getSigners();
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 2,
+            context: ["example.com"],
+            description: "no-adapter",
+            name: "no-adapter",
+            title: "No Adapter",
+        });
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 2,
+            context: ["example.com"],
+            description: "example-adapter",
+            name: "example-adapter",
+            title: "Example Adapter",
+        });
+        
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 1,
+            context: ["example.com"],
+            description: "example-test",
+            name: "example-test",
+            title: "Example Test",
+        }, {
+            branch: "default",
+            version: "0x00010000",
+            flags: 0,
+            binary: {
+              hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+              uris: [],
+            },
+            dependencies: [{
+                name: "example-adapter",
+                branch: "default",
+                version: "0x00010000"
+            }],
+            interfaces: [],
+            extensionVersion: "0x00ff0100",
+            createdAt: 0
+          });
+
+        expect(await contract.includesDependency("example-test", "example-adapter")).to.equal(true);
+        expect(await contract.includesDependency("example-test", "no-adapter")).to.equal(false);
+        expect(await contract.includesDependency("example-test", "non-existing-adapter")).to.equal(false);
     });
 });
 
@@ -1073,17 +1159,23 @@ describe("DappletRegistry + DappletNFT", function () {
         accountAddress = acc1.address;
         dappletOwnerAddress = acc2.address;
 
-        const LibDappletRegistryRead = await ethers.getContractFactory(
+        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+        const deployDappletNFT = await DappletNFT.deploy();
+        await deployDappletNFT.deployed();
+
+        const LibRegistryRead = await ethers.getContractFactory(
             "LibDappletRegistryRead",
             acc1
         );
-        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+        const libRegistryRead = await LibRegistryRead.deploy();
+        await libRegistryRead.deployed();
 
-        const deployDappletNFT = await DappletNFT.deploy();
-        const libDappletRegistryRead = await LibDappletRegistryRead.deploy();
-
-        await deployDappletNFT.deployed();
-        await libDappletRegistryRead.deployed();
+        const LibRegistryReadExt = await ethers.getContractFactory(
+            "LibDappletRegistryReadExt",
+            acc1
+        );
+        const libRegistryReadExt = await LibRegistryReadExt.deploy();
+        await libRegistryReadExt.deployed();
 
         dappletContract = deployDappletNFT;
 
@@ -1092,7 +1184,8 @@ describe("DappletRegistry + DappletNFT", function () {
             {
                 signer: acc1,
                 libraries: {
-                    LibDappletRegistryRead: libDappletRegistryRead.address,
+                    LibDappletRegistryRead: libRegistryRead.address,
+                    LibDappletRegistryReadExt: libRegistryReadExt.address,
                 },
             }
         );
