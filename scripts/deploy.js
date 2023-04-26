@@ -1,3 +1,5 @@
+const STAKING_TOKEN = "0x0000000000000000000000000000000000000000";
+
 async function main() {
   const [deployer] = await ethers.getSigners();
 
@@ -18,7 +20,7 @@ async function main() {
 
   dappletRegistry = await deploy(
     "DappletRegistry",
-    [dappletNFT.address],
+    [dappletNFT.address, STAKING_TOKEN],
     {},
     {
       LibDappletRegistryRead: libRegistryRead.address,
@@ -35,6 +37,7 @@ async function main() {
   console.table([
     { Contract: "DappletNFT", Address: dappletNFT.address },
     { Contract: "LibDappletRegistryRead", Address: libRegistryRead.address },
+    { Contract: "LibDappletRegistryReadExt", Address: libRegistryReadExt.address },
     { Contract: "DappletRegistry", Address: dappletRegistry.address },
   ]);
 
