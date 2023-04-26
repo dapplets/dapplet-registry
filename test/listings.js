@@ -9,6 +9,8 @@ const H = 0;
 const N = 0;
 const T = 4294967295;
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 const ALL_TESTING_VALUES = convertIndexesToNames([
   "1",
   "2",
@@ -91,6 +93,7 @@ describe("Listings", () => {
     });
     const deployDappletRegistry = await DappletRegistry.deploy(
       deployDappletNFT.address,
+      ZERO_ADDRESS
     );
     await deployDappletRegistry.deployed();
     contract = deployDappletRegistry;

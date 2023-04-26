@@ -33,6 +33,10 @@ abstract contract ReservationStake is Ownable {
     uint256 public basePrice = 1e18; // 100 tokens (decimals = 16) by default
     uint256 public burnShare = 0.2e18; // 20% of tokens will be burned
 
+    constructor(address _stakingToken) {
+        stakingToken = _stakingToken;
+    }
+
     // -------------------------------------------------------------------------
     // View functions
     // -------------------------------------------------------------------------

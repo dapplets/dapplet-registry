@@ -32,7 +32,7 @@ contract DappletRegistry is ReservationStake, I_ProjectOwnershipAdapter {
 
     AppStorage internal s;
 
-    constructor(address _dappletNFTContractAddress) {
+    constructor(address _dappletNFTContractAddress, address _stakingToken) ReservationStake(_stakingToken) {
         s.modules.push(); // Zero index is reserved
         s._dappletNFTContract = DappletNFT(_dappletNFTContractAddress);
     }
