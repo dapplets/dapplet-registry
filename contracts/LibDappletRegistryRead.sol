@@ -78,9 +78,8 @@ library LibDappletRegistryRead {
         uint256 limit,
         bool reverse
     ) public view returns (VersionInfoDto[] memory versions, uint256 total) {
-        bytes32 key = keccak256(
-            abi.encodePacked(_getModuleIdx(s, name), branch)
-        );
+        uint256 moduleIdx = _getModuleIdx(s, name);
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (limit == 0) {
@@ -97,9 +96,9 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse) ? (total - offset - 1 - i) : (offset + i);
-            (versions[i], ) = getVersionInfo(
+            (versions[i], ) = _getVersionInfoByIdx(
                 s,
-                name,
+                moduleIdx,
                 branch,
                 versionNumbers[idx]
             );
@@ -139,8 +138,10 @@ library LibDappletRegistryRead {
         for (uint256 i = 0; i < limit; i++) {
             uint256 idx = (reverse) ? (total - offset - i) : (offset + i + 1); // zero index is reserved
             modules[i] = s.modules[idx];
-            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
-            owners[i] = s._dappletNFTContract.ownerOf(idx);
+            lastVersions[i] = _getLastVersionInfo(s, idx, branch);
+            owners[i] = (bytes(s.modules[idx].name).length == 0)
+                ? address(0x0) // burned module
+                : s._dappletNFTContract.ownerOf(idx);
         }
     }
 
@@ -187,7 +188,7 @@ library LibDappletRegistryRead {
 
         for (uint256 i = 0; i < dappIndxs.length; ++i) {
             modules[i] = s.modules[dappIndxs[i]];
-            lastVersions[i] = _getLastVersionInfo(s, modules[i].name, branch);
+            lastVersions[i] = _getLastVersionInfo(s, dappIndxs[i], branch);
         }
     }
 
@@ -197,24 +198,7 @@ library LibDappletRegistryRead {
         string memory branch,
         bytes4 version
     ) public view returns (VersionInfoDto memory dto, uint8 moduleType) {
-        bytes32 key = keccak256(
-            abi.encodePacked(_getModuleIdx(s, name), branch, version)
-        );
-        VersionInfo memory v = s.versions[key];
-        require(v.modIdx != 0, "Version doesn't exist");
-
-        dto = VersionInfoDto(
-            v.branch,
-            v.version,
-            v.binary,
-            _toDependencyDtos(s, v.dependencies),
-            _toDependencyDtos(s, v.interfaces),
-            v.flags,
-            v.extensionVersion,
-            v.createdAt
-        );
-
-        moduleType = s.modules[v.modIdx].moduleType;
+        return _getVersionInfoByIdx(s, _getModuleIdx(s, name), branch, version);
     }
 
     function getModulesInfoByListersBatch(
@@ -248,7 +232,9 @@ library LibDappletRegistryRead {
             for (uint256 j = 0; j < bufLen; ++j) {
                 uint256 idx = outbuf[j];
                 modules[i][j] = s.modules[idx]; // WARNING! indexes are started from 1.
-                owners[i][j] = s._dappletNFTContract.ownerOf(idx);
+                owners[i][j] = (bytes(s.modules[idx].name).length == 0)
+                    ? address(0x0) // burned module
+                    : s._dappletNFTContract.ownerOf(idx);
             }
         }
     }
@@ -293,12 +279,10 @@ library LibDappletRegistryRead {
             // prevent exception on inconsistent listing
             if (mIdx != 0) {
                 modules[i] = s.modules[mIdx];
-                lastVersions[i] = _getLastVersionInfo(
-                    s,
-                    modules[i].name,
-                    branch
-                );
-                owners[i] = s._dappletNFTContract.ownerOf(mIdx);
+                lastVersions[i] = _getLastVersionInfo(s, mIdx, branch);
+                owners[i] = (bytes(s.modules[idx].name).length == 0)
+                    ? address(0x0) // burned module
+                    : s._dappletNFTContract.ownerOf(idx);
             }
         }
     }
@@ -322,9 +306,6 @@ library LibDappletRegistryRead {
         for (uint256 j = 0; j < modIdxs.length; ++j) {
             uint256 modIdx = modIdxs[j];
 
-            // skip burned modules
-            if (s.burnedByModule[modIdx]) continue;
-
             // k - index of duplicated element
             uint256 k = 0;
             for (; k < bufLen; ++k) {
@@ -336,6 +317,10 @@ library LibDappletRegistryRead {
             //no duplicates found  -- add the module's index
             if (k != bufLen) continue;
 
+            // skip burned modules
+            ModuleInfo memory m = s.modules[modIdx];
+            if (bytes(m.name).length == 0) continue;
+
             // add module if it is in the listings
             for (uint256 l = 0; l < listers.length; ++l) {
                 if (s.listingByLister[listers[l]].contains(modIdx)) {
@@ -345,7 +330,6 @@ library LibDappletRegistryRead {
 
             uint256 prevBufLen = bufLen;
 
-            ModuleInfo memory m = s.modules[modIdx];
             bufLen = _fetchModulesByUsersTag(
                 s,
                 m.name,
@@ -376,17 +360,41 @@ library LibDappletRegistryRead {
         return bufLen;
     }
 
+    function _getVersionInfoByIdx(
+        AppStorage storage s,
+        uint256 moduleIdx,
+        string memory branch,
+        bytes4 version
+    ) internal view returns (VersionInfoDto memory dto, uint8 moduleType) {
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch, version));
+        VersionInfo memory v = s.versions[key];
+        require(v.modIdx != 0, "Version doesn't exist");
+
+        dto = VersionInfoDto(
+            v.branch,
+            v.version,
+            v.binary,
+            _toDependencyDtos(s, v.dependencies),
+            _toDependencyDtos(s, v.interfaces),
+            v.flags,
+            v.extensionVersion,
+            v.createdAt
+        );
+
+        moduleType = s.modules[v.modIdx].moduleType;
+    }
+
     function _getLastVersionInfo(
         AppStorage storage s,
-        string memory name,
+        uint256 moduleIdx,
         string memory branch
     ) internal view returns (VersionInfoDto memory dto) {
-        bytes32 key = keccak256(abi.encodePacked(_getModuleIdx(s, name), branch));
+        bytes32 key = keccak256(abi.encodePacked(moduleIdx, branch));
         bytes4[] memory versionNumbers = s.versionNumbers[key];
 
         if (versionNumbers.length > 0) {
             bytes4 lastVersion = versionNumbers[versionNumbers.length - 1];
-            (dto, ) = getVersionInfo(s, name, branch, lastVersion);
+            (dto, ) = _getVersionInfoByIdx(s, moduleIdx, branch, lastVersion);
         }
     }
 

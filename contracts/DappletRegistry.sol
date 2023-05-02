@@ -448,17 +448,21 @@ contract DappletRegistry is ReservationStake, I_ProjectOwnershipAdapter {
             getStakeStatus(moduleName) == _READY_TO_BURN,
             "DUC is not ready to burn"
         );
-        _burnStake(moduleName, msg.sender);
-
-        // ToDo: clean modsByContextType?
 
         bytes32 mKey = keccak256(abi.encodePacked(moduleName));
         uint256 mIdx = s.moduleIdxs[mKey];
 
-        delete s.moduleIdxs[mKey];
-        delete s.modules[mIdx]; // ToDo: what happens with NFT?
+        // Burn NFT
+        s._dappletNFTContract.burn(mIdx);
 
-        s.burnedByModule[mIdx] = true;
+        // Delete name
+        s.modules[mIdx].name = "";
+
+        // Delete a reference from name to index
+        delete s.moduleIdxs[mKey];
+
+        // Burn stake
+        _burnStake(moduleName, msg.sender);
     }
 
     // -------------------------------------------------------------------------

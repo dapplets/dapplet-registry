@@ -20,5 +20,4 @@ struct AppStorage {
     mapping(uint256 => EnumerableSet.AddressSet) adminsOfModules; // key - moduleIndex => EnumerableSet address for added, removed and get all address
     mapping(uint256 => EnumerableStringSet.StringSet) contextIdsOfModules; // key - moduleIndex => EnumerableSet
     mapping(address => LinkedList.LinkedListUint32) listingByLister;
-    mapping(uint256 => bool) burnedByModule; // key - moduleIndex => isBurned?
 }

@@ -155,6 +155,10 @@ contract DappletNFT is ERC721, ERC721Enumerable, Ownable {
         _safeMint(to, tokenId);
     }
 
+    function burn(uint256 tokenId) public onlyOwner {
+        _burn(tokenId);
+    }
+
     // -------------------------------------------------------------------------
     // Internal functions
     // -------------------------------------------------------------------------
