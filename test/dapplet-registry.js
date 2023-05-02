@@ -1122,95 +1122,19 @@ describe("DappletRegistry", function () {
         expect(await contract.includesDependency("example-test", "no-adapter")).to.equal(false);
         expect(await contract.includesDependency("example-test", "non-existing-adapter")).to.equal(false);
     });
-});
 
-describe("DappletNFT", function () {
-    let dappletContract;
-    let buyerAddress;
-
-    beforeEach(async function () {
-        const [acc1, acc2] = await ethers.getSigners();
-        buyerAddress = acc2.address;
-
-        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-        const deployDappletNFT = await DappletNFT.deploy();
-        await deployDappletNFT.deployed();
-        dappletContract = deployDappletNFT;
-    });
-
-    it("The contract is being deposited", async () => {
-        expect(dappletContract.address).to.be.properAddress;
-    });
-
-    it("The dapplet NFT has been mined", async () => {
-        await dappletContract.safeMint(buyerAddress, 737);
-        const tokenOwner = await dappletContract.ownerOf(737);
-        expect(tokenOwner).to.equal(buyerAddress);
-    });
-});
-
-describe("DappletRegistry + DappletNFT", function () {
-    let registryContract;
-    let dappletContract;
-    let accountAddress;
-    let dappletOwnerAddress;
-
-    beforeEach(async function () {
-        const [acc1, acc2] = await ethers.getSigners();
-        accountAddress = acc1.address;
-        dappletOwnerAddress = acc2.address;
-
-        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-        const deployDappletNFT = await DappletNFT.deploy();
-        await deployDappletNFT.deployed();
-
-        const LibRegistryRead = await ethers.getContractFactory(
-            "LibDappletRegistryRead",
-            acc1
-        );
-        const libRegistryRead = await LibRegistryRead.deploy();
-        await libRegistryRead.deployed();
-
-        const LibRegistryReadExt = await ethers.getContractFactory(
-            "LibDappletRegistryReadExt",
-            acc1
-        );
-        const libRegistryReadExt = await LibRegistryReadExt.deploy();
-        await libRegistryReadExt.deployed();
-
-        dappletContract = deployDappletNFT;
-
-        const DappletRegistry = await ethers.getContractFactory(
-            "DappletRegistry",
-            {
-                signer: acc1,
-                libraries: {
-                    LibDappletRegistryRead: libRegistryRead.address,
-                    LibDappletRegistryReadExt: libRegistryReadExt.address,
-                },
-            }
-        );
-        const deployDappletRegistry = await DappletRegistry.deploy(
-            dappletContract.address,
-            ZERO_ADDRESS
-        );
-        await deployDappletRegistry.deployed();
-        registryContract = deployDappletRegistry;
-
-        await dappletContract.transferOwnership(registryContract.address);
-    });
 
     it("checks if the ownership has been transfered", async () => {
-        const owner = await dappletContract.owner();
-        expect(owner).to.equal(registryContract.address);
+        const owner = await nftContract.owner();
+        expect(owner).to.equal(contract.address);
     });
 
     it("should create NFT adding new module", async () => {
         const [_, dappletOwner] = await ethers.getSigners();
-        const buyerAccount = await registryContract.connect(dappletOwner);
+        const buyerAccount = await contract.connect(dappletOwner);
 
-        expect(await dappletContract.totalSupply()).to.equal(0);
-        expect(await dappletContract.balanceOf(dappletOwnerAddress)).to.equal(
+        expect(await nftContract.totalSupply()).to.equal(0);
+        expect(await nftContract.balanceOf(dappletOwner.address)).to.equal(
             0
         );
 
@@ -1222,22 +1146,22 @@ describe("DappletRegistry + DappletNFT", function () {
             title: "Instagram Adapter Test",
         });
 
-        expect(await dappletContract.totalSupply()).to.equal(1);
-        expect(await dappletContract.ownerOf(1)).to.equal(dappletOwnerAddress);
-        expect(await dappletContract.balanceOf(dappletOwnerAddress)).to.equal(
+        expect(await nftContract.totalSupply()).to.equal(1);
+        expect(await nftContract.ownerOf(1)).to.equal(dappletOwner.address);
+        expect(await nftContract.balanceOf(dappletOwner.address)).to.equal(
             1
         );
     });
 
     it("should return twitter adapter owner by contextId after addModuleInfo", async () => {
-        await addModuleInfo(registryContract, {});
-        await registryContract.changeMyListing([
+        await addModuleInfo(contract, {});
+        await contract.changeMyListing([
             ["H", "twitter-adapter-test"],
             ["twitter-adapter-test", "T"],
         ]);
 
         const moduleByTwitter =
-            await registryContract.getModulesInfoByListersBatch(
+            await contract.getModulesInfoByListersBatch(
                 ["twitter.com"],
                 [accountAddress],
                 0
@@ -1255,23 +1179,23 @@ describe("DappletRegistry + DappletNFT", function () {
 
     it("should transfer ownership of the module", async () => {
         const [_, dappletOwner, dappletBuyer] = await ethers.getSigners();
-        const dappletOwnerToRegistry = await registryContract.connect(
+        const dappletOwnerToRegistry = await contract.connect(
             dappletOwner
         );
 
         await addModuleInfo(dappletOwnerToRegistry, {});
-        const moduleIndex = await registryContract.getModuleIndex(
+        const moduleIndex = await contract.getModuleIndex(
             "twitter-adapter-test"
         );
 
-        const dappletOwnerToDNFT = await dappletContract.connect(dappletOwner);
+        const dappletOwnerToDNFT = await nftContract.connect(dappletOwner);
         await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](
-            dappletOwnerAddress,
+            dappletOwner.address,
             dappletBuyer.address,
             moduleIndex
         );
 
-        const modulesByOwner = await registryContract.getModulesByOwner(
+        const modulesByOwner = await contract.getModulesByOwner(
             dappletBuyer.address,
             "default",
             0,
@@ -1290,7 +1214,7 @@ describe("DappletRegistry + DappletNFT", function () {
     });
 
     it("gives NFT contract address", async () => {
-        const address = await registryContract.getNftContractAddress();
-        expect(dappletContract.address).to.equal(address);
+        const address = await contract.getNftContractAddress();
+        expect(nftContract.address).to.equal(address);
     });
 });

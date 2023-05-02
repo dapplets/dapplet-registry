@@ -3,7 +3,7 @@
   "scripts": {
     "node": "hardhat node",
     "help": "hardhat --help",
-    "test": "hardhat test ./test/dapplet-registry.js ./test/listings.js",
+    "test": "hardhat test ./test/dapplet-registry.js ./test/listings.js ./test/dapplet-nft.js",
     "test:coverage": "hardhat test --coverage",
     "build": "hardhat compile",
     "size": "hardhat size-contracts",
