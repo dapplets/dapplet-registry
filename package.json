@@ -10,6 +10,7 @@
     "deploy:goerli": "hardhat run --network goerli scripts/deploy.js",
     "deploy:rinkeby": "hardhat run --network rinkeby scripts/deploy.js",
     "deploy:ganache": "hardhat run --network ganache scripts/deploy.js",
+    "verify:goerli": "hardhat run --network goerli scripts/verify.js",
     "export:goerli": "hardhat export --network goerli --address",
     "export:ganache": "hardhat export --network ganache --address",
     "import:goerli": "hardhat import --network goerli --address",
