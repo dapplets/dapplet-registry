@@ -3,10 +3,13 @@ const { ethers } = require("hardhat");
 const assertArrays = require("chai-arrays");
 const chaiAsPromised = require("chai-as-promised");
 const addModuleInfo = require("../helpers/addModuleInfo");
+const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const { convertToEthMi, convertToEthVi } = require("../helpers/convert");
 const md5 = require("md5");
 use(assertArrays);
 use(chaiAsPromised);
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const H = 0;
 const T = 4294967295;
@@ -70,21 +73,29 @@ describe("DappletRegistry", function () {
     let contract;
     let nftContract;
     let accountAddress;
+    let tokenContract;
 
     beforeEach(async function () {
         const [acc1] = await ethers.getSigners();
         accountAddress = acc1.address;
 
         const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
+        const deployDappletNFT = await DappletNFT.deploy();
+        await deployDappletNFT.deployed();
+
         const LibRegistryRead = await ethers.getContractFactory(
             "LibDappletRegistryRead",
             acc1
         );
-        const deployDappletNFT = await DappletNFT.deploy();
         const libRegistryRead = await LibRegistryRead.deploy();
-
-        await deployDappletNFT.deployed();
         await libRegistryRead.deployed();
+
+        const LibRegistryReadExt = await ethers.getContractFactory(
+            "LibDappletRegistryReadExt",
+            acc1
+        );
+        const libRegistryReadExt = await LibRegistryReadExt.deploy();
+        await libRegistryReadExt.deployed();
 
         const DappletRegistry = await ethers.getContractFactory(
             "DappletRegistry",
@@ -92,11 +103,13 @@ describe("DappletRegistry", function () {
                 signer: acc1,
                 libraries: {
                     LibDappletRegistryRead: libRegistryRead.address,
+                    LibDappletRegistryReadExt: libRegistryReadExt.address,
                 },
             }
         );
         const deployDappletRegistry = await DappletRegistry.deploy(
-            deployDappletNFT.address
+            deployDappletNFT.address,
+            ZERO_ADDRESS
         );
         await deployDappletRegistry.deployed();
         contract = deployDappletRegistry;
@@ -104,9 +117,60 @@ describe("DappletRegistry", function () {
         await deployDappletNFT.transferOwnership(contract.address);
 
         nftContract = deployDappletNFT;
+
+        const ERC20Mock = await ethers.getContractFactory("ERC20Mock", acc1);
+        tokenContract = await ERC20Mock.deploy();
+        await tokenContract.deployed();
+    // });
+
+    // beforeEach(async function() {
+        // BURNING DAPPLET (burning affects other tests)
+
+        const [,,staker,burner] = await ethers.getSigners();
+
+        // enable staking
+        await contract.setStakeParameters(
+            tokenContract.address,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        // approve tokens
+        const price = "1000000000000000000"; 
+        await tokenContract.mint(staker.address, price);
+        await tokenContract.connect(staker).approve(contract.address, price);
+
+        // create duc
+        const reservationPeriod = 60 * 60 * 24 * 30; // 1 month
+        await addModuleInfo(contract.connect(staker), {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO, reservationPeriod);
+
+        // burn duc
+        const stakeInfo_1 = await contract.stakes("duc");
+        await helpers.time.increaseTo(stakeInfo_1.endsAt);
+        await contract.connect(burner).burnDUC("duc");
+
+        // disable staking
+        await contract.setStakeParameters(
+            ZERO_ADDRESS,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        // END BURNING DAPPLET
     });
 
-    it("The contract is being deposited", async function () {
+    it("The contract is constructed", async function () {
         expect(contract.address).to.be.properAddress;
     });
 
@@ -117,6 +181,198 @@ describe("DappletRegistry", function () {
             0
         );
         expect(moduleInfo).to.eql([[[]], [[]]]);
+    });
+
+    it("DUC staking should be disabled", async () => {
+        const stakingToken = await contract.stakingToken();
+        expect(stakingToken).to.eql(ZERO_ADDRESS);
+    });
+
+    it("should deploy DUC with disabled staking", async () => {
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO);
+
+        const moduleInfo = await contract.getModuleInfoByName("duc");
+        const stakeStatus = await contract.getStakeStatus("duc");
+
+        // deploy regular dapplet
+        await contract.addModuleVersion(
+            "duc",
+            addVersion({ branch: "default", version: "0x00010000" })
+        );
+
+        const moduleInfoAfter = await contract.getModuleInfoByName("duc");
+
+        expect(moduleInfo.modules.name).to.eql("duc");
+        expect(moduleInfo.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(moduleInfoAfter.modules.flags.toString()).to.eql("0"); // DUC flag
+        expect(stakeStatus).to.eql(0); // NO_STAKE
+    });
+
+    it("should deploy DUC with enabled staking + stake release", async () => {
+        // enable staking
+        await contract.setStakeParameters(
+            tokenContract.address,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        const stakingToken = await contract.stakingToken();
+
+        // approve tokens
+        const price = "1000000000000000000"; 
+        const [acc1] = await ethers.getSigners();
+        await tokenContract.mint(acc1.address, price);
+        await tokenContract.approve(contract.address, price);
+
+        // deploy DUC
+        const reservationPeriod = 60 * 60 * 24 * 30; // 1 month
+
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO, reservationPeriod);
+
+        const timestamp_1 = await helpers.time.latest();
+        const moduleInfo_1 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_1 = await contract.getStakeStatus("duc");
+        const userBalance_1 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_1 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_1 = await contract.stakes("duc");
+        const isDUC_1 = await contract.isDUC("duc");
+
+        // deploy regular dapplet
+        await contract.addModuleVersion(
+            "duc",
+            addVersion({ branch: "default", version: "0x00010000" })
+        );
+
+        const moduleInfo_2 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_2 = await contract.getStakeStatus("duc");
+        const userBalance_2 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_2 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_2 = await contract.stakes("duc");
+        const isDUC_2 = await contract.isDUC("duc");
+
+        expect(stakingToken).to.eql(tokenContract.address);
+        expect(moduleInfo_1.modules.name).to.eql("duc");
+        expect(moduleInfo_1.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(stakeStatus_1).to.eql(1); // WAITING_FOR_REGULAR_DAPPLET
+        expect(userBalance_1.toString()).to.eql("0");
+        expect(ducBalance_1.toString()).to.eql(price);
+        expect(stakeInfo_1.amount.toString()).to.eql(price);
+        expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
+        expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+        expect(isDUC_1).to.eql(true);
+
+        expect(moduleInfo_2.modules.flags.toString()).to.eql("0"); // DUC flag
+        expect(stakeStatus_2).to.eql(0); // NO_STAKE
+        expect(userBalance_2.toString()).to.eql(price);
+        expect(ducBalance_2.toString()).to.eql("0");
+        expect(stakeInfo_2.amount.toString()).to.eql("0");
+        expect(stakeInfo_2.duration.toString()).to.eql("0");
+        expect(stakeInfo_2.endsAt.toString()).to.eql("0");
+        expect(isDUC_2).to.eql(false);
+    });
+
+    it("should deploy DUC with enabled staking + burn stake", async () => {
+        // enable staking
+        await contract.setStakeParameters(
+            tokenContract.address,
+            await contract.period(),
+            await contract.minDuration(),
+            await contract.basePrice(),
+            await contract.burnShare(),
+        );
+
+        const stakingToken = await contract.stakingToken();
+
+        // approve tokens
+        const price = "1000000000000000000"; 
+        const [acc1] = await ethers.getSigners();
+        await tokenContract.mint(acc1.address, price);
+        await tokenContract.approve(contract.address, price);
+
+        // deploy DUC
+        const reservationPeriod = 60 * 60 * 24 * 30; // 1 month
+
+        await addModuleInfo(contract, {
+            moduleType: 1, // 1 - dapplet
+            context: ["duc.local"],
+            interfaces: [],
+            description: "duc",
+            name: "duc",
+            title: "duc",
+        }, EMPTY_VERSION_INFO, reservationPeriod);
+
+        const timestamp_1 = await helpers.time.latest();
+        const moduleInfo_1 = await contract.getModuleInfoByName("duc");
+        const stakeStatus_1 = await contract.getStakeStatus("duc");
+        const userBalance_1 = await tokenContract.balanceOf(acc1.address);
+        const ducBalance_1 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_1 = await contract.stakes("duc");
+        const isDUC_1 = await contract.isDUC("duc");
+
+        // stake expired
+        await helpers.time.increaseTo(stakeInfo_1.endsAt);
+        const stakeStatus_2 = await contract.getStakeStatus("duc");
+        const isDUC_2 = await contract.isDUC("duc");
+
+        // third person burns stake
+        const [, burner] = await ethers.getSigners();
+        await contract.connect(burner).burnDUC("duc");
+
+        const stakeStatus_3 = await contract.getStakeStatus("duc");
+        const burnerBalance_3 = await tokenContract.balanceOf(burner.address);
+        const ducBalance_3 = await tokenContract.balanceOf(contract.address);
+        const stakeInfo_3 = await contract.stakes("duc");
+
+        expect(stakingToken).to.eql(tokenContract.address);
+        expect(moduleInfo_1.modules.name).to.eql("duc");
+        expect(moduleInfo_1.modules.flags.toString()).to.eql("1"); // DUC flag
+        expect(stakeStatus_1).to.eql(1); // WAITING_FOR_REGULAR_DAPPLET
+        expect(userBalance_1.toString()).to.eql("0");
+        expect(ducBalance_1.toString()).to.eql(price);
+        expect(stakeInfo_1.amount.toString()).to.eql(price);
+        expect(stakeInfo_1.duration.toString()).to.eql(reservationPeriod.toString());
+        expect(stakeInfo_1.endsAt.toString()).to.eql((timestamp_1 + reservationPeriod).toString());
+        expect(isDUC_1).to.eql(true);
+
+        expect(stakeStatus_2).to.eql(2); // READY_TO_BURN
+        expect(isDUC_2).to.eql(true);
+
+        expect(stakeStatus_3).to.eql(0); // NO_STAKE
+        expect(burnerBalance_3.toString()).to.eql(price);
+        expect(ducBalance_3.toString()).to.eql("0");
+        expect(stakeInfo_3.amount.toString()).to.eql("0");
+        expect(stakeInfo_3.duration.toString()).to.eql("0");
+        expect(stakeInfo_3.endsAt.toString()).to.eql("0");
+
+        try {
+            await contract.isDUC("duc");
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("The module does not exist");
+        }
+
+        try {
+            await contract.getModuleInfoByName("duc");
+            expect.fail("contract is not failed");
+        } catch (e) {
+            expect(e.message).to.have.string("The module does not exist");
+        }
     });
 
     it("should return modules by contextId after addModuleInfo and added it to listing ", async () => {
@@ -322,7 +578,9 @@ describe("DappletRegistry", function () {
             },
         });
 
-        const uri = await nftContract.tokenURI(1);
+        const moduleIndex = await contract.getModuleIndex("twitter-adapter-test");
+
+        const uri = await nftContract.tokenURI(moduleIndex);
         expect(uri).to.contain("data:application/json;base64,");
 
         const base64 = uri.replace("data:application/json;base64,", "");
@@ -555,12 +813,15 @@ describe("DappletRegistry", function () {
             names.push(`twitter-adapter-test-${i}`);
         }
 
-        const page_1 = await contract.getModules("default", 0, 10, false);
+        const startModuleIndex = await contract.getModuleIndex(names[0]);
+        const startOffset = startModuleIndex - 1;
+
+        const page_1 = await contract.getModules("default", startOffset, 10, false);
         expect(page_1.modules.map((x) => x.name)).deep.eq(
             [...names].splice(0, 10)
         );
 
-        const page_2 = await contract.getModules("default", 10, 10, false);
+        const page_2 = await contract.getModules("default", startOffset + 10, 10, false);
         expect(page_2.modules.map((x) => x.name)).deep.eq(
             [...names].splice(10, 10)
         );
@@ -630,6 +891,11 @@ describe("DappletRegistry", function () {
         );
     });
 
+    it("should returns all elements", async () => {
+        const result = await contract.getModules("default", 0, 100, false);
+        expect(result.modules.length).gt(0);
+    });
+
     it("transmitting and verifying the addition of dynamically added data", async () => {
         const title = md5("title");
         const name = md5("name");
@@ -652,7 +918,7 @@ describe("DappletRegistry", function () {
             "default",
             0,
             1,
-            false
+            true
         );
 
         const result = moduleByContext.modules.map(getValues);
@@ -797,7 +1063,8 @@ describe("DappletRegistry", function () {
               ['example-interface', 'T'],
             ],
             convertToEthMi({ name: "example-interface", moduleType: 4 }),
-            convertToEthVi({ version: "0x000100ff" })
+            convertToEthVi({ version: "0x000100ff" }),
+            0
         );
 
         await ownerConnectedContract.addModuleInfo(
@@ -815,7 +1082,8 @@ describe("DappletRegistry", function () {
                         version: "0x000100ff",
                     },
                 ],
-            })
+            }),
+            0
         );
 
         for (let i = 1; i <= 20; i++) {
@@ -829,7 +1097,8 @@ describe("DappletRegistry", function () {
                     ["example-dapplet-" + i, "T"],
                 ],
                 convertToEthMi({ name: "example-dapplet-" + i, moduleType: 1 }),
-                convertToEthVi({})
+                convertToEthVi({}),
+                0
             );
         }
 
@@ -846,92 +1115,83 @@ describe("DappletRegistry", function () {
             0
         );
 
-        console.log(
-            response.modules[0].map((x) => x.name),
-            response.owners
-        );
-    });
-});
-
-describe("DappletNFT", function () {
-    let dappletContract;
-    let buyerAddress;
-
-    beforeEach(async function () {
-        const [acc1, acc2] = await ethers.getSigners();
-        buyerAddress = acc2.address;
-
-        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-        const deployDappletNFT = await DappletNFT.deploy();
-        await deployDappletNFT.deployed();
-        dappletContract = deployDappletNFT;
+        // ToDo: implement asserts
     });
 
-    it("The contract is being deposited", async () => {
-        expect(dappletContract.address).to.be.properAddress;
+    it("should return an owner of the module", async () => {
+        const [acc1] = await ethers.getSigners();
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 1,
+            context: ["example.com"],
+            description: "example-test",
+            name: "example-test",
+            title: "Example Test",
+        });
+
+        expect(await contract.ownerOf("example-test")).to.equal(acc1.address);
     });
 
-    it("The dapplet NFT has been mined", async () => {
-        await dappletContract.safeMint(buyerAddress, 737);
-        const tokenOwner = await dappletContract.ownerOf(737);
-        expect(tokenOwner).to.equal(buyerAddress);
+    it("should return dependency inclusiveness", async () => {
+        const [acc1] = await ethers.getSigners();
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 2,
+            context: ["example.com"],
+            description: "no-adapter",
+            name: "no-adapter",
+            title: "No Adapter",
+        });
+
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 2,
+            context: ["example.com"],
+            description: "example-adapter",
+            name: "example-adapter",
+            title: "Example Adapter",
+        });
+        
+        await addModuleInfo(contract.connect(acc1), {
+            moduleType: 1,
+            context: ["example.com"],
+            description: "example-test",
+            name: "example-test",
+            title: "Example Test",
+        }, {
+            branch: "default",
+            version: "0x00010000",
+            flags: 0,
+            binary: {
+              hash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+              uris: [],
+            },
+            dependencies: [{
+                name: "example-adapter",
+                branch: "default",
+                version: "0x00010000"
+            }],
+            interfaces: [],
+            extensionVersion: "0x00ff0100",
+            createdAt: 0
+          });
+
+        expect(await contract.includesDependency("example-test", "example-adapter")).to.equal(true);
+        expect(await contract.includesDependency("example-test", "no-adapter")).to.equal(false);
+        expect(await contract.includesDependency("example-test", "non-existing-adapter")).to.equal(false);
     });
-});
 
-describe("DappletRegistry + DappletNFT", function () {
-    let registryContract;
-    let dappletContract;
-    let accountAddress;
-    let dappletOwnerAddress;
-
-    beforeEach(async function () {
-        const [acc1, acc2] = await ethers.getSigners();
-        accountAddress = acc1.address;
-        dappletOwnerAddress = acc2.address;
-
-        const LibDappletRegistryRead = await ethers.getContractFactory(
-            "LibDappletRegistryRead",
-            acc1
-        );
-        const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-
-        const deployDappletNFT = await DappletNFT.deploy();
-        const libDappletRegistryRead = await LibDappletRegistryRead.deploy();
-
-        await deployDappletNFT.deployed();
-        await libDappletRegistryRead.deployed();
-
-        dappletContract = deployDappletNFT;
-
-        const DappletRegistry = await ethers.getContractFactory(
-            "DappletRegistry",
-            {
-                signer: acc1,
-                libraries: {
-                    LibDappletRegistryRead: libDappletRegistryRead.address,
-                },
-            }
-        );
-        const deployDappletRegistry = await DappletRegistry.deploy(
-            dappletContract.address
-        );
-        await deployDappletRegistry.deployed();
-        registryContract = deployDappletRegistry;
-
-        await dappletContract.transferOwnership(registryContract.address);
-    });
 
     it("checks if the ownership has been transfered", async () => {
-        const owner = await dappletContract.owner();
-        expect(owner).to.equal(registryContract.address);
+        const owner = await nftContract.owner();
+        expect(owner).to.equal(contract.address);
     });
 
     it("should create NFT adding new module", async () => {
         const [_, dappletOwner] = await ethers.getSigners();
-        const buyerAccount = await registryContract.connect(dappletOwner);
+        const buyerAccount = await contract.connect(dappletOwner);
 
-        expect(await dappletContract.totalSupply()).to.equal(0);
-        expect(await dappletContract.balanceOf(dappletOwnerAddress)).to.equal(
+        expect(await nftContract.totalSupply()).to.equal(0);
+        expect(await nftContract.balanceOf(dappletOwner.address)).to.equal(
             0
         );
 
@@ -943,22 +1203,24 @@ describe("DappletRegistry + DappletNFT", function () {
             title: "Instagram Adapter Test",
         });
 
-        expect(await dappletContract.totalSupply()).to.equal(1);
-        expect(await dappletContract.ownerOf(1)).to.equal(dappletOwnerAddress);
-        expect(await dappletContract.balanceOf(dappletOwnerAddress)).to.equal(
+        const moduleIndex = await contract.getModuleIndex("instagram-adapter-test");
+
+        expect(await nftContract.totalSupply()).to.equal(1);
+        expect(await nftContract.ownerOf(moduleIndex)).to.equal(dappletOwner.address);
+        expect(await nftContract.balanceOf(dappletOwner.address)).to.equal(
             1
         );
     });
 
     it("should return twitter adapter owner by contextId after addModuleInfo", async () => {
-        await addModuleInfo(registryContract, {});
-        await registryContract.changeMyListing([
+        await addModuleInfo(contract, {});
+        await contract.changeMyListing([
             ["H", "twitter-adapter-test"],
             ["twitter-adapter-test", "T"],
         ]);
 
         const moduleByTwitter =
-            await registryContract.getModulesInfoByListersBatch(
+            await contract.getModulesInfoByListersBatch(
                 ["twitter.com"],
                 [accountAddress],
                 0
@@ -976,23 +1238,23 @@ describe("DappletRegistry + DappletNFT", function () {
 
     it("should transfer ownership of the module", async () => {
         const [_, dappletOwner, dappletBuyer] = await ethers.getSigners();
-        const dappletOwnerToRegistry = await registryContract.connect(
+        const dappletOwnerToRegistry = await contract.connect(
             dappletOwner
         );
 
         await addModuleInfo(dappletOwnerToRegistry, {});
-        const moduleIndex = await registryContract.getModuleIndex(
+        const moduleIndex = await contract.getModuleIndex(
             "twitter-adapter-test"
         );
 
-        const dappletOwnerToDNFT = await dappletContract.connect(dappletOwner);
+        const dappletOwnerToDNFT = await nftContract.connect(dappletOwner);
         await dappletOwnerToDNFT["safeTransferFrom(address,address,uint256)"](
-            dappletOwnerAddress,
+            dappletOwner.address,
             dappletBuyer.address,
             moduleIndex
         );
 
-        const modulesByOwner = await registryContract.getModulesByOwner(
+        const modulesByOwner = await contract.getModulesByOwner(
             dappletBuyer.address,
             "default",
             0,
@@ -1011,7 +1273,7 @@ describe("DappletRegistry + DappletNFT", function () {
     });
 
     it("gives NFT contract address", async () => {
-        const address = await registryContract.getNftContractAddress();
-        expect(dappletContract.address).to.equal(address);
+        const address = await contract.getNftContractAddress();
+        expect(nftContract.address).to.equal(address);
     });
 });

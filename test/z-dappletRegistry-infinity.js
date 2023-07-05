@@ -38,6 +38,7 @@ describe("DappletRegistry Infinity Test", function () {
     });
     const deployDappletRegistry = await DappletRegistry.deploy(
       deployDappletNFT.address,
+      ZERO_ADDRESS
     );
     await deployDappletRegistry.deployed();
     contract = deployDappletRegistry;

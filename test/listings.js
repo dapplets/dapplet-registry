@@ -9,6 +9,8 @@ const H = 0;
 const N = 0;
 const T = 4294967295;
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 const ALL_TESTING_VALUES = convertIndexesToNames([
   "1",
   "2",
@@ -65,24 +67,33 @@ describe("Listings", () => {
     accountAddress = acc1.address;
 
     const DappletNFT = await ethers.getContractFactory("DappletNFT", acc1);
-    const LibRegistryRead = await ethers.getContractFactory(
-      "LibDappletRegistryRead",
-      acc1,
-    );
     const deployDappletNFT = await DappletNFT.deploy();
-    const libRegistryRead = await LibRegistryRead.deploy();
-
     await deployDappletNFT.deployed();
+
+    const LibRegistryRead = await ethers.getContractFactory(
+        "LibDappletRegistryRead",
+        acc1
+    );
+    const libRegistryRead = await LibRegistryRead.deploy();
     await libRegistryRead.deployed();
+
+    const LibRegistryReadExt = await ethers.getContractFactory(
+        "LibDappletRegistryReadExt",
+        acc1
+    );
+    const libRegistryReadExt = await LibRegistryReadExt.deploy();
+    await libRegistryReadExt.deployed();
 
     const DappletRegistry = await ethers.getContractFactory("DappletRegistry", {
       signer: acc1,
       libraries: {
         LibDappletRegistryRead: libRegistryRead.address,
+        LibDappletRegistryReadExt: libRegistryReadExt.address,
       },
     });
     const deployDappletRegistry = await DappletRegistry.deploy(
       deployDappletNFT.address,
+      ZERO_ADDRESS
     );
     await deployDappletRegistry.deployed();
     contract = deployDappletRegistry;

@@ -36,7 +36,8 @@ module.exports = addModuleInfo = async (
       ]
     },
   },
-  version = undefined
+  version = undefined,
+  reservationPeriod = 0,
 ) => {
   await contract.addModuleInfo(
     context,
@@ -74,5 +75,6 @@ module.exports = addModuleInfo = async (
         createdAt: 0
       }
      : version,
+     reservationPeriod
   );
 };

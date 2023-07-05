@@ -37,7 +37,8 @@ describe("DappletRegistry", function () {
             }
         );
         const deployDappletRegistry = await DappletRegistry.deploy(
-            deployDappletNFT.address
+            deployDappletNFT.address,
+            ZERO_ADDRESS
         );
         await deployDappletRegistry.deployed();
         contract = deployDappletRegistry;
