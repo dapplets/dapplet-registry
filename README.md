@@ -8,5 +8,5 @@ Ethereum based Dapplet Registry
 ### Export data
 
 ```
-npm run export:goerli 0x61B5cAe60fD15D30b953cE03d9D3AF58d5087B2d
+npm run export:sepolia 0x61B5cAe60fD15D30b953cE03d9D3AF58d5087B2d
 ```

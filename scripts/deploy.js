@@ -34,6 +34,9 @@ async function main() {
     { Contract: "DappletRegistry", Address: dappletRegistry.address },
   ]);
 
+  console.log('Wait 60 seconds for the transaction to be mined into the chain...');
+  await new Promise((res) => setTimeout(res, 60000));
+
   await Promise.all(
     contracts.map(async (contract) => {
       console.log(`Verifying ${contract.name}...`);

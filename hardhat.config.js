@@ -25,18 +25,14 @@ module.exports = {
     strict: true,
   },
   networks: {
-    goerli: {
-      url: process.env.GOERLI_RPC,
+    sepolia: {
+      url: process.env.SEPOLIA_RPC,
       accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
-    rinkeby: {
-      url: process.env.RINKEBY_RPC,
-      accounts: [process.env.DEPLOYER_PRIV_KEY],
-    },
-    ganache: {
-      url: process.env.GANACHE_RPC,
-      accounts: [process.env.GANACHE_PRIVATE_KEY],
-    },
+    // ganache: {
+    //   url: process.env.GANACHE_RPC,
+    //   accounts: [process.env.GANACHE_PRIVATE_KEY],
+    // },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_KEY,
